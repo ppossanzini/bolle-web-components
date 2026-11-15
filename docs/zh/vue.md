@@ -9,14 +9,14 @@
 ## 安装与注册
 
 ```sh
-npm install @bolle/web-components
+npm install bolle-web-components
 ```
 
 ```ts
 // src/main.ts
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
-import "@bolle/web-components"; // registra tutti i tag bolle-*
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
+import "bolle-web-components"; // registra tutti i tag bolle-*
 import { createApp } from "vue";
 import App from "./App.vue";
 
@@ -59,7 +59,7 @@ app.config.compilerOptions.isCustomElement = (tag) =>
 ```vue
 <!-- src/components/AppTextField.vue -->
 <script setup lang="ts">
-import type { BolleTextField } from "@bolle/web-components";
+import type { BolleTextField } from "bolle-web-components";
 
 const model = defineModel<string>({ default: "" });
 </script>
@@ -153,7 +153,7 @@ Dialog、sheet、snackbar、tooltip、menu、fab-menu 和 carousel 提供命令�
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 
 const snackbar = ref<BolleSnackbar | null>(null);
 </script>
@@ -488,7 +488,7 @@ const formats = ref<string[]>(["bold"]);
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const snackbar = ref<BolleSnackbar | null>(null);
@@ -526,7 +526,7 @@ const log = ref("");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleTooltip } from "@bolle/web-components";
+import type { BolleTooltip } from "bolle-web-components";
 
 const tip = ref<BolleTooltip | null>(null);
 </script>
@@ -560,7 +560,7 @@ const tip = ref<BolleTooltip | null>(null);
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleCarousel } from "@bolle/web-components";
+import type { BolleCarousel } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const carousel = ref<BolleCarousel | null>(null);
@@ -643,7 +643,7 @@ const variants = [
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleDialog } from "@bolle/web-components";
+import type { BolleDialog } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const confirm = ref<BolleDialog | null>(null);
@@ -705,7 +705,7 @@ function onClosed(event: Event) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleBottomSheet } from "@bolle/web-components";
+import type { BolleBottomSheet } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const sheet = ref<BolleBottomSheet | null>(null);
@@ -746,7 +746,7 @@ const result = ref("");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSideSheet } from "@bolle/web-components";
+import type { BolleSideSheet } from "bolle-web-components";
 
 const side = ref<BolleSideSheet | null>(null);
 const standardOpen = ref(true);
@@ -881,7 +881,7 @@ const variants = ["small", "center-aligned", "medium", "medium-flexible", "large
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -923,7 +923,7 @@ const current = ref("inbox");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -960,7 +960,7 @@ const current = ref("inbox");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem, BolleNavigationDrawer } from "@bolle/web-components";
+import type { BolleItem, BolleNavigationDrawer } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1007,7 +1007,7 @@ const drawer = ref<BolleNavigationDrawer | null>(null);
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const primary: BolleItem[] = [
@@ -1228,7 +1228,7 @@ const log = ref("");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const items: BolleItem[] = [
@@ -1304,7 +1304,7 @@ function onExpand(event: Event) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const segments: BolleItem[] = [
@@ -1491,7 +1491,7 @@ function onMessage(event: Event) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const cities = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
@@ -1678,7 +1678,7 @@ function onEvening(event: Event) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleMenu, MenuEntry } from "@bolle/web-components";
+import type { BolleMenu, MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const actions = ref<BolleMenu | null>(null);
@@ -1787,7 +1787,7 @@ function onSelect(event: Event) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const fabItems: BolleItem[] = [
@@ -1818,7 +1818,7 @@ const log = ref("");
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MenuEntry } from "@bolle/web-components";
+import type { MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const variants = ["filled", "tonal", "outlined", "elevated"] as const;

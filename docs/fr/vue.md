@@ -16,14 +16,14 @@ s’appellent via un template ref.
 ## Installation et enregistrement
 
 ```sh
-npm install @bolle/web-components
+npm install bolle-web-components
 ```
 
 ```ts
 // src/main.ts
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
-import "@bolle/web-components"; // registra tutti i tag bolle-*
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
+import "bolle-web-components"; // registra tutti i tag bolle-*
 import { createApp } from "vue";
 import App from "./App.vue";
 
@@ -72,7 +72,7 @@ celui-ci :
 ```vue
 <!-- src/components/AppTextField.vue -->
 <script setup lang="ts">
-import type { BolleTextField } from "@bolle/web-components";
+import type { BolleTextField } from "bolle-web-components";
 
 const model = defineModel<string>({ default: "" });
 </script>
@@ -190,7 +190,7 @@ composant.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 
 const snackbar = ref<BolleSnackbar | null>(null);
 </script>
@@ -569,7 +569,7 @@ mettent les messages en file d’attente.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const snackbar = ref<BolleSnackbar | null>(null);
@@ -611,7 +611,7 @@ ouvert jusqu’à Escape. La variante riche se ferme au clic extérieur et ne do
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleTooltip } from "@bolle/web-components";
+import type { BolleTooltip } from "bolle-web-components";
 
 const tip = ref<BolleTooltip | null>(null);
 </script>
@@ -649,7 +649,7 @@ défile verticalement.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleCarousel } from "@bolle/web-components";
+import type { BolleCarousel } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const carousel = ref<BolleCarousel | null>(null);
@@ -738,7 +738,7 @@ Attributs : `open`, `label`, `variant` (basic, full-screen), `modal`,
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleDialog } from "@bolle/web-components";
+import type { BolleDialog } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const confirm = ref<BolleDialog | null>(null);
@@ -802,7 +802,7 @@ section inline visible lorsque `open` est vrai.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleBottomSheet } from "@bolle/web-components";
+import type { BolleBottomSheet } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const sheet = ref<BolleBottomSheet | null>(null);
@@ -845,7 +845,7 @@ marge de la variante détachée.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSideSheet } from "@bolle/web-components";
+import type { BolleSideSheet } from "bolle-web-components";
 
 const side = ref<BolleSideSheet | null>(null);
 const standardOpen = ref(true);
@@ -991,7 +991,7 @@ cinq destinations.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1035,7 +1035,7 @@ par défaut ; `expanded` affiche les libellés à côté des icônes. `variant` 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1075,7 +1075,7 @@ supplémentaire. Événement : `navigate` avec `{ id }`. Méthodes : `show(opene
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem, BolleNavigationDrawer } from "@bolle/web-components";
+import type { BolleItem, BolleNavigationDrawer } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1126,7 +1126,7 @@ seules flèches.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const primary: BolleItem[] = [
@@ -1363,7 +1363,7 @@ lignes supplémentaires. Événements : `action` avec `{ id }`, `change` avec
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const items: BolleItem[] = [
@@ -1442,7 +1442,7 @@ Utilisez de deux à cinq segments.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const segments: BolleItem[] = [
@@ -1648,7 +1648,7 @@ zéro).
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const cities = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
@@ -1846,7 +1846,7 @@ négatives sont plus compactes), `inactive`. Méthodes : `show(anchor, { last?, 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleMenu, MenuEntry } from "@bolle/web-components";
+import type { BolleMenu, MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const actions = ref<BolleMenu | null>(null);
@@ -1962,7 +1962,7 @@ changement, il ne faut donc pas l’utiliser comme binding contrôlé.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const fabItems: BolleItem[] = [
@@ -1997,7 +1997,7 @@ Attributs : `label`, `menu-label`, `items` (`MenuEntry[]`), `disabled`, `variant
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MenuEntry } from "@bolle/web-components";
+import type { MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const variants = ["filled", "tonal", "outlined", "elevated"] as const;

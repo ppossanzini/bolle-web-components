@@ -15,14 +15,14 @@ e i metodi si chiamano tramite un template ref.
 ## Installazione e registrazione
 
 ```sh
-npm install @bolle/web-components
+npm install bolle-web-components
 ```
 
 ```ts
 // src/main.ts
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
-import "@bolle/web-components"; // registra tutti i tag bolle-*
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
+import "bolle-web-components"; // registra tutti i tag bolle-*
 import { createApp } from "vue";
 import App from "./App.vue";
 
@@ -68,7 +68,7 @@ verifica statica completa servono componenti wrapper tipizzati, come questo:
 ```vue
 <!-- src/components/AppTextField.vue -->
 <script setup lang="ts">
-import type { BolleTextField } from "@bolle/web-components";
+import type { BolleTextField } from "bolle-web-components";
 
 const model = defineModel<string>({ default: "" });
 </script>
@@ -184,7 +184,7 @@ componente.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 
 const snackbar = ref<BolleSnackbar | null>(null);
 </script>
@@ -562,7 +562,7 @@ accodano i messaggi.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "@bolle/web-components";
+import type { BolleSnackbar } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const snackbar = ref<BolleSnackbar | null>(null);
@@ -604,7 +604,7 @@ per contenuti interattivi indispensabili.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleTooltip } from "@bolle/web-components";
+import type { BolleTooltip } from "bolle-web-components";
 
 const tip = ref<BolleTooltip | null>(null);
 </script>
@@ -642,7 +642,7 @@ scorre in verticale.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleCarousel } from "@bolle/web-components";
+import type { BolleCarousel } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const carousel = ref<BolleCarousel | null>(null);
@@ -731,7 +731,7 @@ con `{ reason }` annullabile.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleDialog } from "@bolle/web-components";
+import type { BolleDialog } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const confirm = ref<BolleDialog | null>(null);
@@ -795,7 +795,7 @@ inline visibile quando `open` è vero.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleBottomSheet } from "@bolle/web-components";
+import type { BolleBottomSheet } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const sheet = ref<BolleBottomSheet | null>(null);
@@ -838,7 +838,7 @@ della variante staccata.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSideSheet } from "@bolle/web-components";
+import type { BolleSideSheet } from "bolle-web-components";
 
 const side = ref<BolleSideSheet | null>(null);
 const standardOpen = ref(true);
@@ -984,7 +984,7 @@ destinazioni.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1028,7 +1028,7 @@ default; `expanded` mostra le etichette accanto alle icone. `variant` e
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1068,7 +1068,7 @@ variante standard resta inline e si controlla con `open`.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem, BolleNavigationDrawer } from "@bolle/web-components";
+import type { BolleItem, BolleNavigationDrawer } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const destinations: BolleItem[] = [
@@ -1118,7 +1118,7 @@ Con `manual` la selezione avviene con Invio o click, non con le sole frecce.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const primary: BolleItem[] = [
@@ -1354,7 +1354,7 @@ aggiuntive. Eventi: `action` con `{ id }`, `change` con
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const items: BolleItem[] = [
@@ -1433,7 +1433,7 @@ cinque segmenti.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const segments: BolleItem[] = [
@@ -1637,7 +1637,7 @@ conferma, `suggest` con `{ value }` a ogni input (ritardato se
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const cities = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
@@ -1836,7 +1836,7 @@ negativi più compatti), `inactive`. Metodi: `show(anchor, { last?, x?, y? })`,
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleMenu, MenuEntry } from "@bolle/web-components";
+import type { BolleMenu, MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const actions = ref<BolleMenu | null>(null);
@@ -1951,7 +1951,7 @@ non va usato come binding controllato.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "@bolle/web-components";
+import type { BolleItem } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const fabItems: BolleItem[] = [
@@ -1986,7 +1986,7 @@ large, xl). Eventi: `action` per il pulsante principale, `menu-select` con
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MenuEntry } from "@bolle/web-components";
+import type { MenuEntry } from "bolle-web-components";
 import { detail } from "./bolle";
 
 const variants = ["filled", "tonal", "outlined", "elevated"] as const;

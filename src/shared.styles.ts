@@ -6,6 +6,55 @@ export const bolleStyles = css`
     -webkit-user-select: none;
     user-select: none;
   }
+  /* Scrollbars without arrow buttons, so both ends of track and thumb stay round. */
+  :host::-webkit-scrollbar,
+  ::-webkit-scrollbar {
+    width: var(--bb-scrollbar-size, 12px);
+    height: var(--bb-scrollbar-size, 12px);
+    background: transparent;
+  }
+  :host::-webkit-scrollbar-button,
+  ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  :host::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-track {
+    margin: var(--bb-scrollbar-margin, 8px);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--bb-scrollbar-track, transparent);
+  }
+  :host::-webkit-scrollbar-thumb,
+  ::-webkit-scrollbar-thumb {
+    border: var(--bb-scrollbar-inset, 3px) solid transparent;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(
+        --bb-scrollbar-thumb,
+        color-mix(in srgb, currentColor 38%, transparent)
+      )
+      padding-box;
+  }
+  :host::-webkit-scrollbar-thumb:hover,
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(
+      --bb-scrollbar-thumb-hover,
+      color-mix(in srgb, currentColor 62%, transparent)
+    );
+  }
+  :host::-webkit-scrollbar-corner,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  /* Engines without ::-webkit-scrollbar (Firefox) draw no arrows; only colour and width apply. */
+  @supports not selector(::-webkit-scrollbar) {
+    :host,
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--bb-scrollbar-thumb, currentColor)
+        var(--bb-scrollbar-track, transparent);
+    }
+  }
   input,
   textarea,
   [contenteditable]:not([contenteditable="false"]) {
@@ -223,7 +272,7 @@ export const commonStyles = css`
     --bb-hover-glint: radial-gradient(
       circle at 0 100%,
       transparent 0 7px,
-      var(--bb-glint-color, rgb(255 255 255 / 0.1)) 7.5px 10.5px,
+      var(--bb-glint-color, rgb(255 255 255 / 0.4)) 7.5px 10.5px,
       transparent 11px
     );
   }

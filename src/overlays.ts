@@ -1,3 +1,4 @@
+import { controlLabels } from "./localization.js";
 import { html, nothing, type PropertyValues } from "lit";
 import { BolleElement, moveFocus, placeTail, type BolleItem } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
@@ -394,10 +395,30 @@ export class BolleTooltip extends BolleElement {
     tip.showPopover();
     const gap = this.variant === "rich" ? 8 : 4;
     const anchor = this.trigger.getBoundingClientRect();
-    const rect = tip.getBoundingClientRect();
-    tip.style.left = `${Math.max(4, Math.min(innerWidth - rect.width - 4, anchor.left + (anchor.width - rect.width) / 2))}px`;
-    tip.style.top = `${Math.max(4, anchor.bottom + rect.height + gap < innerHeight ? anchor.bottom + gap : anchor.top - rect.height - gap)}px`;
-    placeTail(tip, anchor);
+    // offset sizes ignore the entry scale, unlike getBoundingClientRect.
+    const rect = { width: tip.offsetWidth, height: tip.offsetHeight };
+    // The narrow corner sits over the trigger centre: start-aligned when it fits,
+    // end-aligned near the right edge, so the tail always points at the opener.
+    const centre = anchor.left + anchor.width / 2;
+    const reach = Math.min(16, anchor.width / 2);
+    const fitsStart = centre - reach + rect.width <= innerWidth - 4;
+    const fitsEnd = centre + reach - rect.width >= 4;
+    const left =
+      rect.width <= anchor.width
+        ? anchor.left + (anchor.width - rect.width) / 2
+        : fitsStart || !fitsEnd
+          ? centre - reach
+          : centre + reach - rect.width;
+    const finalLeft = Math.max(4, Math.min(innerWidth - rect.width - 4, left));
+    const finalTop = Math.max(
+      4,
+      anchor.bottom + rect.height + gap < innerHeight
+        ? anchor.bottom + gap
+        : anchor.top - rect.height - gap,
+    );
+    tip.style.left = `${finalLeft}px`;
+    tip.style.top = `${finalTop}px`;
+    placeTail(tip, anchor, { left: finalLeft, top: finalTop, width: rect.width, height: rect.height });
     if (this.variant === "rich") {
       this.dismissController?.abort();
       this.dismissController = new AbortController();
@@ -449,7 +470,7 @@ export class BolleTooltip extends BolleElement {
                   <button
                     type="button"
                     class="tooltip-dismiss"
-                    aria-label="Dismiss"
+                    aria-label=${controlLabels(this.lang).dismiss}
                     @click=${() => this.hide()}
                   >
                     ${closeIcon()}

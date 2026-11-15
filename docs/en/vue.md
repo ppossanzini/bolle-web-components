@@ -1,4 +1,4 @@
-[Italiano](../it/vue.md) · [English](./vue.md) · [Français](../fr/vue.md)
+[Italiano](../it/vue.md) · [English](./vue.md) · [Français](../fr/vue.md) · [中文](../zh/vue.md)
 
 # Vue 3 · exhaustive usage examples
 

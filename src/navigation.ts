@@ -1,7 +1,8 @@
+import { controlLabels } from "./localization.js";
 import { html, nothing } from "lit";
 import { BolleElement, moveFocus, type BolleItem } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
-import { navigationStyles } from "./navigation.styles.js";
+import { navigationStyles, tabsLayoutStyles } from "./navigation.styles.js";
 
 export class BolleNavigationBar extends BolleElement {
   static properties = {
@@ -55,7 +56,7 @@ export class BolleTabs extends BolleElement {
     activation: {},
     scrollable: { type: Boolean, reflect: true },
   };
-  static styles = [commonStyles, navigationStyles];
+  static styles = [commonStyles, navigationStyles, tabsLayoutStyles];
   items: BolleItem[] = [];
   value = "";
   label = "";
@@ -162,7 +163,7 @@ export class BolleTabs extends BolleElement {
             <button
               class="tab-scroll-button"
               type="button"
-              aria-label="Previous tabs"
+              aria-label=${controlLabels(this.lang).previousTabs}
               ?disabled=${this.atStart}
               @click=${() => this.scrollTabs(-1)}
             >
@@ -172,7 +173,7 @@ export class BolleTabs extends BolleElement {
             <button
               class="tab-scroll-button"
               type="button"
-              aria-label="Next tabs"
+              aria-label=${controlLabels(this.lang).nextTabs}
               ?disabled=${this.atEnd}
               @click=${() => this.scrollTabs(1)}
             >

@@ -76,3 +76,18 @@ export function buildReact(tag: string, spec: SnippetSpec): string {
 
 export const code = (value: unknown): string =>
   JSON.stringify(value, null, 2);
+
+/** Plain HTML markup, or null when the example needs JavaScript property bindings. */
+export function buildHtml(tag: string, spec: SnippetSpec): string | null {
+  const needsScript =
+    (spec.vuePreamble?.length ?? 0) > 0 ||
+    spec.attrs.some((attr) => attr.raw !== undefined || attr.vueName !== undefined);
+  if (needsScript) return null;
+  const attrs = spec.attrs.flatMap((attr) => {
+    if (attr.value === undefined || attr.value === false) return [];
+    const name = kebab(attr.name);
+    if (attr.value === true) return [name];
+    return [`${name}="${quote(String(attr.value))}"`];
+  });
+  return layout(tag, attrs, spec.content, false);
+}

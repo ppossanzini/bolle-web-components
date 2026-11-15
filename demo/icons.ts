@@ -1,6 +1,11 @@
 import { html } from "lit";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import archive from "@tabler/icons/outline/archive.svg?raw";
+import arrowLeft from "@tabler/icons/outline/arrow-left.svg?raw";
+import arrowRight from "@tabler/icons/outline/arrow-right.svg?raw";
+import markdown from "@tabler/icons/outline/markdown.svg?raw";
+import refresh from "@tabler/icons/outline/refresh.svg?raw";
+import rulerMeasure from "@tabler/icons/outline/ruler-measure.svg?raw";
 import arrowDown from "@tabler/icons/outline/arrow-down.svg?raw";
 import arrowUp from "@tabler/icons/outline/arrow-up.svg?raw";
 import bold from "@tabler/icons/outline/bold.svg?raw";
@@ -33,6 +38,11 @@ import wifiOff from "@tabler/icons/outline/wifi-off.svg?raw";
 
 const icons: Record<string, string> = {
   archive,
+  "arrow-left": arrowLeft,
+  "arrow-right": arrowRight,
+  markdown,
+  refresh,
+  "ruler-measure": rulerMeasure,
   "arrow-down": arrowDown,
   "arrow-up": arrowUp,
   bold,

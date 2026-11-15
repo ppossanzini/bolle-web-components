@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { keyed } from "lit/directives/keyed.js";
 import {
   BolleElement,
   BolleFormElement,
@@ -90,20 +91,24 @@ export class BolleToolbar extends BolleElement {
     </div>`;
   }
 }
+export type CardTail = "bottom-start" | "bottom-end" | "top-start" | "top-end";
 export class BolleCard extends BolleElement {
   static properties = {
     variant: { reflect: true },
     orientation: { reflect: true },
+    tail: { reflect: true },
     href: {},
     label: {},
   };
   static styles = [commonStyles, surfaceStyles];
   variant = "filled";
   orientation = "vertical";
+  /** Narrow corner: points at where the card comes from, e.g. the content above a link card. */
+  tail: CardTail = "bottom-start";
   href = "";
   label = "";
   protected render() {
-    return html`<article class="card" aria-label=${this.label || nothing}>
+    return html`<article class="card ${this.href ? "is-link" : ""}" aria-label=${this.label || nothing}>
       <slot name="media"></slot>
       ${this.href ? html`<a href=${this.href}><slot></slot></a>` : html`<div class="card-content"><slot></slot></div>`}
     </article>`;
@@ -122,13 +127,16 @@ export class BolleBadge extends BolleElement {
   small = false;
   max = 999;
   protected render() {
-    return html`<span
-      class="badge"
-      role=${this.label ? "status" : nothing}
-      aria-label=${this.label || nothing}
-      aria-hidden=${this.label ? nothing : "true"}
-      >${this.small ? nothing : Number(this.value) > this.max ? `${this.max}+` : this.value}</span
-    >`;
+    return keyed(
+      this.value,
+      html`<span
+        class="badge"
+        role=${this.label ? "status" : nothing}
+        aria-label=${this.label || nothing}
+        aria-hidden=${this.label ? nothing : "true"}
+        >${this.small ? nothing : Number(this.value) > this.max ? `${this.max}+` : this.value}</span
+      >`,
+    );
   }
 }
 export class BolleDivider extends BolleElement {

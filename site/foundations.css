@@ -1,38 +1,9 @@
 /* Foundations page */
 
-.fd-index {
-  position: sticky;
-  inset-block-start: calc(var(--site-bar-height) + 8px);
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px;
-  border-radius: var(--md-sys-shape-corner-full);
-  background: var(--md-sys-color-surface-container);
-}
-
-.fd-index a {
-  padding: 6px 12px;
-  border-radius: var(--md-sys-shape-corner-full);
-  color: var(--md-sys-color-on-surface);
-  font: var(--md-sys-typescale-label-large-font);
-  text-decoration: none;
-}
-
-.fd-index a:hover {
-  background: color-mix(in srgb, currentColor 8%, transparent);
-}
-
-.fd-index a:focus-visible {
-  outline: 3px solid var(--md-sys-color-primary);
-  outline-offset: 2px;
-}
-
 .fd-section {
   display: grid;
   gap: 16px;
-  scroll-margin-block-start: calc(var(--site-bar-height) + 72px);
+  scroll-margin-block-start: calc(var(--site-bar-height) + 24px);
 }
 
 .fd-section h2 {

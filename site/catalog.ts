@@ -1,8 +1,9 @@
 import { html, nothing, type TemplateResult } from "lit";
 import { ti } from "../demo/icons.js";
-import type { BolleItem, MenuEntry } from "../src/index.js";
+import type { BolleItem, CardTail, MenuEntry } from "../src/index.js";
 import type { AttrSpec, SnippetSpec } from "./codegen.js";
 import { code } from "./codegen.js";
+import { l, libraryLocale, m } from "./i18n.js";
 
 export type Group =
   | "App bars"
@@ -118,40 +119,52 @@ const a = (name: string, value: unknown): AttrSpec => ({
 });
 
 const ICON_ITEMS = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
+  { id: "inbox", label: m("Posta"), icon: "inbox" },
+  { id: "archive", label: m("Archivio"), icon: "archive" },
+  { id: "settings", label: m("Impostazioni"), icon: "settings" },
 ];
 const sixItems = [
   ...ICON_ITEMS,
-  { id: "trash", label: "Cestino", icon: "trash" },
-  { id: "help", label: "Aiuto", icon: "help" },
+  { id: "trash", label: m("Cestino"), icon: "trash" },
+  { id: "help", label: m("Aiuto"), icon: "help" },
 ];
+/** ICON_ITEMS with labels in the current language, as shown in code snippets. */
+const iconCode = () => ICON_ITEMS.map((item) => ({ ...item, label: l(item.label) }));
 const navItems = (source = ICON_ITEMS): BolleItem[] =>
-  source.map((item) => ({ ...item, icon: ti(item.icon) }));
+  source.map((item) => ({ ...item, label: l(item.label), icon: ti(item.icon) }));
 
 const LIST_CODE = [
   {
     id: "inbox",
-    label: "Posta",
+    label: m("Posta"),
     icon: "inbox",
-    supportingText: "Messaggi ricevuti",
+    supportingText: m("Messaggi ricevuti"),
     badge: "3",
   },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
+  { id: "archive", label: m("Archivio"), icon: "archive", href: "/archivio" },
   {
     id: "folders",
-    label: "Cartelle",
+    label: m("Cartelle"),
     icon: "folder",
     items: [
-      { id: "work", label: "Lavoro", badge: "12" },
-      { id: "home", label: "Casa" },
+      { id: "work", label: m("Lavoro"), badge: "12" },
+      { id: "home", label: m("Casa") },
     ],
   },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
+  { id: "trash", label: m("Cestino"), icon: "trash", disabled: true },
 ];
-const listItems = (): BolleItem[] =>
+/** LIST_CODE with labels in the current language, as shown in code snippets. */
+const listCode = () =>
   LIST_CODE.map((item) => ({
+    ...item,
+    label: l(item.label),
+    ...(item.supportingText ? { supportingText: l(item.supportingText) } : {}),
+    ...(item.items
+      ? { items: item.items.map((child) => ({ ...child, label: l(child.label) })) }
+      : {}),
+  }));
+const listItems = (): BolleItem[] =>
+  listCode().map((item) => ({
     ...item,
     icon: item.icon ? ti(item.icon) : undefined,
     items: item.items ? item.items.map((child) => ({ ...child })) : undefined,
@@ -160,36 +173,52 @@ const listItems = (): BolleItem[] =>
 const MENU_GROUPS: MenuEntry[] = [
   {
     group: true,
-    label: "Modifica",
+    label: m("Modifica"),
     items: [
-      { id: "undo", label: "Annulla", trailingText: "⌘Z" },
-      { id: "redo", label: "Ripeti", trailingText: "⇧⌘Z", disabled: true },
+      { id: "undo", label: m("Annulla"), trailingText: "⌘Z" },
+      { id: "redo", label: m("Ripeti"), trailingText: "⇧⌘Z", disabled: true },
     ],
   },
   { separator: true },
   {
     id: "share",
-    label: "Condividi",
+    label: m("Condividi"),
     children: [
-      { id: "link", label: "Copia collegamento" },
-      { id: "email", label: "Invia per email" },
+      { id: "link", label: m("Copia collegamento") },
+      { id: "email", label: m("Invia per email") },
     ],
   },
 ];
-const menuEntries = (selection: string): MenuEntry[] => [
-  ...MENU_GROUPS,
-  ...(selection === "none"
-    ? [{ id: "open", label: "Apri in nuova scheda", href: "https://example.com" } as MenuEntry]
-    : []),
-  { id: "download", label: "Scarica", trailingText: "PDF" },
-];
+/** Menu entries with labels translated to the current language, recursively. */
+const translateMenu = (source: MenuEntry[]): MenuEntry[] =>
+  source.map((entry) => {
+    if ("separator" in entry && entry.separator) return entry;
+    const item = { ...entry } as MenuEntry & {
+      label?: string;
+      items?: MenuEntry[];
+      children?: MenuEntry[];
+    };
+    if (item.label) item.label = l(item.label);
+    if (item.items) item.items = translateMenu(item.items);
+    if (item.children) item.children = translateMenu(item.children);
+    return item;
+  });
+const menuEntries = (selection: string): MenuEntry[] =>
+  translateMenu([
+    ...MENU_GROUPS,
+    ...(selection === "none"
+      ? [{ id: "open", label: m("Apri in nuova scheda"), href: "https://example.com" } as MenuEntry]
+      : []),
+    { id: "download", label: m("Scarica"), trailingText: "PDF" },
+  ]);
 
 const SPLIT_ITEMS: MenuEntry[] = [
-  { id: "later", label: "Invia più tardi" },
-  { id: "draft", label: "Salva bozza" },
+  { id: "later", label: m("Invia più tardi") },
+  { id: "draft", label: m("Salva bozza") },
   { separator: true },
-  { id: "template", label: "Usa modello" },
+  { id: "template", label: m("Usa modello") },
 ];
+const splitItems = () => translateMenu(SPLIT_ITEMS);
 
 const SUGGESTIONS = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
 const CITY_OPTIONS = [
@@ -206,12 +235,14 @@ const CITY_OPTIONS = [
 ];
 
 const TAB_CODE = [
-  { id: "inbox", label: "Posta", icon: "inbox", badge: "3" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Preferenze", icon: "settings" },
+  { id: "inbox", label: m("Posta"), icon: "inbox", badge: "3" },
+  { id: "archive", label: m("Archivio"), icon: "archive" },
+  { id: "settings", label: m("Preferenze"), icon: "settings" },
 ];
+/** TAB_CODE with labels in the current language, as shown in code snippets. */
+const tabCode = () => TAB_CODE.map((item) => ({ ...item, label: l(item.label) }));
 const tabItems = (): BolleItem[] =>
-  TAB_CODE.map((item) => ({ ...item, icon: ti(item.icon) }));
+  tabCode().map((item) => ({ ...item, icon: ti(item.icon) }));
 
 const snippets = (items: unknown, name = "items") => ({
   vuePreamble: [`const ${name} = ${code(items)}`],
@@ -225,16 +256,16 @@ export const entries: Entry[] = [
     navLabel: "Buttons",
     group: "Buttons",
     summary:
-      "Azione principale o secondaria, con stati di toggle, link e invio form.",
+      m("Azione principale o secondaria, con stati di toggle, link e invio form."),
     controls: [
-      en("variant", "Variante", ["filled", "tonal", "outlined", "elevated", "text", "accent"], "filled"),
-      en("size", "Dimensione", ["xs", "small", "medium", "large", "xl"], "small"),
-      en("shape", "Forma", ["round", "square"], "round"),
-      fl("icon", "Icona iniziale", false),
-      fl("toggle", "Toggle", false),
-      fl("selected", "Selezionato", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta accessibile", "Azione"),
+      en("variant", m("Variante"), ["filled", "tonal", "outlined", "elevated", "text", "accent"], "filled"),
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large", "xl"], "small"),
+      en("shape", m("Forma"), ["round", "square"], "round"),
+      fl("icon", m("Icona iniziale"), false),
+      fl("toggle", m("Toggle"), false),
+      fl("selected", m("Selezionato"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta accessibile"), m("Azione")),
     ],
     render: (state) => html`<bolle-button
       .variant=${s(state, "variant")}
@@ -246,7 +277,7 @@ export const entries: Entry[] = [
       .label=${s(state, "label")}
       >${b(state, "icon")
         ? html`<span slot="icon" aria-hidden="true">${ti("plus")}</span>`
-        : nothing}${s(state, "label") || "Azione"}</bolle-button
+        : nothing}${s(state, "label") || l("Azione")}</bolle-button
     >`,
     code: (state) => ({
       attrs: [
@@ -258,7 +289,7 @@ export const entries: Entry[] = [
         a("disabled", b(state, "disabled")),
         a("label", s(state, "label")),
       ],
-      content: `${b(state, "icon") ? '<span slot="icon" aria-hidden="true">plus</span>' : ""}${s(state, "label") || "Azione"}`,
+      content: `${b(state, "icon") ? '<span slot="icon" aria-hidden="true">plus</span>' : ""}${s(state, "label") || l("Azione")}`,
     }),
   },
   {
@@ -266,16 +297,16 @@ export const entries: Entry[] = [
     title: "Icon button",
     navLabel: "Icon buttons",
     group: "Buttons",
-    summary: "Bottone con sola icona; l'etichetta accessibile è obbligatoria.",
+    summary: m("Bottone con sola icona; l'etichetta accessibile è obbligatoria."),
     controls: [
-      en("variant", "Variante", ["filled", "tonal", "outlined", "standard"], "tonal"),
-      en("size", "Dimensione", ["xs", "small", "medium", "large", "xl"], "small"),
-      en("shape", "Forma", ["round", "square"], "round"),
-      en("width", "Larghezza", ["default", "narrow", "wide"], "default"),
-      fl("toggle", "Toggle", false),
-      fl("selected", "Selezionato", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta accessibile", "Notifiche"),
+      en("variant", m("Variante"), ["filled", "tonal", "outlined", "standard"], "tonal"),
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large", "xl"], "small"),
+      en("shape", m("Forma"), ["round", "square"], "round"),
+      en("width", m("Larghezza"), ["default", "narrow", "wide"], "default"),
+      fl("toggle", m("Toggle"), false),
+      fl("selected", m("Selezionato"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta accessibile"), m("Notifiche")),
     ],
     render: (state) => html`<bolle-icon-button
       .variant=${s(state, "variant")}
@@ -307,12 +338,12 @@ export const entries: Entry[] = [
     title: "FAB",
     navLabel: "FABs",
     group: "Buttons",
-    summary: "Azione flottante con taglie e sei mappature di colore.",
+    summary: m("Azione flottante con taglie e sei mappature di colore."),
     controls: [
-      en("size", "Dimensione", ["fab", "small", "medium", "large"], "medium"),
-      en("color", "Colore", ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"], "primary-container"),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta accessibile", "Crea"),
+      en("size", m("Dimensione"), ["fab", "small", "medium", "large"], "medium"),
+      en("color", m("Colore"), ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"], "primary-container"),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta accessibile"), m("Crea")),
     ],
     render: (state) => html`<bolle-floating-action-button
       .size=${s(state, "size")}
@@ -336,13 +367,13 @@ export const entries: Entry[] = [
     title: "Extended FAB",
     navLabel: "Extended FABs",
     group: "Buttons",
-    summary: "FAB esteso con testo visibile e icona opzionale.",
+    summary: m("FAB esteso con testo visibile e icona opzionale."),
     controls: [
-      en("size", "Dimensione", ["small", "medium", "large"], "small"),
-      en("color", "Colore", ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"], "primary-container"),
-      fl("icon", "Icona iniziale", true),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Crea documento"),
+      en("size", m("Dimensione"), ["small", "medium", "large"], "small"),
+      en("color", m("Colore"), ["primary-container", "secondary-container", "tertiary-container", "primary", "secondary", "tertiary", "surface"], "primary-container"),
+      fl("icon", m("Icona iniziale"), true),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Crea documento")),
     ],
     render: (state) => html`<bolle-extended-fab
       .size=${s(state, "size")}
@@ -369,16 +400,16 @@ export const entries: Entry[] = [
     navLabel: "Button groups",
     group: "Buttons",
     summary:
-      "Gruppo con selezione singola o multipla, navigazione da tastiera e geometria connessa.",
+      m("Gruppo con selezione singola o multipla, navigazione da tastiera e geometria connessa."),
     controls: [
-      en("variant", "Variante", ["standard", "connected"], "connected"),
-      en("selection", "Selezione", ["none", "single", "multiple"], "single"),
-      en("buttonVariant", "Stile bottoni", ["filled", "tonal", "outlined", "elevated"], "filled"),
-      en("size", "Dimensione", ["xs", "small", "medium", "large", "xl"], "small"),
-      en("shape", "Forma", ["round", "square"], "round"),
-      fl("icons", "Icone", false),
-      fl("required", "Obbligatorio", false),
-      tx("label", "Etichetta del gruppo", "Allineamento"),
+      en("variant", m("Variante"), ["standard", "connected"], "connected"),
+      en("selection", m("Selezione"), ["none", "single", "multiple"], "single"),
+      en("buttonVariant", m("Stile bottoni"), ["filled", "tonal", "outlined", "elevated"], "filled"),
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large", "xl"], "small"),
+      en("shape", m("Forma"), ["round", "square"], "round"),
+      fl("icons", m("Icone"), false),
+      fl("required", m("Obbligatorio"), false),
+      tx("label", m("Etichetta del gruppo"), m("Allineamento")),
     ],
     render: (state) => html`<bolle-button-group
       .variant=${s(state, "variant")}
@@ -394,17 +425,17 @@ export const entries: Entry[] = [
         selected
         >${b(state, "icons")
           ? html`<span slot="icon" aria-hidden="true">${ti("bold")}</span>`
-          : nothing}Sinistra</bolle-button
+          : nothing}${l("Sinistra")}</bolle-button
       >
       <bolle-button value="center" variant=${s(state, "buttonVariant")}
         >${b(state, "icons")
           ? html`<span slot="icon" aria-hidden="true">${ti("italic")}</span>`
-          : nothing}Centro</bolle-button
+          : nothing}${l("Centro")}</bolle-button
       >
       <bolle-button value="right" variant=${s(state, "buttonVariant")}
         >${b(state, "icons")
           ? html`<span slot="icon" aria-hidden="true">${ti("underline")}</span>`
-          : nothing}Destra</bolle-button
+          : nothing}${l("Destra")}</bolle-button
       >
     </bolle-button-group>`,
     code: (state) => ({
@@ -418,7 +449,7 @@ export const entries: Entry[] = [
       ],
       content: ["left", "center", "right"]
         .map((value, index) => {
-          const text = ["Sinistra", "Centro", "Destra"][index];
+          const text = [l("Sinistra"), l("Centro"), l("Destra")][index];
           const icon = ["bold", "italic", "underline"][index];
           const attrs = `value="${value}" variant="${s(state, "buttonVariant")}"${index === 0 ? " selected" : ""}`;
           const leading = b(state, "icons")
@@ -433,12 +464,12 @@ export const entries: Entry[] = [
     tag: "bolle-badge",
     title: "Badge",
     group: "Badges",
-    summary: "Contatore o punto di notifica; con etichetta diventa uno stato annunciato.",
+    summary: m("Contatore o punto di notifica; con etichetta diventa uno stato annunciato."),
     controls: [
-      tx("value", "Valore", "12"),
-      rg("max", "Massimo", 0, 999, 999),
-      fl("small", "Solo punto", false),
-      tx("label", "Etichetta accessibile", "Notifiche"),
+      tx("value", m("Valore"), "12"),
+      rg("max", m("Massimo"), 0, 999, 999),
+      fl("small", m("Solo punto"), false),
+      tx("label", m("Etichetta accessibile"), m("Notifiche")),
     ],
     render: (state) => html`<bolle-badge
       .value=${s(state, "value")}
@@ -459,13 +490,13 @@ export const entries: Entry[] = [
     tag: "bolle-progress-indicator",
     title: "Progress indicator",
     group: "Progress indicators",
-    summary: "Avanzamento lineare o circolare, determinato o indeterminato, anche ondulato.",
+    summary: m("Avanzamento lineare o circolare, determinato o indeterminato, anche ondulato."),
     controls: [
-      en("variant", "Variante", ["linear", "circular"], "linear"),
-      rg("value", "Valore", 0, 100, 65),
-      fl("indeterminate", "Indeterminato", false),
-      fl("wavy", "Ondulato", false),
-      tx("label", "Etichetta accessibile", "Avanzamento"),
+      en("variant", m("Variante"), ["linear", "circular"], "linear"),
+      rg("value", m("Valore"), 0, 100, 65),
+      fl("indeterminate", m("Indeterminato"), false),
+      fl("wavy", m("Ondulato"), false),
+      tx("label", m("Etichetta accessibile"), m("Avanzamento")),
     ],
     render: (state) => html`<bolle-progress-indicator
       .variant=${s(state, "variant")}
@@ -488,10 +519,10 @@ export const entries: Entry[] = [
     tag: "bolle-loading-indicator",
     title: "Loading indicator",
     group: "Loading indicator",
-    summary: "Indicatore Morph, libero o dentro un contenitore.",
+    summary: m("Indicatore Morph, libero o dentro un contenitore."),
     controls: [
-      en("variant", "Variante", ["default", "contained"], "default"),
-      tx("label", "Etichetta accessibile", "Caricamento"),
+      en("variant", m("Variante"), ["default", "contained"], "default"),
+      tx("label", m("Etichetta accessibile"), m("Caricamento")),
     ],
     render: (state) => html`<bolle-loading-indicator
       .variant=${s(state, "variant")}
@@ -505,16 +536,16 @@ export const entries: Entry[] = [
     tag: "bolle-snackbar",
     title: "Snackbar",
     group: "Snackbar",
-    summary: "Messaggio temporaneo con azione, chiusura e coda di messaggi.",
+    summary: m("Messaggio temporaneo con azione, chiusura e coda di messaggi."),
     controls: [
-      tx("message", "Messaggio", "Documento eliminato"),
-      tx("actionLabel", "Etichetta azione", "Annulla"),
-      tx("closeLabel", "Etichetta chiusura", "Chiudi"),
-      rg("duration", "Durata (ms)", 0, 10000, 5000, 1000),
+      tx("message", m("Messaggio"), m("Documento eliminato")),
+      tx("actionLabel", m("Etichetta azione"), m("Annulla")),
+      tx("closeLabel", m("Etichetta chiusura"), m("Chiudi")),
+      rg("duration", m("Durata (ms)"), 0, 10000, 5000, 1000),
     ],
     render: (state, ctx) => html`
       <bolle-button variant="tonal" @click=${() => ctx.snackbar("pv-snackbar", s(state, "message"))}>
-        Mostra snackbar
+        ${l("Mostra snackbar")}
       </bolle-button>
       <bolle-snackbar
         id="pv-snackbar"
@@ -537,12 +568,12 @@ export const entries: Entry[] = [
     tag: "bolle-tooltip",
     title: "Tooltip",
     group: "Tooltips",
-    summary: "Testo di aiuto su hover e focus, semplice o con contenuto ricco.",
+    summary: m("Testo di aiuto su hover e focus, semplice o con contenuto ricco."),
     controls: [
-      en("variant", "Variante", ["plain", "rich"], "plain"),
-      fl("persistent", "Persistente", false),
-      tx("label", "Etichetta", "Salva una copia"),
-      tx("supportingText", "Testo di supporto", "La copia resta nel tuo spazio personale."),
+      en("variant", m("Variante"), ["plain", "rich"], "plain"),
+      fl("persistent", m("Persistente"), false),
+      tx("label", m("Etichetta"), m("Salva una copia")),
+      tx("supportingText", m("Testo di supporto"), m("La copia resta nel tuo spazio personale.")),
     ],
     render: (state) => html`<bolle-tooltip
       .variant=${s(state, "variant")}
@@ -550,7 +581,7 @@ export const entries: Entry[] = [
       .label=${s(state, "label")}
       .supportingText=${s(state, "supportingText")}
     >
-      <bolle-button variant="tonal">Salva una copia</bolle-button>
+      <bolle-button variant="tonal">${l("Salva una copia")}</bolle-button>
     </bolle-tooltip>`,
     code: (state) => ({
       attrs: [
@@ -559,19 +590,19 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
         a("supportingText", s(state, "supportingText")),
       ],
-      content: '<bolle-button variant="tonal">Salva una copia</bolle-button>',
+      content: `<bolle-button variant="tonal">${l("Salva una copia")}</bolle-button>`,
     }),
   },
   {
     tag: "bolle-carousel",
     title: "Carousel",
     group: "Carousel",
-    summary: "Sequenza di slide con controlli, contatore e varianti hero, multi-browse e full-screen.",
+    summary: m("Sequenza di slide con controlli, contatore e varianti hero, multi-browse e full-screen."),
     controls: [
-      en("variant", "Variante", ["hero", "multi-browse", "uncontained", "uncontained-multi-aspect-ratio", "center-aligned-hero", "full-screen"], "hero"),
-      tx("label", "Etichetta", "Documenti recenti"),
-      tx("previousLabel", "Etichetta precedente", "Precedente"),
-      tx("nextLabel", "Etichetta successivo", "Successivo"),
+      en("variant", m("Variante"), ["hero", "multi-browse", "uncontained", "uncontained-multi-aspect-ratio", "center-aligned-hero", "full-screen"], "hero"),
+      tx("label", m("Etichetta"), m("Documenti recenti")),
+      tx("previousLabel", m("Etichetta precedente"), m("Precedente")),
+      tx("nextLabel", m("Etichetta successivo"), m("Successivo")),
     ],
     render: (state) => html`<bolle-carousel
       .variant=${s(state, "variant")}
@@ -579,9 +610,9 @@ export const entries: Entry[] = [
       .previousLabel=${s(state, "previousLabel")}
       .nextLabel=${s(state, "nextLabel")}
     >
-      <article><h3>Posta</h3><p>Messaggi ricevuti</p></article>
-      <article><h3>Archivio</h3><p>Documenti salvati</p></article>
-      <article><h3>Impostazioni</h3><p>Preferenze personali</p></article>
+      <article><h3>${l("Posta")}</h3><p>${l("Messaggi ricevuti")}</p></article>
+      <article><h3>${l("Archivio")}</h3><p>${l("Documenti salvati")}</p></article>
+      <article><h3>${l("Impostazioni")}</h3><p>${l("Preferenze personali")}</p></article>
     </bolle-carousel>`,
     code: (state) => ({
       attrs: [
@@ -591,59 +622,69 @@ export const entries: Entry[] = [
         a("nextLabel", s(state, "nextLabel")),
       ],
       content:
-        "<article><h3>Posta</h3><p>Messaggi ricevuti</p></article>\n" +
-        "<article><h3>Archivio</h3><p>Documenti salvati</p></article>\n" +
-        "<article><h3>Impostazioni</h3><p>Preferenze personali</p></article>",
+        `<article><h3>${l("Posta")}</h3><p>${l("Messaggi ricevuti")}</p></article>\n` +
+        `<article><h3>${l("Archivio")}</h3><p>${l("Documenti salvati")}</p></article>\n` +
+        `<article><h3>${l("Impostazioni")}</h3><p>${l("Preferenze personali")}</p></article>`,
     }),
   },
   {
     tag: "bolle-card",
     title: "Card",
     group: "Cards",
-    summary: "Superficie per contenuto correlato, con media, orientamento e varianti di elevazione.",
+    summary: m("Superficie per contenuto correlato, con media, orientamento e varianti di elevazione."),
+    note:
+      m("Con href l'intera card diventa un link: è il modo di portare a un'altra pagina con una superficie, mentre i bottoni restano per le azioni. Una card-link non deve contenere altri controlli interattivi. La coda punta da dove arriva l'utente: una card sotto il contenuto la gira in alto, dal lato opposto alla direzione in cui porta."),
     controls: [
-      en("variant", "Variante", ["filled", "elevated", "outlined"], "filled"),
-      en("orientation", "Orientamento", ["vertical", "horizontal"], "vertical"),
-      tx("href", "Collegamento", ""),
-      tx("label", "Etichetta accessibile", "Documento"),
+      en("variant", m("Variante"), ["filled", "elevated", "outlined"], "filled"),
+      en("orientation", m("Orientamento"), ["vertical", "horizontal"], "vertical"),
+      en("tail", m("Coda"), ["bottom-start", "bottom-end", "top-start", "top-end"], "bottom-start"),
+      tx("href", m("Collegamento"), "", "#/bolle-dialog"),
+      tx("label", m("Etichetta accessibile"), m("Documento")),
     ],
     render: (state) => html`<bolle-card
       .variant=${s(state, "variant")}
       .orientation=${s(state, "orientation")}
+      .tail=${s(state, "tail") as CardTail}
       .href=${s(state, "href")}
       .label=${s(state, "label")}
     >
-      <h3>Documento</h3>
-      <p>Contenuto indipendente con un'azione interna.</p>
+      <h3>${l("Documento")}</h3>
+      <p>
+        ${s(state, "href")
+          ? l("Tutta la card porta alla destinazione.")
+          : l("Contenuto indipendente con un'azione interna.")}
+      </p>
       ${s(state, "href")
         ? nothing
-        : html`<bolle-button variant="text">Apri</bolle-button>`}
+        : html`<bolle-button variant="text">${l("Apri")}</bolle-button>`}
     </bolle-card>`,
     code: (state) => ({
       attrs: [
         a("variant", s(state, "variant")),
         a("orientation", s(state, "orientation")),
+        a("tail", s(state, "tail") === "bottom-start" ? undefined : s(state, "tail")),
         a("href", s(state, "href")),
         a("label", s(state, "label")),
       ],
-      content:
-        "<h3>Documento</h3>\n<p>Contenuto indipendente con un'azione interna.</p>",
+      content: s(state, "href")
+        ? `<h3>${l("Documento")}</h3>\n<p>${l("Tutta la card porta alla destinazione.")}</p>`
+        : `<h3>${l("Documento")}</h3>\n<p>${l("Contenuto indipendente con un'azione interna.")}</p>\n<bolle-button variant="text">${l("Apri")}</bolle-button>`,
     }),
   },
   {
     tag: "bolle-dialog",
     title: "Dialog",
     group: "Dialogs",
-    summary: "Finestra modale o non modale, con azioni e variante a schermo intero.",
+    summary: m("Finestra modale o non modale, con azioni e variante a schermo intero."),
     controls: [
-      en("variant", "Variante", ["basic", "full-screen"], "basic"),
-      fl("modal", "Modale", true),
-      tx("closeLabel", "Etichetta chiusura", "Annulla"),
-      tx("label", "Etichetta accessibile", "Eliminare il documento?"),
+      en("variant", m("Variante"), ["basic", "full-screen"], "basic"),
+      fl("modal", m("Modale"), true),
+      tx("closeLabel", m("Etichetta chiusura"), m("Annulla")),
+      tx("label", m("Etichetta accessibile"), m("Eliminare il documento?")),
     ],
     render: (state, ctx) => html`
       <bolle-button variant="filled" @click=${(event: Event) => ctx.show("pv-dialog", event)}>
-        Apri dialog
+        ${l("Apri dialog")}
       </bolle-button>
       <bolle-dialog
         id="pv-dialog"
@@ -652,12 +693,12 @@ export const entries: Entry[] = [
         .closeLabel=${s(state, "closeLabel")}
         .label=${s(state, "label")}
       >
-        <p>L'operazione non può essere annullata.</p>
+        <p>${l("L'operazione non può essere annullata.")}</p>
         <bolle-button
           slot="actions"
           variant="text"
           @click=${() => ctx.close("pv-dialog", "elimina")}
-          >Elimina</bolle-button
+          >${l("Elimina")}</bolle-button
         >
       </bolle-dialog>
     `,
@@ -669,25 +710,25 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
       ],
       content:
-        "<p>L'operazione non può essere annullata.</p>\n" +
-        '<bolle-button slot="actions" variant="text">Elimina</bolle-button>',
+        `<p>${l("L'operazione non può essere annullata.")}</p>\n` +
+        `<bolle-button slot="actions" variant="text">${l("Elimina")}</bolle-button>`,
     }),
   },
   {
     tag: "bolle-bottom-sheet",
     title: "Bottom sheet",
     group: "Sheets",
-    summary: "Foglio ancorato in basso, modale o standard, con maniglia di trascinamento.",
+    summary: m("Foglio ancorato in basso, modale o standard, con maniglia di trascinamento."),
     controls: [
-      en("variant", "Variante", ["modal", "standard"], "modal"),
-      fl("dragHandle", "Maniglia", true),
-      tx("closeLabel", "Etichetta chiusura", "Chiudi"),
-      tx("label", "Etichetta accessibile", "Filtri"),
+      en("variant", m("Variante"), ["modal", "standard"], "modal"),
+      fl("dragHandle", m("Maniglia"), true),
+      tx("closeLabel", m("Etichetta chiusura"), m("Chiudi")),
+      tx("label", m("Etichetta accessibile"), m("Filtri")),
     ],
     render: (state, ctx) => html`
       ${s(state, "variant") === "modal"
         ? html`<bolle-button variant="filled" @click=${(event: Event) => ctx.show("pv-sheet", event)}>
-            Apri foglio
+            ${l("Apri foglio")}
           </bolle-button>`
         : nothing}
       <bolle-bottom-sheet
@@ -698,9 +739,9 @@ export const entries: Entry[] = [
         .closeLabel=${s(state, "closeLabel")}
         .label=${s(state, "label")}
       >
-        <p>Scegli i filtri da applicare.</p>
+        <p>${l("Scegli i filtri da applicare.")}</p>
         <bolle-button slot="actions" @click=${() => ctx.close("pv-sheet", "applica")}>
-          Applica
+          ${l("Applica")}
         </bolle-button>
       </bolle-bottom-sheet>
     `,
@@ -713,25 +754,25 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
       ],
       content:
-        "<p>Scegli i filtri da applicare.</p>\n" +
-        '<bolle-button slot="actions">Applica</bolle-button>',
+        `<p>${l("Scegli i filtri da applicare.")}</p>\n` +
+        `<bolle-button slot="actions">${l("Applica")}</bolle-button>`,
     }),
   },
   {
     tag: "bolle-side-sheet",
     title: "Side sheet",
     group: "Sheets",
-    summary: "Pannello laterale modale o standard, con variante staccata dal bordo.",
+    summary: m("Pannello laterale modale o standard, con variante staccata dal bordo."),
     controls: [
-      en("variant", "Variante", ["modal", "standard"], "modal"),
-      fl("detached", "Staccato", false),
-      tx("closeLabel", "Etichetta chiusura", "Chiudi"),
-      tx("label", "Etichetta accessibile", "Dettagli"),
+      en("variant", m("Variante"), ["modal", "standard"], "modal"),
+      fl("detached", m("Staccato"), false),
+      tx("closeLabel", m("Etichetta chiusura"), m("Chiudi")),
+      tx("label", m("Etichetta accessibile"), m("Dettagli")),
     ],
     render: (state, ctx) => html`
       ${s(state, "variant") === "modal"
         ? html`<bolle-button variant="filled" @click=${(event: Event) => ctx.show("pv-side", event)}>
-            Apri pannello
+            ${l("Apri pannello")}
           </bolle-button>`
         : nothing}
       <bolle-side-sheet
@@ -742,9 +783,9 @@ export const entries: Entry[] = [
         .closeLabel=${s(state, "closeLabel")}
         .label=${s(state, "label")}
       >
-        <p>Dettagli del documento selezionato.</p>
+        <p>${l("Dettagli del documento selezionato.")}</p>
         <bolle-button slot="actions" @click=${() => ctx.close("pv-side", "salvato")}>
-          Salva
+          ${l("Salva")}
         </bolle-button>
       </bolle-side-sheet>
     `,
@@ -757,30 +798,30 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
       ],
       content:
-        "<p>Dettagli del documento selezionato.</p>\n" +
-        '<bolle-button slot="actions">Salva</bolle-button>',
+        `<p>${l("Dettagli del documento selezionato.")}</p>\n` +
+        `<bolle-button slot="actions">${l("Salva")}</bolle-button>`,
     }),
   },
   {
     tag: "bolle-divider",
     title: "Divider",
     group: "Divider",
-    summary: "Separatore orizzontale o verticale, con inset e modalità decorativa.",
+    summary: m("Separatore orizzontale o verticale, con inset e modalità decorativa."),
     controls: [
-      en("variant", "Variante", ["full", "inset", "inset-start", "inset-end"], "full"),
-      fl("vertical", "Verticale", false),
-      fl("inset", "Inset", false),
-      fl("decorative", "Decorativo", false),
+      en("variant", m("Variante"), ["full", "inset", "inset-start", "inset-end"], "full"),
+      fl("vertical", m("Verticale"), false),
+      fl("inset", m("Inset"), false),
+      fl("decorative", m("Decorativo"), false),
     ],
     render: (state) => html`<div class="divider-row">
-      ${b(state, "vertical") ? html`<span>Prima</span>` : nothing}
+      ${b(state, "vertical") ? html`<span>${l("Prima")}</span>` : nothing}
       <bolle-divider
         .variant=${s(state, "variant")}
         ?vertical=${b(state, "vertical")}
         ?inset=${b(state, "inset")}
         ?decorative=${b(state, "decorative")}
       ></bolle-divider>
-      ${b(state, "vertical") ? html`<span>Dopo</span>` : nothing}
+      ${b(state, "vertical") ? html`<span>${l("Dopo")}</span>` : nothing}
     </div>`,
     code: (state) => ({
       attrs: [
@@ -795,15 +836,15 @@ export const entries: Entry[] = [
     tag: "bolle-app-bar",
     title: "App bar",
     group: "App bars",
-    summary: "Barra superiore con sette layout, sottotitolo, slot e stato di scorrimento.",
+    summary: m("Barra superiore con sette layout, sottotitolo, slot e stato di scorrimento."),
     controls: [
-      en("variant", "Variante", ["small", "center-aligned", "medium", "medium-flexible", "large", "large-flexible", "search"], "small"),
-      tx("subtitle", "Sottotitolo", "12 non letti"),
-      en("alignment", "Allineamento", ["leading", "center"], "leading"),
-      fl("sticky", "Sticky", false),
-      fl("scrolled", "Scorso", false),
-      fl("collapsed", "Compresso", false),
-      tx("label", "Titolo", "Posta"),
+      en("variant", m("Variante"), ["small", "center-aligned", "medium", "medium-flexible", "large", "large-flexible", "search"], "small"),
+      tx("subtitle", m("Sottotitolo"), m("12 non letti")),
+      en("alignment", m("Allineamento"), ["leading", "center"], "leading"),
+      fl("sticky", m("Sticky"), false),
+      fl("scrolled", m("Scorso"), false),
+      fl("collapsed", m("Compresso"), false),
+      tx("label", m("Titolo"), m("Posta")),
     ],
     render: (state) => html`<bolle-app-bar
       .variant=${s(state, "variant")}
@@ -817,13 +858,13 @@ export const entries: Entry[] = [
       ${s(state, "variant") === "search"
         ? nothing
         : html`<span class="preview-app-title">${s(state, "label")}</span>`}
-      <bolle-icon-button slot="leading" label="Menu">${ti("menu-2")}</bolle-icon-button>
+      <bolle-icon-button slot="leading" label=${l("Menu")}>${ti("menu-2")}</bolle-icon-button>
       ${s(state, "variant") === "search"
-        ? html`<bolle-search label="Cerca" placeholder="Cerca nella posta">
+        ? html`<bolle-search label=${l("Cerca")} placeholder=${l("Cerca nella posta")}>
             <span slot="leading" aria-hidden="true">${ti("search")}</span>
           </bolle-search>`
         : nothing}
-      <bolle-icon-button slot="trailing" label="Cerca">${ti("search")}</bolle-icon-button>
+      <bolle-icon-button slot="trailing" label=${l("Cerca")}>${ti("search")}</bolle-icon-button>
     </bolle-app-bar>`,
     code: (state) => ({
       attrs: [
@@ -836,20 +877,20 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
       ],
       content:
-        '<bolle-icon-button slot="leading" label="Menu">menu</bolle-icon-button>\n' +
-        '<bolle-icon-button slot="trailing" label="Cerca">search</bolle-icon-button>',
+        `<bolle-icon-button slot="leading" label="${l("Menu")}">menu</bolle-icon-button>\n` +
+        `<bolle-icon-button slot="trailing" label="${l("Cerca")}">search</bolle-icon-button>`,
     }),
   },
   {
     tag: "bolle-toolbar",
     title: "Toolbar",
     group: "Toolbars",
-    summary: "Raggruppa azioni correlate con roving tabindex, orizzontale o verticale.",
+    summary: m("Raggruppa azioni correlate con roving tabindex, orizzontale o verticale."),
     controls: [
-      en("variant", "Variante", ["docked", "floating"], "docked"),
-      en("orientation", "Orientamento", ["horizontal", "vertical"], "horizontal"),
-      en("color", "Colore", ["standard", "vibrant"], "standard"),
-      tx("label", "Etichetta", "Formato"),
+      en("variant", m("Variante"), ["docked", "floating"], "docked"),
+      en("orientation", m("Orientamento"), ["horizontal", "vertical"], "horizontal"),
+      en("color", m("Colore"), ["standard", "vibrant"], "standard"),
+      tx("label", m("Etichetta"), m("Formato")),
     ],
     render: (state) => html`<bolle-toolbar
       .variant=${s(state, "variant")}
@@ -857,9 +898,9 @@ export const entries: Entry[] = [
       .color=${s(state, "color")}
       .label=${s(state, "label")}
     >
-      <bolle-icon-button label="Grassetto" toggle>${ti("bold")}</bolle-icon-button>
-      <bolle-icon-button label="Corsivo" toggle>${ti("italic")}</bolle-icon-button>
-      <bolle-icon-button label="Sottolineato" toggle>${ti("underline")}</bolle-icon-button>
+      <bolle-icon-button label=${l("Grassetto")} toggle>${ti("bold")}</bolle-icon-button>
+      <bolle-icon-button label=${l("Corsivo")} toggle>${ti("italic")}</bolle-icon-button>
+      <bolle-icon-button label=${l("Sottolineato")} toggle>${ti("underline")}</bolle-icon-button>
     </bolle-toolbar>`,
     code: (state) => ({
       attrs: [
@@ -869,20 +910,20 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
       ],
       content:
-        '<bolle-icon-button label="Grassetto" toggle>format_bold</bolle-icon-button>\n' +
-        '<bolle-icon-button label="Corsivo" toggle>format_italic</bolle-icon-button>\n' +
-        '<bolle-icon-button label="Sottolineato" toggle>format_underline</bolle-icon-button>',
+        `<bolle-icon-button label="${l("Grassetto")}" toggle>format_bold</bolle-icon-button>\n` +
+        `<bolle-icon-button label="${l("Corsivo")}" toggle>format_italic</bolle-icon-button>\n` +
+        `<bolle-icon-button label="${l("Sottolineato")}" toggle>format_underline</bolle-icon-button>`,
     }),
   },
   {
     tag: "bolle-navigation-bar",
     title: "Navigation bar",
     group: "Navigation bar",
-    summary: "Da tre a cinque destinazioni, baseline o flexible, con layout orizzontale.",
+    summary: m("Da tre a cinque destinazioni, baseline o flexible, con layout orizzontale."),
     controls: [
-      en("variant", "Variante", ["standard", "flexible"], "standard"),
-      en("layout", "Layout", ["vertical", "horizontal"], "vertical"),
-      tx("label", "Etichetta", "Navigazione principale"),
+      en("variant", m("Variante"), ["standard", "flexible"], "standard"),
+      en("layout", m("Layout"), ["vertical", "horizontal"], "vertical"),
+      tx("label", m("Etichetta"), m("Navigazione principale")),
     ],
     render: (state) => html`<bolle-navigation-bar
       .variant=${s(state, "variant")}
@@ -899,19 +940,19 @@ export const entries: Entry[] = [
         { name: "items", raw: "items" },
         a("value", "inbox"),
       ],
-      ...snippets(ICON_ITEMS),
+      ...snippets(iconCode()),
     }),
   },
   {
     tag: "bolle-navigation-rail",
     title: "Navigation rail",
     group: "Navigation rail",
-    summary: "Rail compresso o espanso per la navigazione laterale.",
+    summary: m("Rail compresso o espanso per la navigazione laterale."),
     controls: [
-      fl("expanded", "Espanso", true),
-      en("variant", "Variante", ["standard", "flexible"], "standard"),
-      en("layout", "Layout", ["vertical", "horizontal"], "vertical"),
-      tx("label", "Etichetta", "Navigazione laterale"),
+      fl("expanded", m("Espanso"), true),
+      en("variant", m("Variante"), ["standard", "flexible"], "standard"),
+      en("layout", m("Layout"), ["vertical", "horizontal"], "vertical"),
+      tx("label", m("Etichetta"), m("Navigazione laterale")),
     ],
     render: (state) => html`<bolle-navigation-rail
       ?expanded=${b(state, "expanded")}
@@ -930,24 +971,24 @@ export const entries: Entry[] = [
         { name: "items", raw: "items" },
         a("value", "inbox"),
       ],
-      ...snippets(ICON_ITEMS),
+      ...snippets(iconCode()),
     }),
   },
   {
     tag: "bolle-navigation-drawer",
     title: "Navigation drawer",
     group: "Navigation drawer",
-    summary: "Drawer di sezioni modale o standard, con contenuto aggiuntivo.",
+    summary: m("Drawer di sezioni modale o standard, con contenuto aggiuntivo."),
     controls: [
-      en("variant", "Variante", ["modal", "standard"], "modal"),
-      fl("detached", "Staccato", false),
-      tx("closeLabel", "Etichetta chiusura", "Chiudi"),
-      tx("label", "Etichetta", "Sezioni"),
+      en("variant", m("Variante"), ["modal", "standard"], "modal"),
+      fl("detached", m("Staccato"), false),
+      tx("closeLabel", m("Etichetta chiusura"), m("Chiudi")),
+      tx("label", m("Etichetta"), m("Sezioni")),
     ],
     render: (state, ctx) => html`
       ${s(state, "variant") === "modal"
         ? html`<bolle-button variant="filled" @click=${(event: Event) => ctx.show("pv-drawer", event)}>
-            Apri drawer
+            ${l("Apri drawer")}
           </bolle-button>`
         : nothing}
       <bolle-navigation-drawer
@@ -960,7 +1001,7 @@ export const entries: Entry[] = [
         .items=${navItems()}
         value="inbox"
       >
-        <p>Contenuto aggiuntivo del drawer.</p>
+        <p>${l("Contenuto aggiuntivo del drawer.")}</p>
       </bolle-navigation-drawer>
     `,
     code: (state) => ({
@@ -973,25 +1014,25 @@ export const entries: Entry[] = [
         { name: "items", raw: "items" },
         a("value", "inbox"),
       ],
-      content: "<p>Contenuto aggiuntivo del drawer.</p>",
-      ...snippets(ICON_ITEMS),
+      content: `<p>${l("Contenuto aggiuntivo del drawer.")}</p>`,
+      ...snippets(iconCode()),
     }),
   },
   {
     tag: "bolle-tabs",
     title: "Tabs",
     group: "Tabs",
-    summary: "Tab primari o secondari, attivazione automatica o manuale, anche scorrevoli.",
+    summary: m("Tab primari o secondari, attivazione automatica o manuale, anche scorrevoli."),
     controls: [
-      en("variant", "Variante", ["primary", "secondary"], "primary"),
-      en("activation", "Attivazione", ["automatic", "manual"], "automatic"),
-      fl("scrollable", "Scorrevoli", false),
-      fl("icons", "Icone", true),
-      fl("badges", "Badge", true),
-      tx("label", "Etichetta", "Categorie"),
+      en("variant", m("Variante"), ["primary", "secondary"], "primary"),
+      en("activation", m("Attivazione"), ["automatic", "manual"], "automatic"),
+      fl("scrollable", m("Scorrevoli"), false),
+      fl("icons", m("Icone"), true),
+      fl("badges", m("Badge"), true),
+      tx("label", m("Etichetta"), m("Categorie")),
     ],
     render: (state) => {
-      const items = TAB_CODE.map((item, index) => ({
+      const items = tabCode().map((item, index) => ({
         id: item.id,
         label: item.label,
         icon: b(state, "icons") ? ti(item.icon) : undefined,
@@ -1005,9 +1046,9 @@ export const entries: Entry[] = [
         .items=${items}
         value="inbox"
       >
-        <p slot="inbox">Messaggi ricevuti.</p>
-        <p slot="archive">Documenti salvati.</p>
-        <p slot="settings">Preferenze personali.</p>
+        <p slot="inbox">${l("Messaggi ricevuti.")}</p>
+        <p slot="archive">${l("Documenti salvati.")}</p>
+        <p slot="settings">${l("Preferenze personali.")}</p>
       </bolle-tabs>`;
     },
     code: (state) => ({
@@ -1020,11 +1061,11 @@ export const entries: Entry[] = [
         a("value", "inbox"),
       ],
       content:
-        '<p slot="inbox">Messaggi ricevuti.</p>\n' +
-        '<p slot="archive">Documenti salvati.</p>\n' +
-        '<p slot="settings">Preferenze personali.</p>',
+        `<p slot="inbox">${l("Messaggi ricevuti.")}</p>\n` +
+        `<p slot="archive">${l("Documenti salvati.")}</p>\n` +
+        `<p slot="settings">${l("Preferenze personali.")}</p>`,
       ...snippets(
-        TAB_CODE.map((item, index) => ({
+        tabCode().map((item, index) => ({
           id: item.id,
           label: item.label,
           ...(b(state, "icons") ? { icon: item.icon } : {}),
@@ -1037,15 +1078,15 @@ export const entries: Entry[] = [
     tag: "bolle-checkbox",
     title: "Checkbox",
     group: "Checkbox",
-    summary: "Selezione binaria con stato indeterminato, errore e testo di supporto.",
+    summary: m("Selezione binaria con stato indeterminato, errore e testo di supporto."),
     controls: [
-      fl("checked", "Selezionata", true),
-      fl("indeterminate", "Indeterminata", false),
-      fl("required", "Obbligatoria", false),
-      fl("disabled", "Disabilitata", false),
-      fl("error", "Errore", false),
-      tx("label", "Etichetta", "Accetto i termini"),
-      tx("supportingText", "Testo di supporto", "Puoi revocare il consenso."),
+      fl("checked", m("Selezionata"), true),
+      fl("indeterminate", m("Indeterminata"), false),
+      fl("required", m("Obbligatoria"), false),
+      fl("disabled", m("Disabilitata"), false),
+      fl("error", m("Errore"), false),
+      tx("label", m("Etichetta"), m("Accetto i termini")),
+      tx("supportingText", m("Testo di supporto"), m("Puoi revocare il consenso.")),
     ],
     render: (state) => html`<bolle-checkbox
       ?checked=${b(state, "checked")}
@@ -1072,15 +1113,15 @@ export const entries: Entry[] = [
     tag: "bolle-switch",
     title: "Switch",
     group: "Switch",
-    summary: "Interruttore immediato con icone di stato opzionali.",
+    summary: m("Interruttore immediato con icone di stato opzionali."),
     controls: [
-      fl("checked", "Attivo", true),
-      en("icons", "Icone", ["none", "selected", "both"], "both"),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
-      fl("error", "Errore", false),
-      tx("label", "Etichetta", "Wi-Fi"),
-      tx("supportingText", "Testo di supporto", "Rete senza fili."),
+      fl("checked", m("Attivo"), true),
+      en("icons", m("Icone"), ["none", "selected", "both"], "both"),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
+      fl("error", m("Errore"), false),
+      tx("label", m("Etichetta"), "Wi-Fi"),
+      tx("supportingText", m("Testo di supporto"), m("Rete senza fili.")),
     ],
     render: (state) => html`<bolle-switch
       ?checked=${b(state, "checked")}
@@ -1107,12 +1148,12 @@ export const entries: Entry[] = [
     tag: "bolle-radio-button",
     title: "Radio button",
     group: "Radio button",
-    summary: "Scelta singola in un gruppo con navigazione da tastiera.",
+    summary: m("Scelta singola in un gruppo con navigazione da tastiera."),
     controls: [
-      fl("checked", "Selezionato", true),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Standard"),
+      fl("checked", m("Selezionato"), true),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Standard")),
     ],
     render: (state) => html`<div class="radio-group">
       ${["standard", "plus", "enterprise"].map(
@@ -1141,15 +1182,15 @@ export const entries: Entry[] = [
     tag: "bolle-chip",
     title: "Chip",
     group: "Chips",
-    summary: "Assist, filter, input e suggestion, con elevazione, rimozione e avatar.",
+    summary: m("Assist, filter, input e suggestion, con elevazione, rimozione e avatar."),
     controls: [
-      en("variant", "Variante", ["assist", "filter", "input", "suggestion"], "assist"),
-      fl("selected", "Selezionata", false),
-      fl("elevated", "Elevata", false),
-      fl("disabled", "Disabilitata", false),
-      fl("removable", "Rimovibile", false),
-      tx("label", "Etichetta", "Preferiti"),
-      tx("removeLabel", "Etichetta rimozione", "Rimuovi Preferiti"),
+      en("variant", m("Variante"), ["assist", "filter", "input", "suggestion"], "assist"),
+      fl("selected", m("Selezionata"), false),
+      fl("elevated", m("Elevata"), false),
+      fl("disabled", m("Disabilitata"), false),
+      fl("removable", m("Rimovibile"), false),
+      tx("label", m("Etichetta"), m("Preferiti")),
+      tx("removeLabel", m("Etichetta rimozione"), m("Rimuovi Preferiti")),
     ],
     render: (state) => html`<bolle-chip
       .variant=${s(state, "variant")}
@@ -1176,12 +1217,12 @@ export const entries: Entry[] = [
     tag: "bolle-list",
     title: "List",
     group: "Lists",
-    summary: "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.",
+    summary: m("Righe con icone, testo di supporto, link, espansione e selezione singola o multipla."),
     controls: [
-      en("variant", "Variante", ["standard", "segmented"], "standard"),
-      en("selection", "Selezione", ["none", "single", "multiple"], "single"),
-      fl("interactive", "Interattiva", true),
-      tx("label", "Etichetta", "Documenti"),
+      en("variant", m("Variante"), ["standard", "segmented"], "standard"),
+      en("selection", m("Selezione"), ["none", "single", "multiple"], "single"),
+      fl("interactive", m("Interattiva"), true),
+      tx("label", m("Etichetta"), m("Documenti")),
     ],
     render: (state) => html`<bolle-list
       .variant=${s(state, "variant")}
@@ -1202,29 +1243,29 @@ export const entries: Entry[] = [
         { name: "value", raw: s(state, "selection") === "multiple" ? "['inbox']" : "'inbox'" },
         { name: "expanded", raw: "['folders']" },
       ],
-      ...snippets(LIST_CODE),
+      ...snippets(listCode()),
     }),
   },
   {
     tag: "bolle-segmented-buttons",
     title: "Segmented buttons",
     group: "Buttons",
-    summary: "Da due a cinque segmenti con selezione singola o multipla.",
+    summary: m("Da due a cinque segmenti con selezione singola o multipla."),
     controls: [
-      fl("multiple", "Selezione multipla", false),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
-      rg("count", "Segmenti", 2, 5, 3),
-      en("content", "Contenuto", ["label", "icon-label"], "icon-label"),
-      tx("label", "Etichetta", "Vista"),
+      fl("multiple", m("Selezione multipla"), false),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
+      rg("count", m("Segmenti"), 2, 5, 3),
+      en("content", m("Contenuto"), ["label", "icon-label"], "icon-label"),
+      tx("label", m("Etichetta"), m("Vista")),
     ],
     render: (state) => {
       const pool = [
-        { id: "inbox", label: "Posta", icon: "inbox" },
-        { id: "archive", label: "Archivio", icon: "archive" },
-        { id: "settings", label: "Impostazioni", icon: "settings" },
-        { id: "star", label: "Preferiti", icon: "star" },
-        { id: "trash", label: "Cestino", icon: "trash" },
+        { id: "inbox", label: l("Posta"), icon: "inbox" },
+        { id: "archive", label: l("Archivio"), icon: "archive" },
+        { id: "settings", label: l("Impostazioni"), icon: "settings" },
+        { id: "star", label: l("Preferiti"), icon: "star" },
+        { id: "trash", label: l("Cestino"), icon: "trash" },
       ];
       const items = pool.slice(0, n(state, "count")).map((item) => ({
         ...item,
@@ -1242,11 +1283,11 @@ export const entries: Entry[] = [
     },
     code: (state) => {
       const pool = [
-        { id: "inbox", label: "Posta", icon: "inbox" },
-        { id: "archive", label: "Archivio", icon: "archive" },
-        { id: "settings", label: "Impostazioni", icon: "settings" },
-        { id: "star", label: "Preferiti", icon: "star" },
-        { id: "trash", label: "Cestino", icon: "trash" },
+        { id: "inbox", label: l("Posta"), icon: "inbox" },
+        { id: "archive", label: l("Archivio"), icon: "archive" },
+        { id: "settings", label: l("Impostazioni"), icon: "settings" },
+        { id: "star", label: l("Preferiti"), icon: "star" },
+        { id: "trash", label: l("Cestino"), icon: "trash" },
       ];
       const items = pool.slice(0, n(state, "count"));
       return {
@@ -1275,17 +1316,17 @@ export const entries: Entry[] = [
     tag: "bolle-slider",
     title: "Slider",
     group: "Sliders",
-    summary: "Bolla-valore, livello liquido, membrana o intervallo a gocce che si fondono.",
+    summary: m("Bolla-valore, livello liquido, membrana o intervallo a gocce che si fondono."),
     controls: [
-      en("variant", "Variante", ["bubble", "liquid", "membrane", "range"], "bubble"),
-      rg("min", "Minimo", 0, 100, 0),
-      rg("max", "Massimo", 0, 100, 100),
-      rg("step", "Passo", 1, 10, 1),
-      rg("value", "Valore", 0, 100, 40),
-      rg("upperValue", "Valore massimo (range)", 0, 100, 70),
-      tx("suffix", "Suffisso", ""),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Volume"),
+      en("variant", m("Variante"), ["bubble", "liquid", "membrane", "range"], "bubble"),
+      rg("min", m("Minimo"), 0, 100, 0),
+      rg("max", m("Massimo"), 0, 100, 100),
+      rg("step", m("Passo"), 1, 10, 1),
+      rg("value", m("Valore"), 0, 100, 40),
+      rg("upperValue", m("Valore massimo (range)"), 0, 100, 70),
+      tx("suffix", m("Suffisso"), ""),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Volume")),
     ],
     render: (state) => html`<bolle-slider
       .variant=${s(state, "variant")}
@@ -1317,12 +1358,12 @@ export const entries: Entry[] = [
     tag: "bolle-steps",
     title: "Steps",
     group: "Sliders",
-    summary: "Da tre a sette livelli con nome, disegnati come bolle che crescono.",
+    summary: m("Da tre a sette livelli con nome, disegnati come bolle che crescono."),
     controls: [
-      tx("options", "Opzioni", "Leggera,Morbida,Media,Forte,Intensa"),
-      rg("value", "Indice", 0, 6, 2),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Intensità"),
+      tx("options", m("Opzioni"), m("Leggera,Morbida,Media,Forte,Intensa")),
+      rg("value", m("Indice"), 0, 6, 2),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Intensità")),
     ],
     render: (state) => html`<bolle-steps
       options=${s(state, "options")}
@@ -1343,25 +1384,25 @@ export const entries: Entry[] = [
     tag: "bolle-text-field",
     title: "Text field",
     group: "Text fields",
-    summary: "Campo a riga singola o multilinea, con affissi, contatore, errore e slot icona.",
+    summary: m("Campo a riga singola o multilinea, con affissi, contatore, errore e slot icona."),
     controls: [
-      en("variant", "Variante", ["filled", "outlined"], "filled"),
-      en("type", "Tipo", ["text", "email", "password", "number", "search", "date"], "text"),
-      fl("multiline", "Multilinea", false),
-      rg("rows", "Righe", 2, 8, 3),
-      fl("leadingIcon", "Icona iniziale", false),
-      fl("trailingIcon", "Icona finale", false),
-      tx("prefix", "Prefisso", ""),
-      tx("suffix", "Suffisso", ""),
-      fl("error", "Errore", false),
-      fl("readonly", "Sola lettura", false),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
-      fl("counter", "Contatore", false),
-      rg("maxlength", "Lunghezza massima", 0, 200, 120),
-      tx("label", "Etichetta", "Email"),
-      tx("value", "Valore", ""),
-      tx("supportingText", "Testo di supporto", "Useremo questo indirizzo per le notifiche."),
+      en("variant", m("Variante"), ["filled", "outlined"], "filled"),
+      en("type", m("Tipo"), ["text", "email", "password", "number", "search", "date"], "text"),
+      fl("multiline", m("Multilinea"), false),
+      rg("rows", m("Righe"), 2, 8, 3),
+      fl("leadingIcon", m("Icona iniziale"), false),
+      fl("trailingIcon", m("Icona finale"), false),
+      tx("prefix", m("Prefisso"), ""),
+      tx("suffix", m("Suffisso"), ""),
+      fl("error", m("Errore"), false),
+      fl("readonly", m("Sola lettura"), false),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
+      fl("counter", m("Contatore"), false),
+      rg("maxlength", m("Lunghezza massima"), 0, 200, 120),
+      tx("label", m("Etichetta"), m("Email")),
+      tx("value", m("Valore"), ""),
+      tx("supportingText", m("Testo di supporto"), m("Useremo questo indirizzo per le notifiche.")),
     ],
     render: (state) => html`<bolle-text-field
       .variant=${s(state, "variant")}
@@ -1416,14 +1457,14 @@ export const entries: Entry[] = [
     tag: "bolle-search",
     title: "Search",
     group: "Search",
-    summary: "Ricerca con suggerimenti filtrabili, combobox ARIA e area risultati.",
+    summary: m("Ricerca con suggerimenti filtrabili, combobox ARIA e area risultati."),
     controls: [
-      en("appearance", "Aspetto", ["contained", "divided"], "contained"),
-      en("layout", "Layout", ["docked", "full-screen"], "docked"),
-      fl("filter", "Filtra suggerimenti", true),
-      rg("suggestionDelay", "Ritardo suggerimenti (ms)", 0, 1000, 0, 50),
-      tx("label", "Etichetta", "Cerca città"),
-      tx("placeholder", "Placeholder", "Scrivi una città"),
+      en("appearance", m("Aspetto"), ["contained", "divided"], "contained"),
+      en("layout", m("Layout"), ["docked", "full-screen"], "docked"),
+      fl("filter", m("Filtra suggerimenti"), true),
+      rg("suggestionDelay", m("Ritardo suggerimenti (ms)"), 0, 1000, 0, 50),
+      tx("label", m("Etichetta"), m("Cerca città")),
+      tx("placeholder", m("Placeholder"), m("Scrivi una città")),
     ],
     render: (state) => html`<bolle-search
       .appearance=${s(state, "appearance")}
@@ -1433,7 +1474,7 @@ export const entries: Entry[] = [
       .label=${s(state, "label")}
       .placeholder=${s(state, "placeholder")}
       .suggestions=${SUGGESTIONS}
-      suggestions-label="Suggerimenti"
+      suggestions-label=${l("Suggerimenti")}
     ></bolle-search>`,
     code: (state) => ({
       attrs: [
@@ -1444,7 +1485,7 @@ export const entries: Entry[] = [
         a("label", s(state, "label")),
         a("placeholder", s(state, "placeholder")),
         { name: "suggestions", raw: "suggestions" },
-        a("suggestionsLabel", "Suggerimenti"),
+        a("suggestionsLabel", l("Suggerimenti")),
       ],
       ...snippets(SUGGESTIONS, "suggestions"),
     }),
@@ -1453,17 +1494,17 @@ export const entries: Entry[] = [
     tag: "bolle-date-picker",
     title: "Date picker",
     group: "Date & time pickers",
-    summary: "Data singola o intervallo, con selettore modale o calendario docked.",
+    summary: m("Data singola o intervallo, con selettore modale o calendario docked."),
     controls: [
-      en("variant", "Variante", ["modal", "docked"], "modal"),
-      en("selectionMode", "Selezione", ["single", "range"], "single"),
-      en("weekStartsOn", "Inizio settimana", ["1", "0"], "1"),
-      en("locale", "Lingua", ["it", "en", "fr"], "it"),
-      tx("label", "Etichetta", "Data appuntamento"),
-      tx("value", "Data iniziale", "2026-11-11"),
-      tx("endValue", "Data finale", "2026-11-20"),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
+      en("variant", m("Variante"), ["modal", "docked"], "modal"),
+      en("selectionMode", m("Selezione"), ["single", "range"], "single"),
+      en("weekStartsOn", m("Inizio settimana"), ["1", "0"], "1"),
+      en("locale", m("Lingua"), ["it", "en", "fr", "zh"], "it"),
+      tx("label", m("Etichetta"), m("Data appuntamento")),
+      tx("value", m("Data iniziale"), "2026-11-11"),
+      tx("endValue", m("Data finale"), "2026-11-20"),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
     ],
     render: (state) => html`<bolle-date-picker
       .variant=${s(state, "variant")}
@@ -1494,15 +1535,15 @@ export const entries: Entry[] = [
     tag: "bolle-time-picker",
     title: "Time picker",
     group: "Date & time pickers",
-    summary: "Ora con quadrante o inserimento numerico, ciclo 12 o 24 ore.",
+    summary: m("Ora con quadrante o inserimento numerico, ciclo 12 o 24 ore."),
     controls: [
-      en("variant", "Variante", ["dial", "input"], "dial"),
-      en("hourCycle", "Ciclo orario", ["24", "12"], "24"),
-      en("locale", "Lingua", ["it", "en", "fr"], "it"),
-      tx("label", "Etichetta", "Ora promemoria"),
-      tx("value", "Valore", "09:30"),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
+      en("variant", m("Variante"), ["dial", "input"], "dial"),
+      en("hourCycle", m("Ciclo orario"), ["24", "12"], "24"),
+      en("locale", m("Lingua"), ["it", "en", "fr", "zh"], "it"),
+      tx("label", m("Etichetta"), m("Ora promemoria")),
+      tx("value", m("Valore"), "09:30"),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
     ],
     render: (state) => html`<bolle-time-picker
       .variant=${s(state, "variant")}
@@ -1529,23 +1570,23 @@ export const entries: Entry[] = [
     tag: "bolle-menu",
     title: "Menu",
     group: "Menus",
-    summary: "Menu baseline o verticale, con gruppi, sottomenu e selezione.",
-    note: "Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor).",
+    summary: m("Menu baseline o verticale, con gruppi, sottomenu e selezione."),
+    note: m("Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor)."),
     controls: [
-      en("variant", "Variante", ["vertical", "baseline"], "vertical"),
-      en("colorScheme", "Schema colore", ["standard", "vibrant"], "standard"),
-      en("selectionMode", "Selezione", ["none", "single", "multi"], "none"),
-      fl("quick", "Senza animazione", false),
-      rg("density", "Densità", -3, 1, 0),
-      fl("inactive", "Inattivo", false),
-      tx("menuLabel", "Etichetta accessibile", "Azioni documento"),
+      en("variant", m("Variante"), ["vertical", "baseline"], "vertical"),
+      en("colorScheme", m("Schema colore"), ["standard", "vibrant"], "standard"),
+      en("selectionMode", m("Selezione"), ["none", "single", "multi"], "none"),
+      fl("quick", m("Senza animazione"), false),
+      rg("density", m("Densità"), -3, 1, 0),
+      fl("inactive", m("Inattivo"), false),
+      tx("menuLabel", m("Etichetta accessibile"), m("Azioni documento")),
     ],
     render: (state, ctx) => html`
       <bolle-button
         variant="tonal"
         haspopup="menu"
         @click=${(event: Event) => ctx.show("pv-menu", event)}
-        >Azioni</bolle-button
+        >${l("Azioni")}</bolle-button
       >
       <bolle-menu
         id="pv-menu"
@@ -1577,15 +1618,15 @@ export const entries: Entry[] = [
     tag: "bolle-fab-menu",
     title: "FAB menu",
     group: "Buttons",
-    summary: "Da due a sei azioni correlate aperte da un FAB.",
+    summary: m("Da due a sei azioni correlate aperte da un FAB."),
     controls: [
-      en("color", "Set colore", ["primary", "secondary", "tertiary"], "primary"),
-      tx("label", "Etichetta accessibile", "Crea"),
+      en("color", m("Set colore"), ["primary", "secondary", "tertiary"], "primary"),
+      tx("label", m("Etichetta accessibile"), m("Crea")),
     ],
     render: (state) => html`<bolle-fab-menu
       .color=${s(state, "color")}
       .label=${s(state, "label")}
-      .items=${ICON_ITEMS.map((item) => ({ ...item, icon: ti(item.icon) }))}
+      .items=${navItems()}
     >
       <span slot="icon" aria-hidden="true">${ti("plus")}</span>
     </bolle-fab-menu>`,
@@ -1596,21 +1637,21 @@ export const entries: Entry[] = [
         { name: "items", raw: "items" },
       ],
       content: '<span slot="icon" aria-hidden="true">add</span>',
-      ...snippets(ICON_ITEMS),
+      ...snippets(iconCode()),
     }),
   },
   {
     tag: "bolle-split-button",
     title: "Split button",
     group: "Buttons",
-    summary: "Azione principale affiancata da un menu di azioni alternative.",
+    summary: m("Azione principale affiancata da un menu di azioni alternative."),
     controls: [
-      en("variant", "Variante", ["filled", "tonal", "outlined", "elevated"], "filled"),
-      en("size", "Dimensione", ["xs", "small", "medium", "large", "xl"], "small"),
-      fl("icon", "Icona iniziale", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Invia"),
-      tx("menuLabel", "Etichetta menu", "Altre opzioni"),
+      en("variant", m("Variante"), ["filled", "tonal", "outlined", "elevated"], "filled"),
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large", "xl"], "small"),
+      fl("icon", m("Icona iniziale"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Invia")),
+      tx("menuLabel", m("Etichetta menu"), m("Altre opzioni")),
     ],
     render: (state) => html`<bolle-split-button
       .variant=${s(state, "variant")}
@@ -1619,7 +1660,7 @@ export const entries: Entry[] = [
       ?disabled=${b(state, "disabled")}
       .label=${s(state, "label")}
       .menuLabel=${s(state, "menuLabel")}
-      .items=${SPLIT_ITEMS}
+      .items=${splitItems()}
       >${b(state, "icon")
         ? html`<span slot="icon" aria-hidden="true">${ti("plane")}</span>`
         : nothing}</bolle-split-button
@@ -1637,7 +1678,7 @@ export const entries: Entry[] = [
       content: b(state, "icon")
         ? '<span slot="icon" aria-hidden="true">plane</span>'
         : undefined,
-      ...snippets(SPLIT_ITEMS),
+      ...snippets(splitItems()),
     }),
   },
   {
@@ -1645,19 +1686,19 @@ export const entries: Entry[] = [
     title: "Select",
     group: "HTML controls",
     summary:
-      "Scelta singola su option e optgroup native, con menu Material, stato di errore e campo filled o outlined.",
+      m("Scelta singola su option e optgroup native, con menu Material, stato di errore e campo filled o outlined."),
     controls: [
-      en("variant", "Variante", ["filled", "outlined"], "filled"),
-      fl("error", "Errore", false),
-      fl("required", "Obbligatorio", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Regione"),
-      tx("placeholder", "Segnaposto", "Scegli una regione"),
-      tx("value", "Valore", "lazio"),
+      en("variant", m("Variante"), ["filled", "outlined"], "filled"),
+      fl("error", m("Errore"), false),
+      fl("required", m("Obbligatorio"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Regione")),
+      tx("placeholder", m("Segnaposto"), m("Scegli una regione")),
+      tx("value", m("Valore"), "lazio"),
       tx(
         "supportingText",
-        "Testo di supporto",
-        "Determina il fuso orario della spedizione.",
+        m("Testo di supporto"),
+        m("Determina il fuso orario della spedizione."),
       ),
     ],
     render: (state) => html`<bolle-select
@@ -1670,15 +1711,15 @@ export const entries: Entry[] = [
       .value=${s(state, "value")}
       .supportingText=${s(state, "supportingText")}
     >
-      <optgroup label="Nord">
+      <optgroup label=${l("Nord")}>
         <option value="lombardia">Lombardia</option>
         <option value="veneto">Veneto</option>
       </optgroup>
-      <optgroup label="Centro">
+      <optgroup label=${l("Centro")}>
         <option value="lazio">Lazio</option>
         <option value="toscana">Toscana</option>
       </optgroup>
-      <option value="sicilia" disabled>Sicilia (non disponibile)</option>
+      <option value="sicilia" disabled>${l("{region} (non disponibile)", { region: "Sicilia" })}</option>
     </bolle-select>`,
     code: (state) => ({
       attrs: [
@@ -1691,15 +1732,15 @@ export const entries: Entry[] = [
         a("value", s(state, "value")),
         a("supportingText", s(state, "supportingText")),
       ],
-      content: `<optgroup label="Nord">
+      content: `<optgroup label="${l("Nord")}">
   <option value="lombardia">Lombardia</option>
   <option value="veneto">Veneto</option>
 </optgroup>
-<optgroup label="Centro">
+<optgroup label="${l("Centro")}">
   <option value="lazio">Lazio</option>
   <option value="toscana">Toscana</option>
 </optgroup>
-<option value="sicilia" disabled>Sicilia (non disponibile)</option>`,
+<option value="sicilia" disabled>${l("{region} (non disponibile)", { region: "Sicilia" })}</option>`,
     }),
   },
   {
@@ -1707,20 +1748,20 @@ export const entries: Entry[] = [
     title: "Autocomplete",
     group: "HTML controls",
     summary:
-      "Campo di testo con suggerimenti da option native, filtro durante la digitazione e ruolo combobox.",
+      m("Campo di testo con suggerimenti da option native, filtro durante la digitazione e ruolo combobox."),
     controls: [
-      en("variant", "Variante", ["filled", "outlined"], "filled"),
-      fl("error", "Errore", false),
-      fl("required", "Obbligatorio", false),
-      fl("readonly", "Sola lettura", false),
-      fl("disabled", "Disabilitato", false),
-      tx("label", "Etichetta", "Città di consegna"),
-      tx("placeholder", "Segnaposto", "Scrivi una città"),
-      tx("value", "Valore", ""),
+      en("variant", m("Variante"), ["filled", "outlined"], "filled"),
+      fl("error", m("Errore"), false),
+      fl("required", m("Obbligatorio"), false),
+      fl("readonly", m("Sola lettura"), false),
+      fl("disabled", m("Disabilitato"), false),
+      tx("label", m("Etichetta"), m("Città di consegna")),
+      tx("placeholder", m("Segnaposto"), m("Scrivi una città")),
+      tx("value", m("Valore"), ""),
       tx(
         "supportingText",
-        "Testo di supporto",
-        "Suggerimenti fra le città servite.",
+        m("Testo di supporto"),
+        m("Suggerimenti fra le città servite."),
       ),
     ],
     render: (state) => html`<bolle-autocomplete
@@ -1792,7 +1833,16 @@ export const entryByTag = (tag: string) =>
   entries.find((entry) => entry.tag === tag);
 
 export const initialState = (entry: Entry): State =>
-  Object.fromEntries(entry.controls.map((control) => [control.prop, control.default]));
+  Object.fromEntries(
+    entry.controls.map((control) => [
+      control.prop,
+      control.kind === "text" || control.kind === "longtext"
+        ? l(control.default)
+        : control.prop === "locale"
+          ? libraryLocale()
+          : control.default,
+    ]),
+  );
 
 export { MENU_GROUPS, menuEntries, SPLIT_ITEMS, SUGGESTIONS, TAB_CODE, tabItems, navItems, listItems, LIST_CODE, ICON_ITEMS, sixItems, snippets };
 export type { MenuEntry };

@@ -2,7 +2,7 @@ import { css } from "lit";
 import { checkMaskStyles } from "./icons.js";
 export const surfaceStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.35);
+    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
   }
   :host {
     display: block;
@@ -167,6 +167,63 @@ export const surfaceStyles = css`
     display: block;
     color: inherit;
     text-decoration: none;
+    outline: none;
+  }
+  /* Link card: the whole surface is the target, with a state layer and a focus ring. */
+  .card.is-link {
+    position: relative;
+    cursor: pointer;
+    transition: box-shadow var(--md-sys-motion-duration-short3, 150ms);
+  }
+  .card.is-link > a {
+    position: static;
+  }
+  /* Stretched link: the whole card, padding included, is the click target. */
+  .card.is-link > a::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .card.is-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--md-sys-motion-duration-short3, 150ms);
+  }
+  .card.is-link:hover::after {
+    opacity: 0.08;
+  }
+  .card.is-link:active::after {
+    opacity: 0.1;
+  }
+  .card.is-link:has(> a:focus-visible) {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+  :host([variant="elevated"]) .card.is-link:hover {
+    box-shadow: var(--bb-float-3, var(--md-sys-elevation-level2));
+  }
+  :host([tail="bottom-end"]) .card {
+    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
+    border-end-end-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+  }
+  :host([tail="top-start"]) .card {
+    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
+    border-start-start-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+  }
+  :host([tail="top-end"]) .card {
+    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
+    border-start-end-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+  }
+  @media (forced-colors: active) {
+    .card.is-link:has(> a:focus-visible) {
+      outline-color: Highlight;
+    }
   }
   .badge {
     display: inline-flex;
@@ -176,9 +233,25 @@ export const surfaceStyles = css`
     min-block-size: var(--md-comp-badge-size);
     padding-inline: var(--md-comp-badge-padding);
     border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-error);
+    border-end-start-radius: var(--bb-tail);
+    background-color: var(--md-sys-color-error);
+    background-image: var(--bb-highlight);
     color: var(--md-sys-color-on-error);
     font: var(--md-sys-typescale-label-small-font);
+    box-shadow:
+      inset 0 -2px 3px rgb(0 0 0 / 0.18),
+      0 2px 6px color-mix(in srgb, var(--md-sys-color-error) 45%, transparent);
+    animation: bb-badge-pop var(--bb-tension-duration) var(--bb-tension);
+  }
+  @keyframes bb-badge-pop {
+    0% {
+      scale: 0.4;
+    }
+  }
+  :host([small]) .badge {
+    border-radius: 50%;
+    box-shadow: 0 1px 3px
+      color-mix(in srgb, var(--md-sys-color-error) 45%, transparent);
   }
   :host([small]) .badge {
     min-inline-size: var(--md-comp-badge-small-size);

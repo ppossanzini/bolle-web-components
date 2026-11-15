@@ -1,6 +1,11 @@
+[简体中文](README.zh-CN.md)
+
 # Bolle Material Web Components
 
 A material based web component library, published as `@bolle/web-components`.
+
+Documentation site: <https://ppossanzini.github.io/bolle-web-components/>
+(Italian, English, French and Simplified Chinese).
 
 ## Bolle layer
 
@@ -10,12 +15,13 @@ and the type scale stay M3. The character comes from `--bb-*` tokens in
 
 | Sign        | Where                                                                                     | Tokens                                                      |
 | ----------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Tail        | Menus, tooltips and FAB menu point their narrow corner at the opener; snackbar and cards keep it bottom-start | `--bb-radius`, `--bb-tail`, `--bb-card-tail`               |
+| Tail        | The narrow corner points at where the surface comes from: menus, tooltips and FAB menu at the opener; snackbar and cards keep it bottom-start; a link card below the content turns it top, on the side opposite to where it leads (`tail`) | `--bb-radius`, `--bb-tail`, `--bb-card-tail`               |
 | Film        | Ring around the focus outline and selected chips; FAB wash. Decorative only: the solid outline and container colour carry the state | `--bb-film`, `--bb-film-1…4`, `--bb-ring-width`, `--bb-ring-gap` |
 | Squish/pop  | Buttons squish (1.1 × 0.86) and wobble back; floating surfaces inflate from the tail and pop on close; basic dialogs keep a near-imperceptible bob (2px, ±0.15°) after opening | `--bb-squish`, `--bb-tension`, `--bb-inflate-duration`, `--bb-pop-duration`, `--bb-bob-distance`, `--bb-bob-duration` |
 | Float       | Soft ink shadows that turn violet at higher levels; the top-right highlight sits on the button colour on hover and press, and on the FAB at rest | `--bb-float-1…5`, `--bb-highlight`                          |
 | Liquid      | Segmented buttons move one indicator between segments with the spring curve; the loading indicator is rising, merging bubbles | —                                                           |
 | Glass       | Menus and FAB actions are translucent with blur; opaque without `backdrop-filter`, on slow devices and with reduced transparency | `--bb-glass-opacity`, `--bb-glass-blur`                     |
+| Scrollbars  | Every scroll area inside a component has no arrow buttons, so track and thumb ends are fully round; the track keeps a gap from the container edges; Firefox keeps its native thin bar with the same colours | `--bb-scrollbar-size`, `--bb-scrollbar-inset`, `--bb-scrollbar-margin`, `--bb-scrollbar-track`, `--bb-scrollbar-thumb`, `--bb-scrollbar-thumb-hover` |
 
 Colour roles are generated from the seed `#5B4CF0` by `npm run colors`
 (tonal spot, with the primary palette at full seed chroma). Selected icons fill
@@ -131,12 +137,13 @@ works in HTML without an application build step.
 
 The library is consumed as Custom Elements. The integration guides show an
 exhaustive Vue and React example for every component, covering attributes,
-slots, events, imperative methods and forms. Each guide is available in three
+slots, events, imperative methods and forms. Each guide is available in four
 languages:
 
 - Italiano: [Vue 3](docs/it/vue.md) · [React](docs/it/react.md)
 - English: [Vue 3](docs/en/vue.md) · [React](docs/en/react.md)
 - Français: [Vue 3](docs/fr/vue.md) · [React](docs/fr/react.md)
+- 中文: [Vue 3](docs/zh/vue.md) · [React](docs/zh/react.md)
 
 Index: [docs/README.md](docs/README.md).
 
@@ -250,8 +257,15 @@ npm run dev          # component catalogue
 npm run dev:site     # documentation site with live configuration and code
 npm run build
 npm run build:site   # static documentation site in dist-site/
+npm run i18n:check   # site strings missing or unused per language
 npm pack --dry-run
 ```
+
+Every push to `master` builds the documentation site and publishes it to
+GitHub Pages through `.github/workflows/pages.yml` (type-check, translation
+check, `build:site`). The site uses relative asset URLs, so it works under the
+`/bolle-web-components/` path. In the repository settings, Pages must use
+**GitHub Actions** as its source.
 
 The development page is a full catalogue: foundations with the 30 type styles,
 then every component group with each implemented variant labelled, then the
@@ -410,7 +424,8 @@ Angular consumers need `CUSTOM_ELEMENTS_SCHEMA`; Vue consumers configure
 `compilerOptions.isCustomElement` for every `bolle-*` tag; React consumers use
 `addEventListener` for custom events. The exhaustively documented examples are in
 [Vue 3](docs/it/vue.md) and [React](docs/it/react.md); their runtime verification
-is still open. The English and French editions live in `docs/en` and `docs/fr`.
+is still open. The English, French and Simplified Chinese editions live in `docs/en`,
+`docs/fr` and `docs/zh`.
 
 ### Keyboard shortcuts
 
@@ -506,7 +521,7 @@ column states missing variants or behaviour.
 | Bottom sheets          | `bolle-bottom-sheet`           | Native modal dialog at the bottom; optional drag handle; standard variant fixed at the bottom without scrim; actions and close control                                                                                                                                      | No swipe/drag gesture, detents or content-driven expansion; the handle is visual only                                                                                                          |
 | Button groups          | `bolle-button-group`           | Standard and connected groups; single/multiple selection; required selection after activation; filled, tonal, outlined or elevated buttons; label-only or icon+label contents; size and shape propagation; connected inner corners at the M3 per-size values (XS 4, S/M 8, L 16, XL 20dp) that grow on hover (XS 8, S/M 12, L/XL 20dp); arrow/Home/End focus                                                                                                              | No neighbouring-width animation or spring motion; group itself submits no value; initial required selection belongs to the caller                                                              |
 | Buttons                | `bolle-button`                 | Filled, tonal, outlined, elevated, text; toggles with M3 unselected/selected colour mapping; round/square with size-aware radii (12/12/16/28/28dp) and pressed morph (8/8/12/16/16dp); five sizes with a 40px small container; native links; disabled; form submit/reset                                                                                                                                                       | No origin-aware ripple; no toggle-text combination; no full native form override attribute set                                                                                                 |
-| Cards                  | `bolle-card`                   | Semantic article; filled, outlined, elevated; vertical and horizontal orientation with media slot; optional whole-card link                                                                                                                                                 | Whole-card links must not contain other interactive controls; no dragged state                                                                                                                 |
+| Cards                  | `bolle-card`                   | Semantic article; filled, outlined, elevated; vertical and horizontal orientation with media slot; optional whole-card link with full-surface target, hover state layer and focus ring; `tail` (`bottom-start` default, `bottom-end`, `top-start`, `top-end`) | Whole-card links must not contain other interactive controls; no dragged state                                                                                                                 |
 | Carousel               | `bolle-carousel`               | Native scroll/snap; previous/next and keyboard navigation; hero, center-aligned-hero, multi-browse, uncontained, uncontained-multi-aspect-ratio and vertical full-screen layout hooks                                                                                       | Hero/multi-browse use project flex widths, not dynamic M3 keyline masking; no item morph; caller controls aspect ratios and full-screen breakpoint restrictions                                |
 | Checkbox               | `bolle-checkbox`               | Custom 18dp checkbox with rounded square, check path and indeterminate dash, focus ring, error border, supporting text; required, disabled; form association and reset                                                                                                      | No exact M3 check path timing or error icon in the supporting text                                                                                                                             |
 | Chips                  | `bolle-chip`                   | Assist, suggestion, input and filter; flat and elevated styles; leading icon and avatar slots; filter checkmark replaces the native mark; optional removal; links                                                                                                           | No single-select radio filter group or drag/reorder; removal emits an event and does not delete consumer data                                                                                  |
@@ -528,7 +543,7 @@ column states missing variants or behaviour.
 | Segmented buttons      | `bolle-segmented-buttons`      | Native fieldset/radio or checkbox group; two to five segments; label-only or icon+label contents; connected segment geometry with a 40px container inside a 48px target and a retained 1px outline; checkmark on selected segments; single/multiple values; required, disabled; form reset/restore                                                     | Inner selected corners follow a project rule, not a full token matrix; density steps are not implemented                                                                                       |
 | Select                 | `bolle-select`                 | Single choice over native `<option>` and `<optgroup>` children; Material vertical menu with group labels, checkmark and 12dp selected shape; filled/outlined field with label, placeholder, supporting text and error; menu width follows the field up to 280px; Enter/Space/Arrow keys open, Escape closes; required validation, disabled state and form submission | No multiple selection or type-ahead in the closed field; the popup uses menu semantics (`menuitemradio`) instead of a listbox; option changes need a DOM mutation to refresh |
 | Side sheets            | `bolle-side-sheet`             | Modal dialog or fixed standard aside at the end edge; detached frame with 16px margin and rounded corners                                                                                                                                                                   | Caller owns persistent page layout; no swipe/drag or automatic content resizing                                                                                                                |
-| Sliders                | `bolle-slider`                 | Single custom track with native inputs overlaid: continuous, centered and range with two handles; stop markers at 4px with the M3 roles; five track sizes; value bolle on hover/focus with 48px minimum width; inset start/end icons flanking the track; rotated custom vertical track; capped width token                                 | Firefox track parity unverified; inset icons align at the track ends instead of the thicker M3 inset track; the pressed handle does not grow to the 28dp pressed state |
+| Sliders                | `bolle-slider`                 | Single custom track with native inputs overlaid: continuous, centered and range with two handles; stop markers at 4px with the M3 roles; five track sizes; value bolle on hover/focus with 48px minimum width; inset start/end icons flanking the track; rotated custom vertical track; capped width token; `compact` bubble slider: 32px row, value beside the label, bubble only while dragging or keyboard-focused                                 | Firefox track parity unverified; inset icons align at the track ends instead of the thicker M3 inset track; the pressed handle does not grow to the 28dp pressed state |
 | Snackbar               | `bolle-snackbar`               | Persistent polite live region; top-layer surface; message/action/dismiss; timer pause on hover/focus; queued messages shown one after another; entry motion with reduced-motion opt-out                                                                                     | No exit or container-transform motion; application must choose an adequate timeout, or `duration=0`                                                                                            |
 | Split button           | `bolle-split-button`           | Primary action plus menu action joined at a 2px seam, outer full corners and inner 4px corners mirrored in RTL; optional leading icon; four colour styles; five sizes matching the button scale; disabled                                                                  | No spring shape motion or named form submit on the primary action                                                                                                                              |
 | Switch                 | `bolle-switch`                 | Switch role over a native checkbox; state-dependent 16/24dp handle with transition, optional off/on handle icons, error border, disabled state, supporting text; form association and reset                                                                                 | No pressed-state 28dp handle or state-layer ripple                                                                                                                                             |
@@ -546,8 +561,11 @@ Attributes use kebab case for `supporting-text`, `upper-value`, `upper-label`,
 `end-value`, `week-starts-on`, `hour-cycle` and `show-value`.
 Boolean attributes use presence/absence; `disabled="false"` still means disabled.
 Caller content supplies translated labels, icon content and destination text.
-Picker controls have English and Italian messages through `locale` and
-the `labels` override object. Date formatting uses `Intl.DateTimeFormat`.
+Picker controls, list expand buttons, tab scroll buttons and the rich tooltip
+dismiss button have English, Italian, French and Simplified Chinese messages,
+chosen from the language subtag of `locale`, `lang` or the document language
+(English otherwise); pickers also accept the `labels` override object. Date
+formatting uses `Intl.DateTimeFormat`.
 
 ```ts
 import {

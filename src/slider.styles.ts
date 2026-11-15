@@ -142,6 +142,33 @@ export const sliderStyles = css`
     inset-block-end: 40px;
   }
 
+  /* A · compact: 32px row, value in the label, bubble only while in use */
+  :host([compact]) .label {
+    margin-block-end: 2px;
+  }
+  :host([compact]) .slider {
+    block-size: 32px;
+  }
+  :host([compact]) .track {
+    inset-block-end: 12px;
+  }
+  :host([compact]) .thumb {
+    inset-block-end: 4px;
+  }
+  :host([compact]) .bubble {
+    inset-block-end: 20px;
+    opacity: 0;
+    transition:
+      opacity var(--bb-slider-fade),
+      transform var(--bb-slider-squish),
+      inset-block-end var(--bb-slider-squish);
+  }
+  :host([compact]) .slider:active .bubble,
+  :host([compact]) .slider:has(input:focus-visible) .bubble {
+    opacity: 1;
+    inset-block-end: 30px;
+  }
+
   /* B · liquid level */
   .liquid {
     --fill: max(64px, calc(var(--v) * 1%));

@@ -12,6 +12,31 @@
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
     {
+      "date": "2026-11-15",
+      "classification": "additive",
+      "description": "Built-in messages in French and Simplified Chinese besides English and Italian, chosen from the language subtag (`supportedLocale`); tab scroll buttons and the rich tooltip dismiss button are now localized instead of fixed English."
+    },
+    {
+      "date": "2026-11-15",
+      "classification": "corrective",
+      "description": "Tooltips wider than their trigger align their tail corner over the trigger centre (start-aligned, end-aligned near the right edge) instead of centring, and the tail side is computed from the final position rather than from the box scaled by the entry animation."
+    },
+    {
+      "date": "2026-11-15",
+      "classification": "additive",
+      "description": "Slider `compact` attribute for the bubble variant: a 32px row with the value beside the label; the value bubble appears only while dragging or with keyboard focus."
+    },
+    {
+      "date": "2026-11-15",
+      "classification": "additive",
+      "description": "Card `tail` property (`bottom-start` default, `bottom-end`, `top-start`, `top-end`) so the narrow corner points at where the card comes from. Link cards (`href`) make the whole surface the target, with a hover state layer, a raised float on elevated cards and a focus ring."
+    },
+    {
+      "date": "2026-11-15",
+      "classification": "additive",
+      "description": "Scrollbars inside components have no arrow buttons and round track and thumb ends, inset from the container edges (`--bb-scrollbar-*`). Tabs with a fixed height keep the tab row in place and scroll only the panel."
+    },
+    {
       "date": "2026-11-13",
       "classification": "additive",
       "description": "List rows render the trailing count badge declared by the item `badge`, on the top-level rows and on the nested ones, with the badge tokens already used by tabs and the drawer."

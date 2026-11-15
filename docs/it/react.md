@@ -13,14 +13,14 @@ modo in cui passi proprietà non stringa e proprietà booleane (vedi sotto).
 ## Installazione e registrazione
 
 ```sh
-npm install @bolle/web-components
+npm install bolle-web-components
 ```
 
 ```tsx
 // src/main.tsx
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
-import "@bolle/web-components"; // registra tutti i tag bolle-*
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
+import "bolle-web-components"; // registra tutti i tag bolle-*
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 
@@ -235,7 +235,7 @@ declare module "react" {
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
       > & {
-        items?: import("@bolle/web-components").BolleItem[];
+        items?: import("bolle-web-components").BolleItem[];
         label?: string;
         variant?: "standard" | "segmented";
         interactive?: boolean;

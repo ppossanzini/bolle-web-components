@@ -12,7 +12,7 @@ export interface LandingContext {
   localeSelect: TemplateResult;
 }
 
-const INSTALL = "npm install @bolle/web-components";
+const INSTALL = "npm install bolle-web-components";
 const SEEDS = THEME_PRESETS.slice(0, 4);
 
 /** The tailed bolle mark; `small` drops the film, as the identity requires below 24px. */

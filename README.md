@@ -2,7 +2,7 @@
 
 # Bolle Material Web Components
 
-A material based web component library, published as `@bolle/web-components`.
+A material based web component library, published as `bolle-web-components`.
 
 Documentation site: <https://ppossanzini.github.io/bolle-web-components/>
 (Italian, English, French and Simplified Chinese).
@@ -572,9 +572,9 @@ import {
   BolleCheckbox,
   type BolleItem,
   type BolleValueChangeDetail,
-} from "@bolle/web-components";
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
+} from "bolle-web-components";
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
 
 const destinations: BolleItem[] = [
   { id: "inbox", label: "Inbox", icon: "✉", href: "/inbox" },

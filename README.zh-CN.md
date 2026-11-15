@@ -2,7 +2,7 @@
 
 # Bolle Material Web Components
 
-一个基于 Material 的 Web Components 组件库，以 `@bolle/web-components` 发布。
+一个基于 Material 的 Web Components 组件库，以 `bolle-web-components` 发布。
 
 文档站点：<https://ppossanzini.github.io/bolle-web-components/>
 （意大利文、英文、法文和简体中文）。
@@ -568,9 +568,9 @@ import {
   BolleCheckbox,
   type BolleItem,
   type BolleValueChangeDetail,
-} from "@bolle/web-components";
-import "@bolle/web-components/tokens.css";
-import "@bolle/web-components/typography.css";
+} from "bolle-web-components";
+import "bolle-web-components/tokens.css";
+import "bolle-web-components/typography.css";
 
 const destinations: BolleItem[] = [
   { id: "inbox", label: "Inbox", icon: "✉", href: "/inbox" },

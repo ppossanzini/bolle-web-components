@@ -7,10 +7,11 @@ Exhaustive Vue and React usage examples for every component in the catalogue.
 | Italiano | [vue.md](it/vue.md)              | [react.md](it/react.md)          |
 | English  | [vue.md](en/vue.md)              | [react.md](en/react.md)          |
 | Français | [vue.md](fr/vue.md)              | [react.md](fr/react.md)          |
+| 中文     | [vue.md](zh/vue.md)              | [react.md](zh/react.md)          |
 
 The Vue guide is the attribute, slot, event and method reference; the React guide
 links back to it for the API and documents the React-specific integration rules.
-Code excerpts are identical in all three languages: only the prose is translated.
+Code excerpts are identical in all four languages: only the prose is translated.
 Sample labels inside the excerpts stay as written, and source-code comments are
 in English.
 

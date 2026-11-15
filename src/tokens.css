@@ -349,6 +349,14 @@
     color-mix(in srgb, var(--md-sys-color-primary) 24%, transparent);
   --bb-glass-opacity: 86%;
   --bb-glass-blur: 16px;
+  /* Scrollbars: no arrow buttons, so the track and thumb ends can be fully round. */
+  --bb-scrollbar-size: 12px;
+  --bb-scrollbar-inset: 3px;
+  /* Gap between the track ends and the scroll container edges. */
+  --bb-scrollbar-margin: 8px;
+  --bb-scrollbar-track: transparent;
+  --bb-scrollbar-thumb: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 38%, transparent);
+  --bb-scrollbar-thumb-hover: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 62%, transparent);
   --bb-squish: 1.1 0.86;
   --bb-squish-duration: 90ms;
   /* Underdamped spring (damping ~0.35) sampled for CSS linear(). */

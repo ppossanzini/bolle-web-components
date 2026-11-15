@@ -88,7 +88,9 @@ export {
   BolleCarousel,
 };
 export type { BolleItem } from "./shared.js";
-export type { PickerLabels } from "./localization.js";
+export type { CardTail } from "./surfaces.js";
+export type { PickerLabels, SupportedLocale } from "./localization.js";
+export { supportedLocale } from "./localization.js";
 export type * from "./catalogue.types.js";
 
 export const catalogue = {

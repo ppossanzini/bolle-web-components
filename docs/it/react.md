@@ -1,4 +1,4 @@
-[Italiano](./react.md) · [English](../en/react.md) · [Français](../fr/react.md)
+[Italiano](./react.md) · [English](../en/react.md) · [Français](../fr/react.md) · [中文](../zh/react.md)
 
 # React · esempi d'uso esaustivi
 

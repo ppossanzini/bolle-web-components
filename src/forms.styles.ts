@@ -2,7 +2,7 @@ import { css } from "lit";
 import { checkMaskStyles } from "./icons.js";
 export const formStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.35);
+    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
   }
   :host {
     display: inline-block;

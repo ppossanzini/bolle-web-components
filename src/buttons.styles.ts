@@ -76,7 +76,7 @@ export const buttonStyles = css`
   :host([variant="outlined"]),
   :host([variant="elevated"]) {
     /* No coloured fill to reflect on: the glint takes the label colour. */
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.35);
+    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
   }
   :host([variant="tonal"]) .button,
   :host([variant="filled-tonal"]) .button {

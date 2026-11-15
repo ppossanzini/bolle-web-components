@@ -2,19 +2,28 @@ import {
   DynamicScheme,
   Hct,
   MaterialDynamicColors,
+  SchemeContent,
+  SchemeExpressive,
+  SchemeFidelity,
+  SchemeFruitSalad,
+  SchemeMonochrome,
+  SchemeNeutral,
+  SchemeRainbow,
   SchemeTonalSpot,
+  SchemeVibrant,
   TonalPalette,
   argbFromHex,
   hexFromArgb,
 } from "@material/material-color-utilities";
+import { l, m } from "./i18n.js";
 
 export type ThemeName = "light" | "dark";
 
 export type Density = "airy" | "compact";
 
 export const DENSITY_PRESETS: { id: Density; label: string; scale: number }[] = [
-  { id: "airy", label: "Ariosa", scale: 1 },
-  { id: "compact", label: "Compatta", scale: 3 / 4 },
+  { id: "airy", label: m("Ariosa"), scale: 1 },
+  { id: "compact", label: m("Compatta"), scale: 3 / 4 },
 ];
 
 export const densityPreset = (id: Density) =>
@@ -161,38 +170,140 @@ const DYNAMIC_ROLES: Record<string, (scheme: DynamicScheme) => number> = {
   shadow: (s) => MaterialDynamicColors.shadow.getArgb(s),
 };
 
+/** WCAG relative luminance of a #RRGGBB colour. */
+function luminance(hex: string): number {
+  const value = parseInt(hex.slice(1), 16);
+  const channel = (shift: number) => {
+    const c = ((value >> shift) & 255) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(16) + 0.7152 * channel(8) + 0.0722 * channel(0);
+}
+
+/** WCAG contrast ratio between two #RRGGBB colours. */
+export function contrastRatio(first: string, second: string): number {
+  const [light, dark] = [luminance(first), luminance(second)].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+type SchemeClass = new (source: Hct, isDark: boolean, contrast: number) => DynamicScheme;
+
+export interface ColorAlgorithm {
+  id: string;
+  label: string;
+  /** Material 3 scheme that also supplies the variant rules. */
+  scheme: SchemeClass;
+  /** Hue offsets of secondary and tertiary for colour-wheel harmonies. */
+  harmony?: [number, number];
+  /** Harmonies and tonal spot keep the full seed chroma in the primary palette. */
+  seedPrimary?: boolean;
+}
+
 /**
- * Derives a full M3 colour scheme from a seed colour through HCT: tonal spot
- * roles, with a primary palette that keeps the seed chroma (as scripts/colors.mjs).
- * Contrast runs from 0 (standard) to 1 (high).
+ * Material 3 variants keep secondary and tertiary close to the seed (tonal spot is the
+ * quietest). Harmonies place them elsewhere on the colour wheel with real chroma.
+ */
+export const COLOR_ALGORITHMS: ColorAlgorithm[] = [
+  { id: "tonal-spot", label: "Material · Tonal spot", scheme: SchemeTonalSpot, seedPrimary: true },
+  { id: "vibrant", label: "Material · Vibrant", scheme: SchemeVibrant },
+  { id: "expressive", label: "Material · Expressive", scheme: SchemeExpressive },
+  { id: "fidelity", label: "Material · Fidelity", scheme: SchemeFidelity },
+  { id: "content", label: "Material · Content", scheme: SchemeContent },
+  { id: "rainbow", label: "Material · Rainbow", scheme: SchemeRainbow },
+  { id: "fruit-salad", label: "Material · Fruit salad", scheme: SchemeFruitSalad },
+  { id: "neutral", label: "Material · Neutral", scheme: SchemeNeutral },
+  { id: "monochrome", label: "Material · Monochrome", scheme: SchemeMonochrome },
+  { id: "complementary", label: m("Armonia · Complementare"), scheme: SchemeTonalSpot, harmony: [180, 180], seedPrimary: true },
+  { id: "analogous", label: m("Armonia · Analoga"), scheme: SchemeTonalSpot, harmony: [-30, 30], seedPrimary: true },
+  { id: "split", label: m("Armonia · Complementare divisa"), scheme: SchemeTonalSpot, harmony: [150, 210], seedPrimary: true },
+  { id: "triadic", label: m("Armonia · Triade"), scheme: SchemeTonalSpot, harmony: [120, 240], seedPrimary: true },
+  { id: "tetradic", label: m("Armonia · Quadrato"), scheme: SchemeTonalSpot, harmony: [90, 180], seedPrimary: true },
+];
+
+export const colorAlgorithm = (id: string) =>
+  COLOR_ALGORITHMS.find((item) => item.id === id) ?? COLOR_ALGORITHMS[0];
+
+export interface SurfaceMode {
+  id: string;
+  label: string;
+  /** Chroma of the neutral and neutral-variant palettes; null keeps the algorithm's own. */
+  chroma: [number, number] | null;
+}
+
+/** Surfaces, outlines and text greys: from the seed-tinted M3 neutrals to plain white and grey. */
+export const SURFACE_MODES: SurfaceMode[] = [
+  { id: "white", label: m("Bianche"), chroma: [0, 0] },
+  { id: "soft", label: m("Quasi bianche"), chroma: [1.5, 3] },
+  { id: "tinted", label: m("Tinte (Material)"), chroma: null },
+];
+
+export const surfaceMode = (id: string) =>
+  SURFACE_MODES.find((item) => item.id === id) ?? SURFACE_MODES[0];
+
+export interface SchemeOptions {
+  contrast?: number;
+  /** Keep the seed as the exact primary instead of tone 40/80. */
+  keepSeed?: boolean;
+  algorithm?: string;
+  surfaces?: string;
+}
+
+const wrapHue = (hue: number) => ((hue % 360) + 360) % 360;
+
+/**
+ * Colour roles from a seed. M3 never uses the seed itself as `primary`: it takes tone 40
+ * (light) or 80 (dark) of the seed palette. With `keepSeed` the seed stays the exact
+ * primary and on-primary becomes the palette tone with the higher contrast on it.
  */
 export function hctScheme(
   seed: string,
   theme: ThemeName,
-  contrast = 0,
+  options: SchemeOptions = {},
 ): Record<string, string> {
-  const base = new SchemeTonalSpot(
-    Hct.fromInt(argbFromHex(seed)),
-    theme === "dark",
-    contrast,
-  );
+  const { contrast = 0, keepSeed = false } = options;
+  const algorithm = colorAlgorithm(options.algorithm ?? "tonal-spot");
+  const surfaces = surfaceMode(options.surfaces ?? "white");
+  const source = Hct.fromInt(argbFromHex(seed));
+  const base = new algorithm.scheme(source, theme === "dark", contrast);
+  const seedPalette = TonalPalette.fromInt(argbFromHex(seed));
+  const primaryPalette = algorithm.seedPrimary ? seedPalette : base.primaryPalette;
+  // Harmony accents keep enough chroma to read as colours, never more than the seed has.
+  const accentChroma = Math.max(Math.min(source.chroma, 48), 24);
+  const accent = (offset: number, chroma: number) =>
+    TonalPalette.fromHueAndChroma(wrapHue(source.hue + offset), chroma);
+  const [secondaryPalette, tertiaryPalette] = algorithm.harmony
+    ? [accent(algorithm.harmony[0], accentChroma * 0.75), accent(algorithm.harmony[1], accentChroma)]
+    : [base.secondaryPalette, base.tertiaryPalette];
+  const [neutralPalette, neutralVariantPalette] = surfaces.chroma
+    ? [
+        TonalPalette.fromHueAndChroma(source.hue, surfaces.chroma[0]),
+        TonalPalette.fromHueAndChroma(source.hue, surfaces.chroma[1]),
+      ]
+    : [base.neutralPalette, base.neutralVariantPalette];
   const scheme = new DynamicScheme({
     sourceColorHct: base.sourceColorHct,
     variant: base.variant,
     contrastLevel: contrast,
     isDark: theme === "dark",
-    primaryPalette: TonalPalette.fromInt(argbFromHex(seed)),
-    secondaryPalette: base.secondaryPalette,
-    tertiaryPalette: base.tertiaryPalette,
-    neutralPalette: base.neutralPalette,
-    neutralVariantPalette: base.neutralVariantPalette,
+    primaryPalette,
+    secondaryPalette,
+    tertiaryPalette,
+    neutralPalette,
+    neutralVariantPalette,
   });
-  return Object.fromEntries(
+  const colors = Object.fromEntries(
     COLOR_ROLES.map((role) => [
       role.token,
       hexFromArgb(DYNAMIC_ROLES[role.token](scheme)),
     ]),
   );
+  if (!keepSeed) return colors;
+  const exact = hexFromArgb(argbFromHex(seed));
+  const candidates = [100, 95, 10, 0].map((tone) => hexFromArgb(seedPalette.tone(tone)));
+  const onPrimary = candidates.reduce((best, candidate) =>
+    contrastRatio(candidate, exact) > contrastRatio(best, exact) ? candidate : best,
+  );
+  return { ...colors, primary: exact, "surface-tint": exact, "on-primary": onPrimary };
 }
 
 export const FONT_STACKS: Record<string, string> = {
@@ -214,13 +325,13 @@ interface ThemePreset {
 }
 
 export const THEME_PRESETS: ThemePreset[] = [
-  { id: "bolle", label: "Viola", seed: "#5B4CF0" },
-  { id: "laguna", label: "Laguna", seed: "#0E7C86" },
-  { id: "corallo", label: "Corallo", seed: "#C2410C" },
-  { id: "bosco", label: "Bosco", seed: "#2F7D32" },
-  { id: "oceano", label: "Oceano", seed: "#00639b" },
-  { id: "ambra", label: "Ambra", seed: "#7a5900" },
-  { id: "grafite", label: "Grafite", seed: "#5a6068" },
+  { id: "bolle", label: m("Viola"), seed: "#5B4CF0" },
+  { id: "laguna", label: m("Laguna"), seed: "#0E7C86" },
+  { id: "corallo", label: m("Corallo"), seed: "#C2410C" },
+  { id: "bosco", label: m("Bosco"), seed: "#2F7D32" },
+  { id: "oceano", label: m("Oceano"), seed: "#00639b" },
+  { id: "ambra", label: m("Ambra"), seed: "#7a5900" },
+  { id: "grafite", label: m("Grafite"), seed: "#5a6068" },
 ];
 
 export const DEFAULT_THEME_PRESET = THEME_PRESETS[0];
@@ -340,4 +451,147 @@ export function tokensCss(set: TokenSet): string {
     "}",
   ];
   return lines.join("\n");
+}
+
+/** File format of an exported theme: both colour schemes plus shared shape and type. */
+export interface ThemeFile {
+  format: "bolle-tokens";
+  version: 1;
+  density: Density;
+  light: TokenSet;
+  dark: TokenSet;
+}
+
+export function exportThemeJson(
+  palettes: Record<ThemeName, TokenSet>,
+  density: Density,
+): string {
+  const file: ThemeFile = {
+    format: "bolle-tokens",
+    version: 1,
+    density,
+    light: palettes.light,
+    dark: palettes.dark,
+  };
+  return `${JSON.stringify(file, null, 2)}\n`;
+}
+
+/** Light values on :root, dark colours under [data-theme="dark"]; ready for a stylesheet. */
+export function exportThemeCss(palettes: Record<ThemeName, TokenSet>): string {
+  const dark = [
+    ':root[data-theme="dark"] {',
+    ...COLOR_ROLES.map(
+      (role) => `  --md-sys-color-${role.token}: ${palettes.dark.colors[role.token]};`,
+    ),
+    "}",
+  ];
+  return `${tokensCss(palettes.light)}\n\n${dark.join("\n")}\n`;
+}
+
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+/** Fills a partial token set from a fallback, keeping only valid values. */
+function cleanSet(input: unknown, fallback: TokenSet): TokenSet {
+  const source = (input ?? {}) as Partial<TokenSet>;
+  const colors = { ...fallback.colors };
+  for (const role of COLOR_ROLES) {
+    const value = source.colors?.[role.token];
+    if (typeof value === "string" && HEX_COLOR.test(value)) colors[role.token] = value.toLowerCase();
+  }
+  const shapes = { ...fallback.shapes };
+  for (const shape of SHAPE_TOKENS) {
+    const value = Number(source.shapes?.[shape.token]);
+    if (Number.isFinite(value) && value >= 0 && value <= 200) shapes[shape.token] = value;
+  }
+  const font = (value: unknown, current: string) =>
+    typeof value === "string" && value in FONT_STACKS ? value : current;
+  const size = Number(source.baseSize);
+  return {
+    colors,
+    shapes,
+    brandFont: font(source.brandFont, fallback.brandFont),
+    plainFont: font(source.plainFont, fallback.plainFont),
+    baseSize: Number.isFinite(size) && size >= 10 && size <= 24 ? size : fallback.baseSize,
+  };
+}
+
+export interface ImportResult {
+  palettes: Record<ThemeName, TokenSet>;
+  density?: Density;
+  /** Number of values read from the file, to tell the user what happened. */
+  count: number;
+}
+
+/** Reads `--md-sys-color-*`, shape, typeface and font-size declarations from a CSS block. */
+function readCssBlock(block: string, base: TokenSet): { set: TokenSet; count: number } {
+  const set: TokenSet = { ...base, colors: { ...base.colors }, shapes: { ...base.shapes } };
+  let count = 0;
+  for (const [, name, raw] of block.matchAll(/(--[\w-]+|font-size)\s*:\s*([^;]+);/g)) {
+    const value = raw.trim();
+    const color = /^--md-sys-color-(.+)$/.exec(name)?.[1];
+    const shape = /^--md-sys-shape-corner-(.+)$/.exec(name)?.[1];
+    if (color && color in set.colors && HEX_COLOR.test(value)) {
+      set.colors[color] = value.toLowerCase();
+      count += 1;
+    } else if (shape && shape in set.shapes && /^\d+(\.\d+)?px$/.test(value)) {
+      set.shapes[shape] = parseFloat(value);
+      count += 1;
+    } else if (name === "font-size" && /^\d+px$/.test(value)) {
+      set.baseSize = parseInt(value, 10);
+      count += 1;
+    } else if (name === "--md-ref-typeface-brand" || name === "--md-ref-typeface-plain") {
+      const key = FONT_KEYS.find((item) => FONT_STACKS[item] === value);
+      if (key) {
+        if (name.endsWith("brand")) set.brandFont = key;
+        else set.plainFont = key;
+        count += 1;
+      }
+    }
+  }
+  return { set, count };
+}
+
+/** Accepts a Bolle JSON export or a CSS file; throws a readable error otherwise. */
+export function importTheme(
+  text: string,
+  current: Record<ThemeName, TokenSet>,
+): ImportResult {
+  const trimmed = text.trim();
+  if (trimmed.startsWith("{")) {
+    let data: Partial<ThemeFile>;
+    try {
+      data = JSON.parse(trimmed);
+    } catch {
+      throw new Error(l("Il file JSON non è valido."));
+    }
+    if (data.format !== "bolle-tokens" || !data.light)
+      throw new Error(l("Il JSON non è un'esportazione dei token Bolle."));
+    const density = DENSITY_PRESETS.some((item) => item.id === data.density)
+      ? data.density
+      : undefined;
+    return {
+      palettes: {
+        light: cleanSet(data.light, current.light),
+        dark: cleanSet(data.dark ?? data.light, current.dark),
+      },
+      density,
+      count: COLOR_ROLES.length * 2,
+    };
+  }
+  const darkMatch = /\[data-theme=["']?dark["']?\][^{]*\{([^}]*)\}/.exec(trimmed);
+  const lightMatch = /(?:^|\})\s*:root\s*\{([^}]*)\}/.exec(trimmed);
+  if (!lightMatch && !darkMatch)
+    throw new Error(l("Nessun blocco :root o [data-theme=\"dark\"] trovato nel CSS."));
+  const light = lightMatch ? readCssBlock(lightMatch[1], current.light) : { set: current.light, count: 0 };
+  const darkBase: TokenSet = {
+    ...current.dark,
+    shapes: light.set.shapes,
+    brandFont: light.set.brandFont,
+    plainFont: light.set.plainFont,
+    baseSize: light.set.baseSize,
+  };
+  const dark = darkMatch ? readCssBlock(darkMatch[1], darkBase) : { set: darkBase, count: 0 };
+  const count = light.count + dark.count;
+  if (count === 0) throw new Error(l("Il CSS non contiene token Bolle riconosciuti."));
+  return { palettes: { light: light.set, dark: dark.set }, count };
 }

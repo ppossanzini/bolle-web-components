@@ -18,6 +18,7 @@ export class BolleSlider extends BolleFormElement {
     max: { type: Number },
     step: { type: Number },
     variant: { reflect: true },
+    compact: { type: Boolean, reflect: true },
     upperValue: { type: Number, attribute: "upper-value" },
     upperLabel: { attribute: "upper-label" },
     minGap: { type: Number, attribute: "min-gap" },
@@ -33,6 +34,8 @@ export class BolleSlider extends BolleFormElement {
   max = 100;
   step = 1;
   variant: SliderVariant = "bubble";
+  /** Bubble variant only: low track, value beside the label, bubble shown while dragging or focused. */
+  compact = false;
   upperValue = 100;
   upperLabel = "";
   minGap = 4;
@@ -189,7 +192,7 @@ export class BolleSlider extends BolleFormElement {
         </div>`;
     }
 
-    return html`${this.head(nothing)}
+    return html`${this.head(this.compact ? `${v}${this.suffix}` : nothing)}
       <div class="slider" style=${`--v:${p}`}>
         <div class="track"></div>
         <div class="thumb"></div>

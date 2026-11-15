@@ -15,8 +15,13 @@ export interface BolleItem {
 }
 
 /** Points the narrow corner of a floating surface toward the element it came from. */
-export function placeTail(surface: HTMLElement, anchor: DOMRect) {
-  const box = surface.getBoundingClientRect();
+export function placeTail(
+  surface: HTMLElement,
+  anchor: DOMRect,
+  /** Final position when known; measuring during the entry animation reads a scaled box. */
+  target?: { left: number; top: number; width: number; height: number },
+) {
+  const box = target ?? surface.getBoundingClientRect();
   const vertical =
     box.top + box.height / 2 >= anchor.top + anchor.height / 2
       ? "top"

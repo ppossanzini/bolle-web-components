@@ -1,7 +1,7 @@
 import { css } from "lit";
 export const navigationStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.35);
+    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
   }
   :host {
     display: block;
@@ -194,5 +194,23 @@ export const navigationStyles = css`
   .tab-scroll-button:focus-visible {
     outline: var(--md-comp-focus-outline);
     outline-offset: calc(var(--md-comp-focus-outline-offset) * -1);
+  }
+`;
+
+/* Tabs as a column: with a fixed host height the tab row stays put and only the panel scrolls. */
+export const tabsLayoutStyles = css`
+  :host {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+  [role="tablist"],
+  .tab-scroller {
+    flex: none;
+  }
+  [role="tabpanel"] {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow: auto;
   }
 `;

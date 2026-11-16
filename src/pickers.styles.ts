@@ -93,6 +93,13 @@ export const pickerStyles = css`
     max-block-size: calc(100dvh - 16px);
     overflow: auto;
     box-shadow: var(--md-sys-elevation-level2);
+    /* Nested surfaces: container radius minus the container padding, never below 2px. */
+    --bb-inset-radius: max(
+      2px,
+      calc(
+        var(--md-sys-shape-corner-extra-large) - var(--md-comp-dialog-padding)
+      )
+    );
   }
   dialog::backdrop {
     background: var(--md-sys-color-scrim);
@@ -108,6 +115,10 @@ export const pickerStyles = css`
     background: var(--md-sys-color-surface-container-high);
     box-shadow: var(--md-sys-elevation-level1);
     max-inline-size: 100%;
+    --bb-inset-radius: max(
+      2px,
+      calc(var(--md-sys-shape-corner-large) - var(--md-comp-dialog-padding))
+    );
   }
   :host([variant="docked"]) .calendar footer {
     display: flex;
@@ -136,7 +147,10 @@ export const pickerStyles = css`
     background: var(--md-sys-color-surface-container-high);
     color: inherit;
     border: 1px solid var(--md-sys-color-outline);
-    border-radius: var(--md-sys-shape-corner-extra-small);
+    border-radius: var(
+      --bb-inset-radius,
+      var(--md-sys-shape-corner-extra-small)
+    );
     min-block-size: var(--md-comp-action-target);
   }
   table {
@@ -197,7 +211,7 @@ export const pickerStyles = css`
   .time-selectors input {
     inline-size: var(--md-comp-time-selector-width);
     block-size: var(--md-comp-time-selector-height);
-    border-radius: var(--md-sys-shape-corner-small);
+    border-radius: var(--bb-inset-radius, var(--md-sys-shape-corner-small));
     background: var(--md-sys-color-surface-container-highest);
     font: var(--md-sys-typescale-display-medium-font);
     border: 0;
@@ -263,7 +277,7 @@ export const pickerStyles = css`
   .time-selectors > button {
     min-inline-size: var(--md-comp-time-selector-width);
     min-block-size: var(--md-comp-time-selector-height);
-    border-radius: var(--md-sys-shape-corner-small);
+    border-radius: var(--bb-inset-radius, var(--md-sys-shape-corner-small));
     background: var(--md-sys-color-surface-container-highest);
     color: var(--md-sys-color-on-surface);
     font: var(--md-sys-typescale-display-medium-font);
@@ -279,7 +293,7 @@ export const pickerStyles = css`
   }
   .period label {
     border: 1px solid var(--md-sys-color-outline);
-    border-radius: var(--md-sys-shape-corner-small);
+    border-radius: var(--bb-inset-radius, var(--md-sys-shape-corner-small));
     padding-inline: var(--md-comp-action-gap);
   }
   .picker-title {

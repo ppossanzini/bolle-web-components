@@ -13,6 +13,13 @@ export const overlayStyles = css`
     max-block-size: calc(100dvh - 32px);
     overflow: auto;
     box-shadow: var(--md-sys-elevation-level2);
+    /* Nested surfaces: container radius minus the container padding, never below 2px. */
+    --bb-inset-radius: max(
+      2px,
+      calc(
+        var(--md-sys-shape-corner-extra-large) - var(--md-comp-dialog-padding)
+      )
+    );
   }
   dialog[open] {
     animation: overlay-in var(--md-sys-motion-duration-medium2)
@@ -137,6 +144,7 @@ export const overlayStyles = css`
     inline-size: 100vw;
     block-size: 100dvh;
     border-radius: 0;
+    --bb-inset-radius: 2px;
     margin: 0;
   }
   :host([placement="bottom"]) dialog {
@@ -156,6 +164,8 @@ export const overlayStyles = css`
     border-start-end-radius: 0;
     border-end-end-radius: 0;
     padding: 0;
+    /* Content sits in the sheet padding: nothing left of the 16px corner. */
+    --bb-inset-radius: 2px;
   }
   :host([detached][placement="side"]) dialog,
   :host([detached][placement="start"]) dialog {
@@ -165,6 +175,7 @@ export const overlayStyles = css`
       100dvh - 2 * var(--md-comp-side-sheet-detached-margin)
     );
     border-radius: var(--md-sys-shape-corner-large);
+    --bb-inset-radius: 2px;
   }
   :host([detached][placement="side"]) dialog {
     margin-inline-start: auto;
@@ -192,6 +203,7 @@ export const overlayStyles = css`
     border-end-end-radius: var(--md-sys-shape-corner-large);
     border-start-start-radius: 0;
     border-end-start-radius: 0;
+    --bb-inset-radius: 2px;
   }
   :host(:dir(rtl)[placement="start"]) dialog {
     margin: 0 0 0 auto;
@@ -232,6 +244,12 @@ export const overlayStyles = css`
     overflow: auto;
     border-start-start-radius: var(--md-sys-shape-corner-extra-large);
     border-start-end-radius: var(--md-sys-shape-corner-extra-large);
+    --bb-inset-radius: max(
+      2px,
+      calc(
+        var(--md-sys-shape-corner-extra-large) - var(--md-comp-dialog-padding)
+      )
+    );
   }
   :host([placement="side"]) .standard,
   :host([placement="start"]) .standard {
@@ -240,6 +258,8 @@ export const overlayStyles = css`
     max-block-size: 100dvh;
     overflow: auto;
     padding: 0;
+    /* Square sheet: nested surfaces keep the 2px minimum. */
+    --bb-inset-radius: 2px;
   }
   .sheet-header {
     position: sticky;

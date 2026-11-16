@@ -127,6 +127,9 @@ export function renderFoundations(): TemplateResult {
             </bolle-tooltip>
           </div>
         </div>
+        <p class="fd-rule">
+          ${l("Una superficie dentro un'altra prende il raggio del contenitore meno il padding che il contenitore applica, con un minimo di 2px. Il contenitore lo pubblica in --bb-inset-radius e la superficie interna lo eredita: card dentro dialog, fogli o altre card, media nelle card, voci nei menu e campi nei picker.")}
+        </p>
         ${tokenTable([
           ["--bb-radius", l("Raggio dei tre angoli tondi delle superfici sospese")],
           ["--bb-tail", l("Angolo stretto rivolto all'origine")],

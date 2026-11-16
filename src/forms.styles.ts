@@ -274,6 +274,15 @@ export const formStyles = css`
     border-radius: var(--md-sys-shape-corner-large);
     background: var(--md-sys-color-surface-container-low);
     box-shadow: var(--md-sys-elevation-level2);
+    /* Nested surface: row corner = container corner minus the container padding, min 2px. */
+    --search-suggestion-radius: max(
+      2px,
+      calc(
+        var(--md-sys-shape-corner-large) - var(
+            --md-comp-menu-container-padding-block
+          )
+      )
+    );
   }
   .search-suggestions[hidden] {
     display: none;
@@ -283,7 +292,7 @@ export const formStyles = css`
     align-items: center;
     min-block-size: var(--md-comp-menu-item-target-height);
     padding-inline: var(--md-comp-field-padding);
-    border-radius: var(--md-sys-shape-corner-small);
+    border-radius: var(--search-suggestion-radius);
     color: var(--md-sys-color-on-surface);
     cursor: pointer;
   }
@@ -343,6 +352,15 @@ export const formStyles = css`
     background: var(--md-sys-color-surface-container-low);
     color: var(--md-sys-color-on-surface);
     box-shadow: var(--md-sys-elevation-level2);
+    /* Nested surface: option corner = container corner minus the container padding, min 2px. */
+    --autocomplete-option-radius: max(
+      2px,
+      calc(
+        var(--md-comp-menus-standard-menu-container-shape) - var(
+            --md-comp-menu-container-padding-block
+          )
+      )
+    );
     font: var(--md-sys-typescale-label-large-font);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
   }
@@ -352,7 +370,7 @@ export const formStyles = css`
     min-block-size: var(--md-comp-menu-item-height);
     padding: var(--md-comp-menu-item-vertical-padding)
       var(--md-comp-menu-item-horizontal-padding);
-    border-radius: var(--md-comp-menus-standard-menu-item-shape);
+    border-radius: var(--autocomplete-option-radius);
     cursor: pointer;
   }
   .autocomplete-list li:hover {

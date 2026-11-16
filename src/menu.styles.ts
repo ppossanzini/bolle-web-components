@@ -52,6 +52,16 @@ export const menuStyles = css`
       --bb-shape,
       var(--md-comp-menus-standard-menu-container-shape)
     );
+    /* Nested surface: an item sits one block padding inside the menu, so its
+       radius is the container radius minus that inset, never below 2px. */
+    --menu-radius: var(
+      --bb-r,
+      var(--md-comp-menus-standard-menu-container-shape)
+    );
+    --menu-item-radius: max(
+      2px,
+      calc(var(--menu-radius) - var(--md-comp-menu-container-padding-block))
+    );
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
     font: var(--md-sys-typescale-label-large-font);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
@@ -63,9 +73,11 @@ export const menuStyles = css`
   }
   :host([variant="baseline"]) [popover] {
     border-radius: var(--md-comp-menu-container-shape);
+    --menu-radius: var(--md-comp-menu-container-shape);
   }
   :host([inactive]) [popover] {
     border-radius: var(--md-comp-menus-standard-menu-inactive-container-shape);
+    --menu-radius: var(--md-comp-menus-standard-menu-inactive-container-shape);
   }
   :host([quick]) [popover] {
     animation: none;
@@ -83,7 +95,7 @@ export const menuStyles = css`
     padding: var(--md-comp-menu-item-vertical-padding)
       var(--md-comp-menu-item-horizontal-padding);
     border: 0;
-    border-radius: var(--md-comp-menus-standard-menu-item-shape);
+    border-radius: var(--menu-item-radius);
     background: transparent;
     color: inherit;
     text-decoration: none;
@@ -147,34 +159,9 @@ export const menuStyles = css`
   .group + .group {
     border-block-start: 1px solid var(--md-sys-color-outline-variant);
   }
-  button:first-child,
-  a:first-child {
-    border-start-start-radius: var(
-      --md-comp-menus-standard-menu-item-selected-shape
-    );
-    border-start-end-radius: var(
-      --md-comp-menus-standard-menu-item-selected-shape
-    );
-  }
-  button:last-child,
-  a:last-child {
-    border-end-start-radius: var(
-      --md-comp-menus-standard-menu-item-selected-shape
-    );
-    border-end-end-radius: var(
-      --md-comp-menus-standard-menu-item-selected-shape
-    );
-  }
-  :host([variant="baseline"]) button:first-child,
-  :host([variant="baseline"]) a:first-child,
-  :host([variant="baseline"]) button:last-child,
-  :host([variant="baseline"]) a:last-child {
-    border-radius: 0;
-  }
   [aria-checked="true"] {
     background: var(--menu-selected);
     color: var(--menu-on-selected);
-    border-radius: var(--md-comp-menus-standard-menu-item-selected-shape);
   }
   [aria-disabled="true"] {
     cursor: default;

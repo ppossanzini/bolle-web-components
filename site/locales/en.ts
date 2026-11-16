@@ -507,6 +507,7 @@ const messages: Record<string, string> = {
   "Tutti i componenti →": "All components →",
   "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.": "A subtle conic gradient derived from the seed color: the four hues rotate around its hue, so the film follows the dynamic theme. Use it sparingly: focus ring, selected state, FAB. One iridescent surface per screen, never as a background.",
   "Un'iridescenza che deriva dal tuo colore seed e compare solo dove conta: focus, selezione, l'azione principale.": "An iridescence derived from your seed color that appears only where it matters: focus, selection, the main action.",
+  "Una superficie dentro un'altra prende il raggio del contenitore meno il padding che il contenitore applica, con un minimo di 2px. Il contenitore lo pubblica in --bb-inset-radius e la superficie interna lo eredita: card dentro dialog, fogli o altre card, media nelle card, voci nei menu e campi nei picker.": "A surface inside another takes the container radius minus the padding the container applies, never below 2px. The container publishes it as --bb-inset-radius and the inner surface inherits it: a card inside a dialog, a sheet or another card, media inside cards, menu items and picker fields.",
   "Una dialog che galleggia": "A floating dialog",
   "Usa": "Use",
   "Usa #RGB o #RRGGBB": "Use #RGB or #RRGGBB",

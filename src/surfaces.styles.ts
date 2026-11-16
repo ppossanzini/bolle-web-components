@@ -3,6 +3,11 @@ import { checkMaskStyles } from "./icons.js";
 export const surfaceStyles = css`
   :host {
     --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
+    /* A card nested in a padded surface takes the radius that surface publishes. */
+    --bb-card-radius: var(
+      --bb-inset-radius,
+      var(--bb-radius, var(--md-sys-shape-corner-medium))
+    );
   }
   :host {
     display: block;
@@ -139,10 +144,18 @@ export const surfaceStyles = css`
     padding: var(--md-comp-card-padding);
     font: var(--md-sys-typescale-body-medium-font);
     letter-spacing: var(--md-sys-typescale-body-medium-tracking);
-    border-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
-    border-end-start-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+    border-radius: var(--bb-card-radius);
+    border-end-start-radius: min(
+      var(--bb-card-tail, var(--md-sys-shape-corner-medium)),
+      var(--bb-card-radius)
+    );
     background: var(--md-sys-color-surface-container-highest);
     overflow: clip;
+    /* Nested surfaces: container radius minus the container padding, never below 2px. */
+    --bb-inset-radius: max(
+      2px,
+      calc(var(--bb-card-radius) - var(--md-comp-card-padding))
+    );
   }
   :host([variant="outlined"]) .card {
     background: var(--md-sys-color-surface);
@@ -161,7 +174,13 @@ export const surfaceStyles = css`
     flex: 0 0 var(--md-comp-card-horizontal-media-width);
     inline-size: var(--md-comp-card-horizontal-media-width);
     overflow: clip;
-    border-radius: var(--md-sys-shape-corner-small);
+  }
+  /* Media is content inside the card padding: it follows the same nested radius. */
+  ::slotted([slot="media"]) {
+    border-radius: max(
+      2px,
+      calc(var(--bb-card-radius) - var(--md-comp-card-padding))
+    );
   }
   .card > a {
     display: block;
@@ -177,6 +196,11 @@ export const surfaceStyles = css`
   }
   .card.is-link > a {
     position: static;
+  }
+  /* The card carries the hover and press layer: the link inside it must not add a second one. */
+  .card.is-link > a:hover,
+  .card.is-link > a:active {
+    background-image: none;
   }
   /* Stretched link: the whole card, padding included, is the click target. */
   .card.is-link > a::before {
@@ -209,16 +233,25 @@ export const surfaceStyles = css`
     box-shadow: var(--bb-float-3, var(--md-sys-elevation-level2));
   }
   :host([tail="bottom-end"]) .card {
-    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
-    border-end-end-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+    border-end-start-radius: var(--bb-card-radius);
+    border-end-end-radius: min(
+      var(--bb-card-tail, var(--md-sys-shape-corner-medium)),
+      var(--bb-card-radius)
+    );
   }
   :host([tail="top-start"]) .card {
-    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
-    border-start-start-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+    border-end-start-radius: var(--bb-card-radius);
+    border-start-start-radius: min(
+      var(--bb-card-tail, var(--md-sys-shape-corner-medium)),
+      var(--bb-card-radius)
+    );
   }
   :host([tail="top-end"]) .card {
-    border-end-start-radius: var(--bb-radius, var(--md-sys-shape-corner-medium));
-    border-start-end-radius: var(--bb-card-tail, var(--md-sys-shape-corner-medium));
+    border-end-start-radius: var(--bb-card-radius);
+    border-start-end-radius: min(
+      var(--bb-card-tail, var(--md-sys-shape-corner-medium)),
+      var(--bb-card-radius)
+    );
   }
   @media (forced-colors: active) {
     .card.is-link:has(> a:focus-visible) {

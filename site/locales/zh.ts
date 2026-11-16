@@ -507,6 +507,7 @@ const messages: Record<string, string> = {
   "Tutti i componenti →": "所有组件 →",
   "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.": "由种子色派生的柔和锥形渐变：四种色调围绕其色相旋转，因此虹彩薄膜会跟随动态主题。用得克制：焦点环、选中状态、FAB。每屏只有一个虹彩表面，绝不用作背景。",
   "Un'iridescenza che deriva dal tuo colore seed e compare solo dove conta: focus, selezione, l'azione principale.": "一层源自你种子色的虹彩，只出现在关键之处：焦点、选中、主要操作。",
+  "Una superficie dentro un'altra prende il raggio del contenitore meno il padding che il contenitore applica, con un minimo di 2px. Il contenitore lo pubblica in --bb-inset-radius e la superficie interna lo eredita: card dentro dialog, fogli o altre card, media nelle card, voci nei menu e campi nei picker.": "一个表面位于另一个表面内部时，采用容器圆角减去容器施加的内边距，且不小于 2px。容器把它发布到 --bb-inset-radius，内部表面继承该值：对话框、面板或另一张卡片中的卡片、卡片内的媒体、菜单项以及选择器内的字段。",
   "Una dialog che galleggia": "会漂浮的 Dialog",
   "Usa": "使用",
   "Usa #RGB o #RRGGBB": "请使用 #RGB 或 #RRGGBB",

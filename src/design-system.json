@@ -12,6 +12,16 @@
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
     {
+      "date": "2026-11-16",
+      "classification": "corrective",
+      "description": "A link card shows one hover layer: the anchor inside the card no longer adds the shared link hover and glint on top of the card state layer."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "corrective",
+      "description": "Nested surfaces share one radius rule: an inner surface takes the container radius minus the padding the container applies, with a 2px floor. Dialogs, sheets and cards publish the value as `--bb-inset-radius` and a card placed inside them inherits it; the card tail is clamped to the card radius. Menu items, autocomplete and search suggestions derive their corners from the container radius, and docked date picker and time picker fields derive theirs from the calendar or dialog padding."
+    },
+    {
       "date": "2026-11-15",
       "classification": "additive",
       "description": "Built-in messages in French and Simplified Chinese besides English and Italian, chosen from the language subtag (`supportedLocale`); tab scroll buttons and the rich tooltip dismiss button are now localized instead of fixed English."

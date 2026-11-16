@@ -267,7 +267,8 @@
   --md-sys-elevation-level2: 0 2px 6px 2px #00000026, 0 1px 2px #0000004d;
   --md-comp-menu-min-width: 112px;
   --md-comp-menu-max-width: 280px;
-  --md-comp-menu-container-padding: 8px 0;
+  --md-comp-menu-container-padding-block: 8px;
+  --md-comp-menu-container-padding: var(--md-comp-menu-container-padding-block) 0;
   --md-comp-menu-container-shape: 4px;
   --md-comp-menus-standard-menu-container-shape: 16px;
   --md-comp-menus-standard-menu-inactive-container-shape: 8px;

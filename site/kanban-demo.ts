@@ -33,13 +33,6 @@ const euro = new Intl.NumberFormat("it-IT", {
 });
 const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
 const formatDate = (value: string) => dayMonth.format(new Date(`${value}T12:00`));
-const initials = (name: string) =>
-  name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
-
 const isLate = (card: JobCard) =>
   card.due < TODAY_ISO && card.column !== "chiuso";
 
@@ -94,17 +87,6 @@ const contentCss = css`
     margin-block-start: 10px;
     font: var(--md-sys-typescale-label-small-font);
     color: var(--md-sys-color-on-surface-variant);
-  }
-  .kavatar {
-    display: inline-grid;
-    place-items: center;
-    inline-size: 22px;
-    block-size: 22px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
-    font-weight: 700;
   }
   .kmanager {
     overflow: hidden;
@@ -345,7 +327,7 @@ export class BolleKanbanDemo extends LitElement {
         <span class="knum">${job.progress}%</span>
       </div>
       <div class="kfoot">
-        <span class="kavatar" aria-hidden="true">${initials(job.manager)}</span>
+        <bolle-avatar size="xs" color="tertiary" .name=${job.manager}></bolle-avatar>
         <span class="kmanager" dir="auto">${job.manager}</span>
         <span class="kdue ${late ? "late" : ""}"
           >${late ? l(m("in ritardo")) : formatDate(job.due)}</span

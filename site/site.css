@@ -302,6 +302,37 @@ bolle-docs {
   min-inline-size: 0;
 }
 
+/* Bottom app bar, avatar, empty state and pagination --------------------- */
+.preview-surface > bolle-bottom-app-bar {
+  flex: 1 1 100%;
+}
+/* The bar is a bottom edge: the stage gives it a floor and a width to fill. */
+.preview-surface > bolle-bottom-app-bar.bar-preview {
+  max-inline-size: 100%;
+}
+.preview-surface:has(.bar-preview) {
+  align-items: flex-end;
+}
+demo-pagination {
+  display: block;
+  inline-size: 100%;
+}
+demo-pagination .readout {
+  margin: 12px 0 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+.variant-stage > bolle-empty-state,
+.preview-surface > bolle-empty-state.empty-preview {
+  inline-size: 100%;
+  max-inline-size: 560px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--md-sys-color-surface);
+  box-shadow: var(--bb-float-1);
+}
+
 /* Shell and dashboard are whole panels: they need the full stage and a height. */
 .preview-surface > demo-dashboard {
   inline-size: 100%;
@@ -1470,13 +1501,17 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="Data table"]),
 .playground-stage:has(.preview-surface[data-group="App shell"]),
 .playground-stage:has(.preview-surface[data-group="Dashboard"]),
-.playground-stage:has(.preview-surface[data-group="Kanban"]) {
+.playground-stage:has(.preview-surface[data-group="Kanban"]),
+.playground-stage:has(.preview-surface[data-group="Pagination"]),
+.playground-stage:has(.preview-surface[data-group="App bars"]) {
   grid-template-columns: minmax(0, 1fr);
 }
 .playground-stage:has(.preview-surface[data-group="Data table"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="App shell"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Dashboard"]) .playground-side,
-.playground-stage:has(.preview-surface[data-group="Kanban"]) .playground-side {
+.playground-stage:has(.preview-surface[data-group="Kanban"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="Pagination"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="App bars"]) .playground-side {
   border-inline-start: 0;
   border-block-start: 1px solid var(--md-sys-color-outline-variant);
   max-block-size: none;
@@ -1484,7 +1519,9 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="Data table"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="App shell"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Dashboard"]) .side-body,
-.playground-stage:has(.preview-surface[data-group="Kanban"]) .side-body {
+.playground-stage:has(.preview-surface[data-group="Kanban"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="Pagination"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="App bars"]) .side-body {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   align-items: start;
 }

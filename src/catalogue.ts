@@ -44,6 +44,10 @@ import {
 import { BolleSidebar } from "./sidebar.js";
 import { BolleDataTable } from "./data-table.js";
 import { BolleKanban } from "./kanban.js";
+import { BolleBottomAppBar } from "./bottom-app-bar.js";
+import { BolleAvatar } from "./avatar.js";
+import { BolleEmptyState } from "./empty-state.js";
+import { BollePagination } from "./pagination.js";
 import { BolleAppShell } from "./app-shell.js";
 import { BolleDashboard, BolleWidget } from "./dashboard.js";
 import {
@@ -58,6 +62,7 @@ export {
   BolleWidget,
   BolleDataTable,
   BolleKanban,
+  BolleBottomAppBar,
   BolleSidebar,
   BolleButton,
   BolleIconButton,
@@ -97,6 +102,9 @@ export {
   BolleProgressIndicator,
   BolleLoadingIndicator,
   BolleCarousel,
+  BolleAvatar,
+  BolleEmptyState,
+  BollePagination,
 };
 export type { BolleItem, SurfaceTail } from "./shared.js";
 export type { CardTail } from "./surfaces.js";
@@ -132,7 +140,10 @@ export type {
   KanbanCollapseDetail,
   KanbanAddDetail,
 } from "./kanban.js";
-export type { KanbanLabels } from "./localization.js";
+export type { KanbanLabels, PaginationLabels } from "./localization.js";
+export type { AvatarShape, AvatarSize, AvatarStatus } from "./avatar.js";
+export { avatarInitials } from "./avatar.js";
+export type { PaginationChangeDetail } from "./pagination.js";
 export type { AppShellForm, AppShellFormDetail } from "./app-shell.js";
 export {
   APP_SHELL_MEDIUM,
@@ -182,6 +193,10 @@ export const catalogue = {
   "bolle-widget": BolleWidget,
   "bolle-data-table": BolleDataTable,
   "bolle-kanban": BolleKanban,
+  "bolle-bottom-app-bar": BolleBottomAppBar,
+  "bolle-avatar": BolleAvatar,
+  "bolle-empty-state": BolleEmptyState,
+  "bolle-pagination": BollePagination,
   "bolle-sidebar": BolleSidebar,
   "bolle-slider": BolleSlider,
   "bolle-snackbar": BolleSnackbar,

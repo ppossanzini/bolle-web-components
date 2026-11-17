@@ -460,6 +460,66 @@ export function shellLabels(
   };
 }
 
+/** Built-in texts of the pagination. */
+export const paginationMessages = {
+  en: {
+    label: "Pages",
+    range: "{from}–{to} of {total}",
+    pageOf: "Page {page} of {pages}",
+    first: "First page",
+    previous: "Previous page",
+    next: "Next page",
+    last: "Last page",
+    perPage: "Rows per page",
+    goTo: "Go to page {page}",
+  },
+  it: {
+    label: "Pagine",
+    range: "{from}–{to} di {total}",
+    pageOf: "Pagina {page} di {pages}",
+    first: "Prima pagina",
+    previous: "Pagina precedente",
+    next: "Pagina successiva",
+    last: "Ultima pagina",
+    perPage: "Righe per pagina",
+    goTo: "Vai alla pagina {page}",
+  },
+  fr: {
+    label: "Pages",
+    range: "{from}–{to} sur {total}",
+    pageOf: "Page {page} sur {pages}",
+    first: "Première page",
+    previous: "Page précédente",
+    next: "Page suivante",
+    last: "Dernière page",
+    perPage: "Lignes par page",
+    goTo: "Aller à la page {page}",
+  },
+  zh: {
+    label: "页面",
+    range: "{from}–{to}，共 {total} 条",
+    pageOf: "第 {page} 页，共 {pages} 页",
+    first: "第一页",
+    previous: "上一页",
+    next: "下一页",
+    last: "最后一页",
+    perPage: "每页行数",
+    goTo: "前往第 {page} 页",
+  },
+} as const;
+
+export type PaginationLabels = { [K in keyof typeof paginationMessages.en]: string };
+
+export function paginationLabels(
+  locale: string,
+  overrides: Partial<PaginationLabels> = {},
+): PaginationLabels {
+  return {
+    ...paginationMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...overrides,
+  };
+}
+
 /** Built-in texts of the kanban board. */
 export const kanbanMessages = {
   en: {
@@ -487,6 +547,7 @@ export const kanbanMessages = {
     added: "Card added to {column}.",
     loading: "Loading the board",
     empty: "No cards yet",
+    error: "The board could not be loaded",
     retry: "Try again",
   },
   it: {
@@ -514,6 +575,7 @@ export const kanbanMessages = {
     added: "Scheda aggiunta in {column}.",
     loading: "Caricamento della board",
     empty: "Non ci sono ancora schede",
+    error: "Non riusciamo a caricare la board",
     retry: "Riprova",
   },
   fr: {
@@ -541,6 +603,7 @@ export const kanbanMessages = {
     added: "Carte ajoutée dans {column}.",
     loading: "Chargement du tableau",
     empty: "Aucune carte pour le moment",
+    error: "Le tableau ne peut pas être chargé",
     retry: "Réessayer",
   },
   zh: {
@@ -568,6 +631,7 @@ export const kanbanMessages = {
     added: "卡片已添加到{column}。",
     loading: "正在加载看板",
     empty: "还没有卡片",
+    error: "无法加载看板",
     retry: "重试",
   },
 } as const;

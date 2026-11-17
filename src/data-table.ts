@@ -14,11 +14,7 @@ import {
   columnGripIcon,
   databaseOffIcon,
   expandIcon,
-  firstPageIcon,
-  lastPageIcon,
-  nextPageIcon,
   pinIcon,
-  previousIcon,
   rowMenuIcon,
   sortArrowDownIcon,
   sortArrowUpIcon,
@@ -1009,36 +1005,46 @@ export class BolleDataTable extends BolleElement {
 
   private renderState() {
     if (this.error)
-      return html`<div class="state" role="alert">
-        <span class="state-icon error">${alertIcon()}</span>
-        <p class="state-title">${this.text.error}</p>
-        ${this.error ? html`<p class="state-text">${this.error}</p>` : nothing}
-        <bolle-button variant="filled" @click=${() => this.emit("retry", {})}
-          >${this.text.retry}</bolle-button
+      return html`<div class="state">
+        <bolle-empty-state
+          class="empty"
+          tone="error"
+          role="alert"
+          .icon=${alertIcon()}
+          .title=${this.text.error}
+          .text=${this.error}
         >
+          <bolle-button
+            slot="actions"
+            variant="filled"
+            @click=${() => this.emit("retry", {})}
+            >${this.text.retry}</bolle-button
+          >
+        </bolle-empty-state>
       </div>`;
     return html`<div class="state">
-      <span class="state-icon">${databaseOffIcon()}</span>
-      <p class="state-title">${this.emptyLabel || this.text.empty}</p>
-      <slot name="empty"></slot>
+      <bolle-empty-state
+        class="empty"
+        .icon=${databaseOffIcon()}
+        .title=${this.emptyLabel || this.text.empty}
+      >
+        <div slot="actions"><slot name="empty"></slot></div>
+      </bolle-empty-state>
     </div>`;
   }
 
   private renderFooter() {
     if (!this.pageSize) return nothing;
-    const pages = this.pageCount;
     const total = this.total || this.rows.length;
-    const from = pages ? this.page * this.pageSize + 1 : 0;
-    const to = Math.min(total, from + this.rows.length - 1);
     return html`<footer class="footer">
-      <span class="range">${fill(this.text.range, { from, to: Math.max(from, to), total })}</span>
-      <nav class="pager" aria-label=${this.text.pageOf.replace("{page}", "").replace("{pages}", "").trim()}>
-        <bolle-icon-button variant="standard" size="xs" label=${this.text.firstPage} ?disabled=${this.page === 0} @click=${() => this.goTo(0)}>${firstPageIcon()}</bolle-icon-button>
-        <bolle-icon-button variant="standard" size="xs" label=${this.text.previousPage} ?disabled=${this.page === 0} @click=${() => this.goTo(this.page - 1)}>${previousIcon()}</bolle-icon-button>
-        <span class="page-of">${fill(this.text.pageOf, { page: this.page + 1, pages })}</span>
-        <bolle-icon-button variant="standard" size="xs" label=${this.text.nextPage} ?disabled=${this.page >= pages - 1} @click=${() => this.goTo(this.page + 1)}>${nextPageIcon()}</bolle-icon-button>
-        <bolle-icon-button variant="standard" size="xs" label=${this.text.lastPage} ?disabled=${this.page >= pages - 1} @click=${() => this.goTo(pages - 1)}>${lastPageIcon()}</bolle-icon-button>
-      </nav>
+      <bolle-pagination
+        .page=${this.page}
+        .pageSize=${this.pageSize}
+        .total=${total}
+        form="compact"
+        @page-change=${(event: CustomEvent<{ page: number; pageSize: number }>) =>
+          this.emit<DataTablePageDetail>("page-change", event.detail)}
+      ></bolle-pagination>
     </footer>`;
   }
 
@@ -1047,7 +1053,7 @@ export class BolleDataTable extends BolleElement {
     const rowCount = this.groupBy
       ? this.groups.length + this.rows.length
       : this.rows.length;
-    const body = empty ? this.renderState() : this.renderBody();
+    const body = this.renderBody();
     return html`<div
       class="table ${this.variant === "free" ? "is-free" : ""} density-${this.density}"
       role="group"
@@ -1083,7 +1089,7 @@ export class BolleDataTable extends BolleElement {
           </colgroup>
           ${this.renderHeader()}
           ${
-            this.loading && empty
+            empty
               ? nothing
               : html`<tbody>
                   ${this.virtual && !this.groupBy
@@ -1104,6 +1110,7 @@ export class BolleDataTable extends BolleElement {
                 </tbody>`
           }
         </table>
+        ${empty ? this.renderState() : nothing}
         ${this.contentStyles
           ? html`<style>
               ${unsafeCSS(this.contentStyles)}

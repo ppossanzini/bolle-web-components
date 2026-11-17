@@ -126,6 +126,8 @@ const PANEL_GROUPS = new Set<string>([
   "App shell",
   "Dashboard",
   "Kanban",
+  "Pagination",
+  "App bars",
 ]);
 
 const SCHIUMA = "Schiuma";

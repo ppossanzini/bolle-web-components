@@ -434,41 +434,15 @@ export const dataTableStyles = css`
   }
 
   /* Empty and error ---------------------------------------------------- */
+  /* The state surface is a component; the table only gives it a max width. */
+  /* The state sits under the sticky header and keeps the width it is given. */
   .state {
     position: sticky;
     inset-inline-start: 0;
-    display: grid;
-    justify-items: center;
-    gap: 8px;
-    max-inline-size: 440px;
-    margin: 48px auto;
-    padding: 0 24px;
-    text-align: center;
+    padding: 8px 24px 32px;
   }
-  .state-title {
-    margin: 8px 0 0;
-    font: var(--md-sys-typescale-title-large-font);
-  }
-  .state-text {
-    margin: 0 0 8px;
-    color: var(--md-sys-color-on-surface-variant);
-  }
-  .state-icon {
-    display: grid;
-    place-items: center;
-    inline-size: 56px;
-    block-size: 56px;
-    border-radius: 28px 28px 28px 8px;
-    background: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface-variant);
-  }
-  .state-icon svg {
-    inline-size: 24px;
-    block-size: 24px;
-  }
-  .state-icon.error {
-    background: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
+  .state .empty {
+    --bb-empty-state-icon-size: 56px;
   }
 
   /* Footer ------------------------------------------------------------- */
@@ -485,18 +459,8 @@ export const dataTableStyles = css`
     font: var(--md-sys-typescale-body-small-font);
     color: var(--md-sys-color-on-surface-variant);
   }
-  .range,
-  .page-of {
-    font-variant-numeric: tabular-nums;
-  }
-  .page-of {
-    padding-inline: 8px;
-    white-space: nowrap;
-  }
-  .pager {
-    display: flex;
-    align-items: center;
-    gap: 2px;
+  .footer bolle-pagination {
+    inline-size: 100%;
   }
 
   @media (max-width: 720px) {

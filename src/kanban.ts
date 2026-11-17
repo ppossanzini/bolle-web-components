@@ -737,16 +737,22 @@ export class BolleKanban extends BolleElement {
         <p>${this.text.loading}</p>
       </div>`;
     if (this.error)
-      return html`<div class="state" role="alert">
-        <span class="state-icon error">${alertIcon()}</span>
-        <p>${this.error}</p>
-        <bolle-button variant="filled" @click=${() => this.emit("retry", {})}
-          >${this.text.retry}</bolle-button
+      return html`<div class="state">
+        <bolle-empty-state
+          tone="error"
+          role="alert"
+          .icon=${alertIcon()}
+          .title=${this.text.error}
+          .text=${this.error}
         >
+          <bolle-button slot="actions" variant="filled" @click=${() => this.emit("retry", {})}
+            >${this.text.retry}</bolle-button
+          >
+        </bolle-empty-state>
       </div>`;
     return html`<div class="state">
-      <span class="state-icon">${databaseOffIcon()}</span>
-      <p>${this.emptyLabel || this.text.empty}</p>
+      <bolle-empty-state .icon=${databaseOffIcon()} .title=${this.emptyLabel || this.text.empty}>
+      </bolle-empty-state>
     </div>`;
   }
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.2.3",
+  "version": "0.3.0",
   "specification": "Material Design 3",
   "sourceDate": "2026-11-10",
   "tokenSnapshot": "34.0.21",
@@ -11,9 +11,14 @@
     "standard-contrast-dark"
   ],
   "fullConformanceVerified": false,
-  "componentEntries": 40,
+  "componentEntries": 44,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-17",
+      "classification": "additive",
+      "description": "Four common components that were missing: `bolle-bottom-app-bar` closes the Material 3 catalogue with a bottom container for actions, an end slot and an optional docked FAB, in a standard or floating form; `bolle-avatar`, `bolle-empty-state` and `bolle-pagination` are Schiuma primitives that the library itself was duplicating. The data table now renders `bolle-pagination` for its pager and `bolle-empty-state` for the empty and error rows, the kanban renders the same state for loading, error and empty, and the documentation demos drop their hand-written initials circle in favour of `bolle-avatar`. Component tokens `--md-comp-bottom-app-bar-*` and `--md-comp-avatar-*-size` added; pagination labels in English, Italian, French and Simplified Chinese."
+    },
     {
       "date": "2026-11-16",
       "classification": "additive",

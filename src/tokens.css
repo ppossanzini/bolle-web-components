@@ -149,7 +149,14 @@
   --md-comp-app-bar-large-flexible-height: 120px;
   --md-comp-app-bar-search-height: 56px;
   --md-comp-app-bar-large-height: 152px;
+  --md-comp-bottom-app-bar-height: 80px;
+  --md-comp-bottom-app-bar-inset: 16px;
   --md-comp-card-padding: 16px;
+  --md-comp-avatar-xs-size: 24px;
+  --md-comp-avatar-small-size: 32px;
+  --md-comp-avatar-medium-size: 40px;
+  --md-comp-avatar-large-size: 56px;
+  --md-comp-avatar-xl-size: 80px;
   --md-comp-badge-size: 16px;
   --md-comp-badge-small-size: 6px;
   --md-comp-badge-padding: 4px;

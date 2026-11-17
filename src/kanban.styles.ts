@@ -325,17 +325,6 @@ export const kanbanStyles = css`
   .state p {
     margin: 0;
   }
-  .state-icon {
-    display: grid;
-    place-items: center;
-    inline-size: 40px;
-    block-size: 40px;
-    font-size: 24px;
-    color: var(--md-sys-color-outline);
-  }
-  .state-icon.error {
-    color: var(--md-sys-color-error);
-  }
   /* Bolle scrollbars: no arrow buttons, round track and thumb. */
   .board::-webkit-scrollbar,
   .columns::-webkit-scrollbar,

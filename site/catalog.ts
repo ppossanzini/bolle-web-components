@@ -10,11 +10,13 @@ import type { AttrSpec, SnippetSpec } from "./codegen.js";
 import "./data-table-demo.js";
 import "./app-shell-demo.js";
 import "./kanban-demo.js";
+import "./pagination-demo.js";
 import { code } from "./codegen.js";
 import { l, libraryLocale, m } from "./i18n.js";
 
 export type Group =
   | "App bars"
+  | "Avatars"
   | "Badges"
   | "Buttons"
   | "Cards"
@@ -27,6 +29,7 @@ export type Group =
   | "Date & time pickers"
   | "Dialogs"
   | "Divider"
+  | "Empty states"
   | "HTML controls"
   | "Kanban"
   | "Lists"
@@ -35,6 +38,7 @@ export type Group =
   | "Navigation bar"
   | "Navigation drawer"
   | "Navigation rail"
+  | "Pagination"
   | "Progress indicators"
   | "Radio button"
   | "Search"
@@ -132,6 +136,16 @@ const a = (name: string, value: unknown): AttrSpec => ({
   name,
   value: value as string | number | boolean,
 });
+
+/**
+ * A drawn portrait as a data URI: the avatar preview needs a real image without
+ * a network request, so the page stays offline-safe.
+ */
+const portrait =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="#d6c8f0"/><circle cx="48" cy="38" r="17" fill="#6b53a8"/><path d="M14 96c0-19 15-30 34-30s34 11 34 30z" fill="#6b53a8"/></svg>`,
+  );
 
 const ICON_ITEMS = [
   { id: "inbox", label: m("Posta"), icon: "inbox" },
@@ -574,6 +588,195 @@ export const entries: Entry[] = [
         a("max", n(state, "max")),
         a("small", b(state, "small")),
         a("label", s(state, "label")),
+      ],
+    }),
+  },
+  {
+    tag: "bolle-bottom-app-bar",
+    title: "Bottom app bar",
+    group: "App bars",
+    summary: m(
+      "Contenitore in fondo alla schermata: azioni, uno spazio per il pulsante principale e una forma piana o staccata dal bordo.",
+    ),
+    note: m(
+      "La barra non conosce l'applicazione: riceve le azioni negli slot e lascia al contenitore decidere cosa mostrare. Con dock il pulsante flottante esce dal bordo superiore e la barra resta un riferimento stabile mentre il contenuto scorre, se è sticky.",
+    ),
+    controls: [
+      en("variant", m("Forma"), ["standard", "floating"], "standard"),
+      en("align", m("Allineamento"), ["start", "center"], "start"),
+      fl("divider", m("Linea superiore"), true),
+      fl("dock", m("Pulsante agganciato"), false),
+      tx("label", m("Etichetta accessibile"), m("Azioni della schermata")),
+    ],
+    render: (state) =>
+      html`<bolle-bottom-app-bar
+        class="bar-preview"
+        .variant=${s(state, "variant")}
+        .align=${s(state, "align")}
+        ?divider=${b(state, "divider")}
+        ?dock=${b(state, "dock")}
+        .label=${s(state, "label")}
+      >
+        <bolle-icon-button
+          slot="leading"
+          variant="standard"
+          label=${l(m("Indietro"))}
+          >${ti("arrow-left")}</bolle-icon-button
+        >
+        <bolle-icon-button variant="standard" label=${l(m("Condividi"))}
+          >${ti("users")}</bolle-icon-button
+        >
+        <bolle-icon-button variant="standard" label=${l(m("Preferiti"))}
+          >${ti("heart")}</bolle-icon-button
+        >
+        <bolle-icon-button slot="trailing" variant="standard" label=${l(m("Altro"))}
+          >${ti("menu-2")}</bolle-icon-button
+        >
+        <bolle-floating-action-button
+          slot="fab"
+          size="medium"
+          label=${l(m("Nuova commessa"))}
+          >${ti("plus")}</bolle-floating-action-button
+        >
+      </bolle-bottom-app-bar>`,
+    code: (state) => ({
+      attrs: [
+        a("variant", s(state, "variant")),
+        a("align", s(state, "align")),
+        a("label", s(state, "label")),
+        ...(b(state, "divider") ? [] : [a("divider", false)]),
+        ...(b(state, "dock") ? [a("dock", true)] : []),
+      ],
+      content: `<bolle-icon-button slot="leading" label="${l(m("Indietro"))}" variant="standard">…</bolle-icon-button>
+<bolle-icon-button label="${l(m("Condividi"))}" variant="standard">…</bolle-icon-button>
+<bolle-icon-button label="${l(m("Preferiti"))}" variant="standard">…</bolle-icon-button>
+<bolle-icon-button slot="trailing" label="${l(m("Altro"))}" variant="standard">…</bolle-icon-button>
+<bolle-floating-action-button slot="fab" label="${l(m("Nuova commessa"))}">…</bolle-floating-action-button>`,
+    }),
+  },
+  {
+    tag: "bolle-avatar",
+    title: "Avatar",
+    group: "Avatars",
+    summary: m(
+      "Segno di identità di una persona o di un ente: immagine, iniziali o icona, con un indicatore di stato.",
+    ),
+    note: m(
+      "Le iniziali si ricavano dal nome quando non sono date, e restano leggibili anche in una lingua senza spazi. Se l'immagine non si carica, l'avatar ricade sulle iniziali senza lasciare un riquadro vuoto. Lo slot icon sostituisce il contenuto e lo slot badge aggiunge un contatore.",
+    ),
+    controls: [
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large", "xl"], "medium"),
+      en("shape", m("Forma"), ["circle", "rounded", "square"], "circle"),
+      en("color", m("Colore"), ["tertiary", "primary", "secondary", "surface"], "tertiary"),
+      en("status", m("Stato"), ["", "online", "busy", "away", "offline"], "online"),
+      fl("image", m("Con immagine"), false),
+      tx("name", m("Nome"), "Francesca Moretti"),
+    ],
+    render: (state) =>
+      html`<bolle-avatar
+        .size=${s(state, "size")}
+        .shape=${s(state, "shape")}
+        .color=${s(state, "color")}
+        .status=${s(state, "status") || undefined}
+        .name=${s(state, "name")}
+        .src=${b(state, "image") ? portrait : ""}
+      ></bolle-avatar>`,
+    code: (state) => ({
+      attrs: [
+        a("size", s(state, "size")),
+        a("shape", s(state, "shape")),
+        a("color", s(state, "color")),
+        ...(s(state, "status") ? [a("status", s(state, "status"))] : []),
+        ...(b(state, "image") ? [a("src", "/persone/moretti.jpg")] : []),
+        a("name", s(state, "name")),
+      ],
+    }),
+  },
+  {
+    tag: "bolle-empty-state",
+    title: "Empty state",
+    group: "Empty states",
+    summary: m(
+      "Superficie da mostrare quando un contenitore non ha nulla da disegnare: icona, titolo, una riga di testo e le azioni che ne escono.",
+    ),
+    note: m(
+      "Un solo componente per il vuoto e per l'errore: il tono error colora l'icona con il ruolo d'errore e, con role alert, la regione viene annunciata appena compare. Con align start il testo e le azioni si allineano al bordo, come dentro una tabella.",
+    ),
+    controls: [
+      en("tone", m("Tono"), ["neutral", "error"], "neutral"),
+      en("align", m("Allineamento"), ["center", "start"], "center"),
+      tx("title", m("Titolo"), m("Nessuna commessa da mostrare")),
+      lt("text", m("Testo"), m("Le commesse archiviate non compaiono qui. Cambia i filtri o creane una nuova.")),
+      fl("actions", m("Azioni"), true),
+    ],
+    render: (state) =>
+      html`<bolle-empty-state
+        class="empty-preview"
+        .tone=${s(state, "tone")}
+        .align=${s(state, "align")}
+        .icon=${ti("folder")}
+        .title=${s(state, "title")}
+        .text=${s(state, "text")}
+      >
+        ${b(state, "actions")
+          ? html`<bolle-button slot="actions" variant="filled">${l(m("Nuova commessa"))}</bolle-button>
+              <bolle-button slot="actions" variant="text">${l(m("Cancella i filtri"))}</bolle-button>`
+          : nothing}
+      </bolle-empty-state>`,
+    code: (state) => ({
+      attrs: [
+        a("tone", s(state, "tone")),
+        a("align", s(state, "align")),
+        a("title", s(state, "title")),
+        a("text", s(state, "text")),
+        { name: "icon", raw: "icon" },
+      ],
+      content: b(state, "actions")
+        ? `<bolle-button slot="actions" variant="filled">${l(m("Nuova commessa"))}</bolle-button>`
+        : undefined,
+    }),
+  },
+  {
+    tag: "bolle-pagination",
+    title: "Pagination",
+    group: "Pagination",
+    summary: m(
+      "Controllo delle pagine di un elenco che resta all'applicazione: intervallo, pagine numerate, frecce e righe per pagina.",
+    ),
+    note: m(
+      m("La paginazione non taglia i dati: chiede la pagina e la dimensione con page-change e il totale lo riceve. La finestra delle pagine numerate lascia sempre raggiungibili la prima e l'ultima, e sotto i 560px di spazio il numero della pagina prende il posto dell'elenco; con form compact restano intervallo e frecce."),
+    ),
+    controls: [
+      en("form", m("Forma"), ["full", "compact"], "full"),
+      rg("page", m("Pagina"), 1, 25, 3),
+      rg("pageSize", m("Righe per pagina"), 5, 50, 10, 5),
+      rg("total", m("Righe in totale"), 20, 500, 248, 10),
+      fl("pageSizes", m("Scelta delle righe"), true),
+      tx("label", m("Etichetta accessibile"), m("Pagine")),
+    ],
+    render: (state) =>
+      html`<demo-pagination
+        .form=${s(state, "form")}
+        .page=${n(state, "page") - 1}
+        .pageSize=${n(state, "pageSize")}
+        .total=${n(state, "total")}
+        ?page-sizes=${b(state, "pageSizes")}
+      ></demo-pagination>`,
+    code: (state) => ({
+      attrs: [
+        a("page", n(state, "page") - 1),
+        a("page-size", n(state, "pageSize")),
+        a("total", n(state, "total")),
+        a("form", s(state, "form")),
+        a("label", s(state, "label")),
+      ],
+      vuePreamble: [
+        `const page = ref(${n(state, "page") - 1})`,
+        `const pageSize = ref(${n(state, "pageSize")})`,
+      ],
+      reactPreamble: [
+        `const [page, setPage] = useState(${n(state, "page") - 1})`,
+        `const [pageSize, setPageSize] = useState(${n(state, "pageSize")})`,
       ],
     }),
   },
@@ -2185,6 +2388,7 @@ export const entries: Entry[] = [
 export const groups: Group[] = [
   "App bars",
   "App shell",
+  "Avatars",
   "Badges",
   "Buttons",
   "Cards",
@@ -2196,6 +2400,7 @@ export const groups: Group[] = [
   "Date & time pickers",
   "Dialogs",
   "Divider",
+  "Empty states",
   "HTML controls",
   "Kanban",
   "Lists",
@@ -2204,6 +2409,7 @@ export const groups: Group[] = [
   "Navigation bar",
   "Navigation drawer",
   "Navigation rail",
+  "Pagination",
   "Progress indicators",
   "Radio button",
   "Search",

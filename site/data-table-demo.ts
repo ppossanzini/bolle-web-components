@@ -82,18 +82,6 @@ const contentCss = css`
     gap: 8px;
     min-inline-size: 0;
   }
-  .avatar {
-    display: inline-grid;
-    place-items: center;
-    inline-size: 26px;
-    block-size: 26px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--md-sys-color-tertiary-container);
-    color: var(--md-sys-color-on-tertiary-container);
-    font: var(--md-sys-typescale-label-small-font);
-    font-weight: 700;
-  }
   .progress {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 4ch;
@@ -231,13 +219,6 @@ function makeJobs(count: number): JobRow[] {
 const isLate = (row: DataTableRow) =>
   String(row.due) < TODAY_ISO && row.status !== "Chiusa" && row.status !== "In collaudo";
 
-const initials = (name: string) =>
-  String(name)
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
-
 const statusPill = (status: string) =>
   html`<span class="status tone-${STATUS_TONE[status] ?? "neutral"}">${status}</span>`;
 
@@ -265,7 +246,7 @@ const columns = (): DataTableColumn[] => [
     width: 200,
     groupable: true,
     render: (row) => html`<span class="person"
-      ><span class="avatar" aria-hidden="true">${initials(String(row.manager))}</span
+      ><bolle-avatar size="xs" color="tertiary" .name=${String(row.manager)}></bolle-avatar
       >${row.manager}</span
     >`,
   },

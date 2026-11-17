@@ -2,7 +2,7 @@ import { LitElement, html, nothing } from "lit";
 import { menuStyles } from "./menu.styles.js";
 import { checkIcon } from "./icons.js";
 import { bolleStyles } from "./shared.styles.js";
-import { placeTail } from "./shared.js";
+import { applyTail, type SurfaceTail } from "./shared.js";
 import {
   flattenMenu,
   isAction,
@@ -23,6 +23,7 @@ export class BolleMenu extends LitElement {
     selectionMode: { attribute: "selection-mode" },
     menuLabel: { attribute: "menu-label" },
     quick: { type: Boolean, reflect: true },
+    tail: { reflect: true },
     density: { type: Number, reflect: true },
     inactive: { type: Boolean, reflect: true },
     _active: { state: true },
@@ -37,6 +38,7 @@ export class BolleMenu extends LitElement {
   selectionMode: SelectionMode = "none";
   menuLabel = "";
   quick = false;
+  tail: SurfaceTail = "auto";
   density = 0;
   inactive = false;
   private _active = 0;
@@ -220,35 +222,47 @@ export class BolleMenu extends LitElement {
       this.close(false);
       return;
     }
-    const box = surface.getBoundingClientRect();
-    const rtl = getComputedStyle(this.anchor).direction === "rtl";
+    // Layout size, not getBoundingClientRect: the entry animation scales the
+    // surface, and a scaled box would place the menu short of its anchor.
+    const box = { width: surface.offsetWidth, height: surface.offsetHeight };
     const submenu =
       this.parentElement instanceof BolleMenu ||
       (this.getRootNode() instanceof ShadowRoot &&
         (this.getRootNode() as ShadowRoot).host instanceof BolleMenu);
-    let left =
-      this.point?.x ??
-      (submenu
-        ? rtl
-          ? rect.left - box.width
-          : rect.right
-        : rtl
-          ? rect.right - box.width
-          : rect.left);
-    let top = this.point?.y ?? (submenu ? rect.top : rect.bottom);
-    if (submenu && (left < 0 || left + box.width > innerWidth))
-      left = rtl ? rect.right : rect.left - box.width;
-    if (top + box.height > innerHeight)
-      top =
-        submenu || this.point
-          ? innerHeight - box.height
-          : rect.top - box.height;
-    surface.style.left = `${Math.max(0, Math.min(left, innerWidth - box.width))}px`;
-    surface.style.top = `${Math.max(0, Math.min(top, innerHeight - box.height))}px`;
-    placeTail(
-      surface,
-      this.point ? new DOMRect(this.point.x, this.point.y, 0, 0) : rect,
-    );
+    const from = this.point
+      ? new DOMRect(this.point.x, this.point.y, 0, 0)
+      : rect;
+    // The menu always grows towards the wider side of the viewport, on both axes.
+    // A submenu sits beside its item and runs along it; a menu sits under or over
+    // its anchor and runs along it.
+    const towardsEnd = submenu
+      ? innerWidth - from.right >= from.left
+      : innerWidth - from.left >= from.right;
+    const towardsBottom = submenu
+      ? innerHeight - from.top >= from.bottom
+      : innerHeight - from.bottom >= from.top;
+    const left = submenu
+      ? towardsEnd
+        ? from.right
+        : from.left - box.width
+      : towardsEnd
+        ? from.left
+        : from.right - box.width;
+    const top = submenu
+      ? towardsBottom
+        ? from.top
+        : from.bottom - box.height
+      : towardsBottom
+        ? from.bottom
+        : from.top - box.height;
+    const target = {
+      left: Math.max(0, Math.min(left, innerWidth - box.width)),
+      top: Math.max(0, Math.min(top, innerHeight - box.height)),
+      ...box,
+    };
+    surface.style.left = `${target.left}px`;
+    surface.style.top = `${target.top}px`;
+    applyTail(surface, this.tail, from, target);
   };
 
   private async focusItem(index: number) {

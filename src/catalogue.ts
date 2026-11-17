@@ -41,6 +41,11 @@ import {
   BolleNavigationRail,
   BolleTabs,
 } from "./navigation.js";
+import { BolleSidebar } from "./sidebar.js";
+import { BolleDataTable } from "./data-table.js";
+import { BolleKanban } from "./kanban.js";
+import { BolleAppShell } from "./app-shell.js";
+import { BolleDashboard, BolleWidget } from "./dashboard.js";
 import {
   BolleProgressIndicator,
   BolleLoadingIndicator,
@@ -48,6 +53,12 @@ import {
 } from "./feedback.js";
 
 export {
+  BolleAppShell,
+  BolleDashboard,
+  BolleWidget,
+  BolleDataTable,
+  BolleKanban,
+  BolleSidebar,
   BolleButton,
   BolleIconButton,
   BolleFloatingActionButton,
@@ -87,8 +98,52 @@ export {
   BolleLoadingIndicator,
   BolleCarousel,
 };
-export type { BolleItem } from "./shared.js";
+export type { BolleItem, SurfaceTail } from "./shared.js";
 export type { CardTail } from "./surfaces.js";
+export type {
+  SidebarItem,
+  SidebarNavigateDetail,
+  SidebarExpandDetail,
+  SidebarCollapseDetail,
+  SidebarResizeDetail,
+} from "./sidebar.js";
+export { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from "./sidebar.js";
+export type {
+  DataTableColumn,
+  DataTableRow,
+  DataTableSort,
+  DataTableSortDetail,
+  DataTableColumnChangeDetail,
+  DataTablePageDetail,
+  DataTableSelectDetail,
+  DataTableExpandDetail,
+  DataTableRowDetail,
+  DataTableRowActionDetail,
+} from "./data-table.js";
+export type {
+  KanbanCard,
+  KanbanColumn,
+  KanbanMoveDetail,
+  KanbanMoveBlockedDetail,
+  KanbanCardDetail,
+  KanbanCardActionDetail,
+  KanbanColumnDetail,
+  KanbanColumnActionDetail,
+  KanbanCollapseDetail,
+  KanbanAddDetail,
+} from "./kanban.js";
+export type { KanbanLabels } from "./localization.js";
+export type { AppShellForm, AppShellFormDetail } from "./app-shell.js";
+export {
+  APP_SHELL_MEDIUM,
+  APP_SHELL_EXPANDED,
+} from "./app-shell.js";
+export type {
+  DashboardLayoutEntry,
+  DashboardLayoutDetail,
+} from "./dashboard.js";
+export { DASHBOARD_COLUMNS } from "./dashboard.js";
+export type { ShellLabels } from "./localization.js";
 export type { PickerLabels, SupportedLocale } from "./localization.js";
 export { supportedLocale } from "./localization.js";
 export type * from "./catalogue.types.js";
@@ -122,6 +177,12 @@ export const catalogue = {
   "bolle-select": BolleSelect,
   "bolle-segmented-buttons": BolleSegmentedButtons,
   "bolle-side-sheet": BolleSideSheet,
+  "bolle-app-shell": BolleAppShell,
+  "bolle-dashboard": BolleDashboard,
+  "bolle-widget": BolleWidget,
+  "bolle-data-table": BolleDataTable,
+  "bolle-kanban": BolleKanban,
+  "bolle-sidebar": BolleSidebar,
   "bolle-slider": BolleSlider,
   "bolle-snackbar": BolleSnackbar,
   "bolle-split-button": BolleSplitButton,
@@ -168,6 +229,11 @@ declare global {
     "bolle-select": BolleSelect;
     "bolle-segmented-buttons": BolleSegmentedButtons;
     "bolle-side-sheet": BolleSideSheet;
+    "bolle-app-shell": BolleAppShell;
+    "bolle-dashboard": BolleDashboard;
+    "bolle-widget": BolleWidget;
+    "bolle-data-table": BolleDataTable;
+    "bolle-sidebar": BolleSidebar;
     "bolle-slider": BolleSlider;
     "bolle-snackbar": BolleSnackbar;
     "bolle-split-button": BolleSplitButton;

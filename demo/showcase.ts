@@ -1131,7 +1131,6 @@ render(
             ></bolle-slider>`,
         ),
       ),
-      ),
       component(
         "lists",
         "Lists",

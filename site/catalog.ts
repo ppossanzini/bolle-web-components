@@ -1,7 +1,15 @@
 import { html, nothing, type TemplateResult } from "lit";
 import { ti } from "../demo/icons.js";
-import type { BolleItem, CardTail, MenuEntry } from "../src/index.js";
+import type {
+  BolleItem,
+  CardTail,
+  MenuEntry,
+  SidebarItem,
+} from "../src/index.js";
 import type { AttrSpec, SnippetSpec } from "./codegen.js";
+import "./data-table-demo.js";
+import "./app-shell-demo.js";
+import "./kanban-demo.js";
 import { code } from "./codegen.js";
 import { l, libraryLocale, m } from "./i18n.js";
 
@@ -13,10 +21,14 @@ export type Group =
   | "Carousel"
   | "Checkbox"
   | "Chips"
+  | "App shell"
+  | "Dashboard"
+  | "Data table"
   | "Date & time pickers"
   | "Dialogs"
   | "Divider"
   | "HTML controls"
+  | "Kanban"
   | "Lists"
   | "Loading indicator"
   | "Menus"
@@ -27,6 +39,7 @@ export type Group =
   | "Radio button"
   | "Search"
   | "Sheets"
+  | "Sidebar"
   | "Sliders"
   | "Snackbar"
   | "Switch"
@@ -70,6 +83,8 @@ export interface Entry {
   /** Label used inside a multi-component family in the navigation. */
   navLabel?: string;
   group: Group;
+  /** Advanced components for admin applications, listed apart from the Material families. */
+  section?: "Schiuma";
   summary: string;
   note?: string;
   controls: Control[];
@@ -168,6 +183,82 @@ const listItems = (): BolleItem[] =>
     ...item,
     icon: item.icon ? ti(item.icon) : undefined,
     items: item.items ? item.items.map((child) => ({ ...child })) : undefined,
+  }));
+
+interface SidebarCode {
+  id: string;
+  label: string;
+  icon?: string;
+  count?: number;
+  children?: SidebarCode[];
+}
+
+/** Navigation of a works management application, three levels deep. */
+const SIDEBAR_CODE: SidebarCode[] = [
+  { id: "dashboard", label: m("Cruscotto"), icon: "layout-dashboard" },
+  {
+    id: "jobs",
+    label: m("Commesse"),
+    icon: "briefcase",
+    count: 12,
+    children: [
+      {
+        id: "active",
+        label: m("Attive"),
+        count: 8,
+        children: [
+          { id: "sites", label: m("Cantieri edili"), count: 3 },
+          { id: "plants", label: m("Impianti elettrici e termici"), count: 4 },
+          { id: "extra", label: m("Manutenzione straordinaria"), count: 1 },
+        ],
+      },
+      { id: "waiting", label: m("In attesa di avvio"), count: 4 },
+      { id: "closed", label: m("Chiuse") },
+    ],
+  },
+  {
+    id: "warehouse",
+    label: m("Magazzino"),
+    icon: "package",
+    children: [
+      { id: "articles", label: m("Articoli") },
+      { id: "movements", label: m("Movimenti di carico e scarico") },
+      { id: "inventory", label: m("Inventario") },
+    ],
+  },
+  {
+    id: "maintenance",
+    label: m("Manutenzioni"),
+    icon: "tool",
+    count: 5,
+    children: [
+      { id: "planned", label: m("Programmate"), count: 5 },
+      { id: "history", label: m("Storico interventi") },
+    ],
+  },
+  {
+    id: "admin",
+    label: m("Amministrazione"),
+    icon: "file-invoice",
+    children: [
+      { id: "invoices", label: m("Fatture") },
+      { id: "payments", label: m("Scadenzario pagamenti") },
+    ],
+  },
+  { id: "registry", label: m("Anagrafiche"), icon: "users" },
+];
+/** SIDEBAR_CODE with labels in the current language, as shown in code snippets. */
+const sidebarCode = (items = SIDEBAR_CODE): SidebarCode[] =>
+  items.map((item) => ({
+    ...item,
+    label: l(item.label),
+    ...(item.children ? { children: sidebarCode(item.children) } : {}),
+  }));
+const sidebarItems = (items = sidebarCode()): SidebarItem[] =>
+  items.map((item) => ({
+    ...item,
+    icon: item.icon ? ti(item.icon) : undefined,
+    children: item.children ? sidebarItems(item.children) : undefined,
   }));
 
 const MENU_GROUPS: MenuEntry[] = [
@@ -542,6 +633,7 @@ export const entries: Entry[] = [
       tx("actionLabel", m("Etichetta azione"), m("Annulla")),
       tx("closeLabel", m("Etichetta chiusura"), m("Chiudi")),
       rg("duration", m("Durata (ms)"), 0, 10000, 5000, 1000),
+      en("tail", m("Coda"), ["auto", "none"], "auto"),
     ],
     render: (state, ctx) => html`
       <bolle-button variant="tonal" @click=${() => ctx.snackbar("pv-snackbar", s(state, "message"))}>
@@ -553,6 +645,7 @@ export const entries: Entry[] = [
         .actionLabel=${s(state, "actionLabel")}
         .closeLabel=${s(state, "closeLabel")}
         .duration=${n(state, "duration")}
+        .tail=${s(state, "tail")}
       ></bolle-snackbar>
     `,
     code: (state) => ({
@@ -561,6 +654,7 @@ export const entries: Entry[] = [
         a("actionLabel", s(state, "actionLabel")),
         a("closeLabel", s(state, "closeLabel")),
         a("duration", n(state, "duration")),
+        a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
       ],
     }),
   },
@@ -572,23 +666,27 @@ export const entries: Entry[] = [
     controls: [
       en("variant", m("Variante"), ["plain", "rich"], "plain"),
       fl("persistent", m("Persistente"), false),
+      en("tail", m("Coda"), ["auto", "none"], "auto"),
       tx("label", m("Etichetta"), m("Salva una copia")),
       tx("supportingText", m("Testo di supporto"), m("La copia resta nel tuo spazio personale.")),
     ],
-    render: (state) => html`<bolle-tooltip
-      .variant=${s(state, "variant")}
-      ?persistent=${b(state, "persistent")}
-      .label=${s(state, "label")}
-      .supportingText=${s(state, "supportingText")}
-    >
-      <bolle-button variant="tonal">${l("Salva una copia")}</bolle-button>
-    </bolle-tooltip>`,
+    render: (state) =>
+      html`<bolle-tooltip
+        .variant=${s(state, "variant")}
+        ?persistent=${b(state, "persistent")}
+        .label=${s(state, "label")}
+        .supportingText=${s(state, "supportingText")}
+        .tail=${s(state, "tail")}
+      >
+        <bolle-button variant="tonal">${l("Salva una copia")}</bolle-button>
+      </bolle-tooltip>`,
     code: (state) => ({
       attrs: [
         a("variant", s(state, "variant")),
         a("persistent", b(state, "persistent")),
         a("label", s(state, "label")),
         a("supportingText", s(state, "supportingText")),
+        a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
       ],
       content: `<bolle-button variant="tonal">${l("Salva una copia")}</bolle-button>`,
     }),
@@ -631,13 +729,31 @@ export const entries: Entry[] = [
     tag: "bolle-card",
     title: "Card",
     group: "Cards",
-    summary: m("Superficie per contenuto correlato, con media, orientamento e varianti di elevazione."),
-    note:
-      m("Con href l'intera card diventa un link: è il modo di portare a un'altra pagina con una superficie, mentre i bottoni restano per le azioni. Una card-link non deve contenere altri controlli interattivi. La coda punta da dove arriva l'utente: una card sotto il contenuto la gira in alto, dal lato opposto alla direzione in cui porta."),
+    summary: m(
+      "Superficie per contenuto correlato, con media, orientamento e varianti di elevazione.",
+    ),
+    note: m(
+      "Con href l'intera card diventa un link: è il modo di portare a un'altra pagina con una superficie, mentre i bottoni restano per le azioni. Una card-link non deve contenere altri controlli interattivi. La coda punta da dove arriva l'utente: una card sotto il contenuto la gira in alto, dal lato opposto alla direzione in cui porta. Con tail=\"none\" la coda sparisce e la card resta una bolla con i quattro angoli uguali.",
+    ),
     controls: [
-      en("variant", m("Variante"), ["filled", "elevated", "outlined"], "filled"),
-      en("orientation", m("Orientamento"), ["vertical", "horizontal"], "vertical"),
-      en("tail", m("Coda"), ["bottom-start", "bottom-end", "top-start", "top-end"], "bottom-start"),
+      en(
+        "variant",
+        m("Variante"),
+        ["filled", "elevated", "outlined"],
+        "filled",
+      ),
+      en(
+        "orientation",
+        m("Orientamento"),
+        ["vertical", "horizontal"],
+        "vertical",
+      ),
+      en(
+        "tail",
+        m("Coda"),
+        ["bottom-start", "bottom-end", "top-start", "top-end", "none"],
+        "bottom-start",
+      ),
       tx("href", m("Collegamento"), "", "#/bolle-dialog"),
       tx("label", m("Etichetta accessibile"), m("Documento")),
     ],
@@ -1571,7 +1687,9 @@ export const entries: Entry[] = [
     title: "Menu",
     group: "Menus",
     summary: m("Menu baseline o verticale, con gruppi, sottomenu e selezione."),
-    note: m("Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor)."),
+    note: m(
+      "Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor). tail=\"none\" disegna il menu senza coda, con i quattro angoli uguali.",
+    ),
     controls: [
       en("variant", m("Variante"), ["vertical", "baseline"], "vertical"),
       en("colorScheme", m("Schema colore"), ["standard", "vibrant"], "standard"),
@@ -1579,6 +1697,7 @@ export const entries: Entry[] = [
       fl("quick", m("Senza animazione"), false),
       rg("density", m("Densità"), -3, 1, 0),
       fl("inactive", m("Inattivo"), false),
+      en("tail", m("Coda"), ["auto", "none"], "auto"),
       tx("menuLabel", m("Etichetta accessibile"), m("Azioni documento")),
     ],
     render: (state, ctx) => html`
@@ -1596,6 +1715,7 @@ export const entries: Entry[] = [
         ?quick=${b(state, "quick")}
         .density=${n(state, "density")}
         ?inactive=${b(state, "inactive")}
+        .tail=${s(state, "tail")}
         .menuLabel=${s(state, "menuLabel")}
         .items=${menuEntries(s(state, "selectionMode"))}
       ></bolle-menu>
@@ -1608,6 +1728,7 @@ export const entries: Entry[] = [
         a("quick", b(state, "quick")),
         a("density", n(state, "density")),
         a("inactive", b(state, "inactive")),
+        a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
         a("menuLabel", s(state, "menuLabel")),
         { name: "items", raw: "items" },
       ],
@@ -1620,19 +1741,28 @@ export const entries: Entry[] = [
     group: "Buttons",
     summary: m("Da due a sei azioni correlate aperte da un FAB."),
     controls: [
-      en("color", m("Set colore"), ["primary", "secondary", "tertiary"], "primary"),
+      en(
+        "color",
+        m("Set colore"),
+        ["primary", "secondary", "tertiary"],
+        "primary",
+      ),
+      en("tail", m("Coda"), ["auto", "none"], "auto"),
       tx("label", m("Etichetta accessibile"), m("Crea")),
     ],
-    render: (state) => html`<bolle-fab-menu
-      .color=${s(state, "color")}
-      .label=${s(state, "label")}
-      .items=${navItems()}
-    >
-      <span slot="icon" aria-hidden="true">${ti("plus")}</span>
-    </bolle-fab-menu>`,
+    render: (state) =>
+      html`<bolle-fab-menu
+        .color=${s(state, "color")}
+        .tail=${s(state, "tail")}
+        .label=${s(state, "label")}
+        .items=${navItems()}
+      >
+        <span slot="icon" aria-hidden="true">${ti("plus")}</span>
+      </bolle-fab-menu>`,
     code: (state) => ({
       attrs: [
         a("color", s(state, "color")),
+        a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
         a("label", s(state, "label")),
         { name: "items", raw: "items" },
       ],
@@ -1796,20 +1926,278 @@ export const entries: Entry[] = [
       ),
     }),
   },
+  {
+    tag: "bolle-sidebar",
+    title: "Sidebar",
+    group: "Sidebar",
+    section: "Schiuma",
+    summary: m(
+      "Navigazione di un'applicazione gestionale: albero fino a tre livelli, filtro, contatori, rail compatta e larghezza regolabile.",
+    ),
+    note: m(
+      "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto.",
+    ),
+    controls: [
+      en("variant", m("Variante"), ["edge", "card"], "edge"),
+      en("search", m("Ricerca"), ["field", "contained", "divided", "none"], "field"),
+      fl("collapsed", m("Compressa"), false),
+      rg("width", m("Larghezza"), 220, 480, 300, 4),
+      tx("label", m("Etichetta"), m("Navigazione principale")),
+      tx("header", m("Intestazione"), "Cantieri Rossi"),
+    ],
+    render: (state) =>
+      html`<bolle-sidebar
+        .variant=${s(state, "variant")}
+        .search=${s(state, "search")}
+        ?collapsed=${b(state, "collapsed")}
+        .width=${n(state, "width")}
+        .label=${s(state, "label")}
+        .items=${sidebarItems()}
+        current="jobs/active/plants"
+      >
+        <span slot="header">${s(state, "header")}</span>
+      </bolle-sidebar>`,
+    code: (state) => ({
+      attrs: [
+        a("variant", s(state, "variant")),
+        a("search", s(state, "search")),
+        a("collapsed", b(state, "collapsed")),
+        a("width", n(state, "width")),
+        a("label", s(state, "label")),
+        { name: "items", raw: "items" },
+        a("current", "jobs/active/plants"),
+      ],
+      content: `<span slot="header">${s(state, "header")}</span>`,
+      ...snippets(sidebarCode()),
+    }),
+  },
+  {
+    tag: "bolle-app-shell",
+    title: "App shell",
+    group: "App shell",
+    section: "Schiuma",
+    summary: m(
+      "Regioni di un'applicazione gestionale: barra superiore, navigazione, contenuto, pannello secondario e barra di stato, con la forma che cambia secondo la larghezza.",
+    ),
+    note: m(
+      "L'applicazione riempie gli slot, la shell decide la forma misurando la propria larghezza: sotto 840px la navigazione passa sotto il contenuto e il pannello diventa un foglio, oltre 1240px la navigazione resta estesa. Allargando la finestra l'anteprima passa da sola alla forma più ampia.",
+    ),
+    controls: [
+      en("form", m("Forma"), ["auto", "medium", "compact"], "auto"),
+      en("density", m("Densità"), ["comfortable", "compact"], "comfortable"),
+      fl("supportingOpen", m("Pannello secondario"), false),
+      tx("label", m("Etichetta"), m("Applicazione")),
+    ],
+    render: (state) =>
+      html`<demo-app-shell
+        .form=${s(state, "form")}
+        .density=${s(state, "density")}
+        ?supportingOpen=${b(state, "supportingOpen")}
+        .label=${s(state, "label")}
+      ></demo-app-shell>`,
+    code: (state) => ({
+      attrs: [
+        a("form", s(state, "form")),
+        a("label", s(state, "label")),
+        a("supporting-open", b(state, "supportingOpen")),
+        a("supporting-label", l(m("Commessa"))),
+      ],
+      content: `<bolle-app-bar slot="bar" variant="small">…</bolle-app-bar>
+<bolle-sidebar slot="navigation" …></bolle-sidebar>
+<div>…</div>
+<div slot="supporting">…</div>
+<p slot="status">…</p>
+<bolle-navigation-bar slot="bottom-bar" …></bolle-navigation-bar>`,
+    }),
+  },
+  {
+    tag: "bolle-dashboard",
+    title: "Dashboard",
+    group: "Dashboard",
+    section: "Schiuma",
+    summary: m(
+      "Griglia a dodici colonne di riquadri: ampiezza, ordine, ridimensionamento e riordino, con il layout che resta all'applicazione.",
+    ),
+    note: m(
+      "Ogni riquadro dichiara la propria ampiezza con span e un minimo con min-span. Il riquadro si sposta trascinando la maniglia, con Alt e le frecce o dal menu, e si allarga trascinando l'angolo o con le frecce. Ogni modifica arriva con layout-change.",
+    ),
+    controls: [
+      en("density", m("Densità"), ["comfortable", "compact"], "comfortable"),
+      rg("columns", m("Colonne"), 6, 12, 12, 1),
+      tx("label", m("Etichetta"), m("Riquadri del cruscotto")),
+    ],
+    render: (state) =>
+      html`<demo-dashboard
+        .density=${s(state, "density")}
+        .columns=${n(state, "columns")}
+        .label=${s(state, "label")}
+      ></demo-dashboard>`,
+    code: (state) => ({
+      attrs: [
+        a("density", s(state, "density")),
+        a("columns", n(state, "columns")),
+        a("label", s(state, "label")),
+      ],
+      content: `<bolle-widget id="late" title="${l(m("Lavori in ritardo"))}" span="8" min-span="4">…</bolle-widget>
+<bolle-widget id="sites" title="${l(m("Avanzamento cantieri"))}" span="4" min-span="3">…</bolle-widget>`,
+    }),
+  },
+  {
+    tag: "bolle-kanban",
+    title: "Kanban",
+    group: "Kanban",
+    section: "Schiuma",
+    summary: m(
+      "Board a colonne di schede: spostamento tra colonne e riordino, corsie, colonne comprimibili, limiti WIP segnalati e stato di carico, errore e board vuota.",
+    ),
+    note: m(
+      "La board non decide dove può andare una scheda: chiede con card-move e ascolta il rifiuto con card-move-blocked, applicando la regola che l'applicazione passa in restrict. Lo scorrimento verticale è della colonna, non della board; il trascinamento ha la copia che segue il puntatore, il segnaposto e lo scorrimento automatico ai bordi. La scheda si sposta anche con Alt e le frecce dalla maniglia.",
+    ),
+    controls: [
+      en("density", m("Densità"), ["comfortable", "compact"], "comfortable"),
+      fl("lanes", m("Corsie"), false),
+      fl("collapsible", m("Colonne comprimibili"), true),
+      fl("addable", m("Aggiunta rapida"), true),
+      fl("movable", m("Trascinamento"), true),
+      tx("label", m("Etichetta"), m("Commesse")),
+    ],
+    render: (state) =>
+      html`<demo-kanban
+        .density=${s(state, "density")}
+        ?lanes=${b(state, "lanes")}
+        ?collapsible=${b(state, "collapsible")}
+        ?addable=${b(state, "addable")}
+        ?movable=${b(state, "movable")}
+        .label=${s(state, "label")}
+      ></demo-kanban>`,
+    code: (state) => ({
+      attrs: [
+        a("label", s(state, "label")),
+        a("density", s(state, "density")),
+        ...(b(state, "lanes") ? [a("lanes", true)] : []),
+        ...(b(state, "collapsible") ? [] : [a("collapsible", false)]),
+        ...(b(state, "addable") ? [] : [a("addable", false)]),
+        ...(b(state, "movable") ? [] : [a("movable", false)]),
+        { name: "columns", raw: "columns" },
+        { name: "cards", raw: "cards" },
+        { name: "card", raw: "renderCard" },
+        { name: "restrict", raw: "restrict" },
+      ],
+      vuePreamble: [
+        `const columns = [
+  { id: "programmato", label: "${l(m("Programmato"))}" },
+  { id: "in-corso", label: "${l(m("In corso"))}", wip: 5 },
+  { id: "collaudo", label: "${l(m("Collaudo"))}", wip: 3 },
+  { id: "chiuso", label: "${l(m("Chiuso"))}" },
+]`,
+        `const cards = ref(jobs.map((job) => ({ id: job.id, column: job.phase, title: job.title })))`,
+        `const renderCard = (card) => html\`<p>\${card.title}</p>\``,
+        `const restrict = (card, column) =>
+  column.id === "chiuso" && card.progress < 100
+    ? "${l(m("Per passare in Chiuso l'avanzamento deve essere al 100%."))}"
+    : undefined`,
+      ],
+      reactPreamble: [
+        `const columns = [
+  { id: "programmato", label: "${l(m("Programmato"))}" },
+  { id: "in-corso", label: "${l(m("In corso"))}", wip: 5 },
+  { id: "collaudo", label: "${l(m("Collaudo"))}", wip: 3 },
+  { id: "chiuso", label: "${l(m("Chiuso"))}" },
+]`,
+        `const [cards, setCards] = useState(jobs.map((job) => ({ id: job.id, column: job.phase, title: job.title })))`,
+        `const renderCard = (card) => <p>{card.title}</p>`,
+        `const restrict = (card, column) =>
+  column.id === "chiuso" && card.progress < 100
+    ? "${l(m("Per passare in Chiuso l'avanzamento deve essere al 100%."))}"
+    : undefined`,
+      ],
+      content: undefined,
+    }),
+  },
+  {
+    tag: "bolle-data-table",
+    title: "Data table",
+    group: "Data table",
+    section: "Schiuma",
+    summary: m(
+      "Elenco di righe con colonne dichiarate dall'applicazione: ordinamento anche multiplo, gruppi, pagine, selezione, dettaglio della riga e colonne regolabili.",
+    ),
+    note: m(
+      "La tabella non tocca i dati: ordina, pagina, raggruppa e seleziona solo su richiesta dell'applicazione, che ascolta gli eventi. L'intestazione resta ferma, le colonne fissate restano visibili mentre scorri e le righe si aprono con un dettaglio.",
+    ),
+    controls: [
+      en("variant", m("Variante"), ["card", "free"], "card"),
+      en("density", m("Densità"), ["comfortable", "compact"], "comfortable"),
+      fl("selectable", m("Selezione"), true),
+      fl("expandable", m("Dettaglio riga"), true),
+      en("groupBy", m("Raggruppa per"), ["", "client", "city", "status", "manager"], ""),
+      rg("pageSize", m("Righe per pagina"), 0, 25, 8, 1),
+      fl("virtual", m("Scorrimento continuo"), false),
+      tx("label", m("Etichetta"), m("Commesse")),
+    ],
+    render: (state) =>
+      html`<demo-data-table
+        .variant=${s(state, "variant")}
+        .density=${s(state, "density")}
+        ?selectable=${b(state, "selectable")}
+        ?expandable=${b(state, "expandable")}
+        .groupBy=${s(state, "groupBy")}
+        .pageSize=${n(state, "pageSize")}
+        ?virtual=${b(state, "virtual")}
+        .label=${s(state, "label")}
+      ></demo-data-table>`,
+    code: (state) => ({
+      attrs: [
+        a("variant", s(state, "variant")),
+        a("density", s(state, "density")),
+        a("selectable", b(state, "selectable")),
+        a("expandable", b(state, "expandable")),
+        ...(s(state, "groupBy") ? [a("group-by", s(state, "groupBy"))] : []),
+        a("page-size", n(state, "pageSize")),
+        ...(b(state, "virtual") ? [a("virtual", true)] : []),
+        a("label", s(state, "label")),
+        { name: "columns", raw: "columns" },
+        { name: "rows", raw: "rows" },
+      ],
+      vuePreamble: [
+        `const columns = [
+  { key: "code", label: "${l(m("Codice"))}", width: 136, pinned: true },
+  { key: "title", label: "${l(m("Commessa"))}", width: 300 },
+  { key: "client", label: "${l(m("Cliente"))}", width: 220, groupable: true },
+  { key: "amount", label: "${l(m("Importo"))}", width: 140, align: "end" },
+]`,
+        `const rows = jobs.map((job) => ({ ...job }))`,
+      ],
+      reactPreamble: [
+        `const columns = [
+  { key: "code", label: "${l(m("Codice"))}", width: 136, pinned: true },
+  { key: "title", label: "${l(m("Commessa"))}", width: 300 },
+  { key: "client", label: "${l(m("Cliente"))}", width: 220, groupable: true },
+  { key: "amount", label: "${l(m("Importo"))}", width: 140, align: "end" },
+]`,
+        `const rows = jobs.map((job) => ({ ...job }))`,
+      ],
+      content: undefined,
+    }),
+  },
 ];
 
 export const groups: Group[] = [
   "App bars",
+  "App shell",
   "Badges",
   "Buttons",
   "Cards",
   "Carousel",
+  "Data table",
   "Checkbox",
+  "Dashboard",
   "Chips",
   "Date & time pickers",
   "Dialogs",
   "Divider",
   "HTML controls",
+  "Kanban",
   "Lists",
   "Loading indicator",
   "Menus",
@@ -1820,6 +2208,7 @@ export const groups: Group[] = [
   "Radio button",
   "Search",
   "Sheets",
+  "Sidebar",
   "Sliders",
   "Snackbar",
   "Switch",

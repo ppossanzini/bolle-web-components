@@ -1,6 +1,12 @@
 import { controlLabels } from "./localization.js";
 import { html, nothing, type PropertyValues } from "lit";
-import { BolleElement, moveFocus, placeTail, type BolleItem } from "./shared.js";
+import {
+  BolleElement,
+  applyTail,
+  moveFocus,
+  type BolleItem,
+  type SurfaceTail,
+} from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { chevronDownIcon, closeIcon } from "./icons.js";
 import { overlayStyles } from "./overlays.styles.js";
@@ -239,6 +245,7 @@ export class BolleSnackbar extends BolleElement {
     actionLabel: { attribute: "action-label" },
     closeLabel: { attribute: "close-label" },
     duration: { type: Number },
+    tail: { reflect: true },
   };
   static styles = [commonStyles, overlayStyles];
   open = false;
@@ -246,6 +253,7 @@ export class BolleSnackbar extends BolleElement {
   actionLabel = "";
   closeLabel = "";
   duration = 5000;
+  tail: SurfaceTail = "auto";
   private timer?: ReturnType<typeof setTimeout>;
   private exitTimer?: ReturnType<typeof setTimeout>;
   private queue: string[] = [];
@@ -325,12 +333,14 @@ export class BolleTooltip extends BolleElement {
     variant: { reflect: true },
     supportingText: { attribute: "supporting-text" },
     persistent: { type: Boolean, reflect: true },
+    tail: { reflect: true },
   };
   static styles = [commonStyles, overlayStyles];
   label = "";
   variant = "plain";
   supportingText = "";
   persistent = false;
+  tail: SurfaceTail = "auto";
   private trigger?: HTMLElement;
   private previousDescription: string | null = null;
   private controller?: AbortController;
@@ -418,7 +428,12 @@ export class BolleTooltip extends BolleElement {
     );
     tip.style.left = `${finalLeft}px`;
     tip.style.top = `${finalTop}px`;
-    placeTail(tip, anchor, { left: finalLeft, top: finalTop, width: rect.width, height: rect.height });
+    applyTail(tip, this.tail, anchor, {
+      left: finalLeft,
+      top: finalTop,
+      width: rect.width,
+      height: rect.height,
+    });
     if (this.variant === "rich") {
       this.dismissController?.abort();
       this.dismissController = new AbortController();
@@ -488,12 +503,14 @@ export class BolleFabMenu extends BolleElement {
     items: { attribute: false },
     color: { reflect: true },
     open: { type: Boolean, reflect: true },
+    tail: { reflect: true },
   };
   static styles = [commonStyles, overlayStyles];
   label = "";
   items: BolleItem[] = [];
   color: "primary" | "secondary" | "tertiary" = "primary";
   open = false;
+  tail: SurfaceTail = "auto";
   private get trigger() {
     return this.renderRoot.querySelector<HTMLButtonElement>(".fab-trigger")!;
   }
@@ -511,7 +528,7 @@ export class BolleFabMenu extends BolleElement {
       const menu = this.surface.getBoundingClientRect();
       this.surface.style.left = `${Math.max(16, Math.min(innerWidth - menu.width - 16, rect.right - menu.width))}px`;
       this.surface.style.top = `${placeAbove ? Math.max(16, rect.top - menu.height - 4) : rect.bottom + 4}px`;
-      placeTail(this.surface, rect);
+      applyTail(this.surface, this.tail, rect);
     } else if (!this.open && this.surface.matches(":popover-open"))
       this.surface.hidePopover();
   }

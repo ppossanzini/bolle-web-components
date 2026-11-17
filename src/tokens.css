@@ -51,7 +51,7 @@
   --md-sys-shape-corner-extra-large-top: 28px 28px 0 0;
   --md-sys-elevation-level0: none;
   --md-sys-elevation-level1: 0 1px 2px #0000004d, 0 1px 3px 1px #00000026;
-  --md-sys-elevation-level2: 0 1px 2px #0000004d, 0 2px 6px 2px #00000026;
+  --md-sys-elevation-level2: 0 2px 6px 2px #00000026, 0 1px 2px #0000004d;
   --md-sys-elevation-level3: 0 1px 3px #0000004d, 0 4px 8px 3px #00000026;
   --md-sys-elevation-level4: 0 2px 3px #0000004d, 0 6px 10px 4px #00000026;
   --md-sys-elevation-level5: 0 4px 4px #0000004d, 0 8px 12px 6px #00000026;
@@ -264,7 +264,6 @@
     var(--md-ref-typeface-plain, system-ui, sans-serif);
   --md-sys-typescale-body-small-font: 400 12px/16px
     var(--md-ref-typeface-plain, system-ui, sans-serif);
-  --md-sys-elevation-level2: 0 2px 6px 2px #00000026, 0 1px 2px #0000004d;
   --md-comp-menu-min-width: 112px;
   --md-comp-menu-max-width: 280px;
   --md-comp-menu-container-padding-block: 8px;
@@ -272,8 +271,6 @@
   --md-comp-menu-container-shape: 4px;
   --md-comp-menus-standard-menu-container-shape: 16px;
   --md-comp-menus-standard-menu-inactive-container-shape: 8px;
-  --md-comp-menus-standard-menu-item-shape: 4px;
-  --md-comp-menus-standard-menu-item-selected-shape: 12px;
   --md-comp-menu-item-target-height: 48px;
   --md-comp-menu-item-height: 44px;
   --md-comp-menu-item-horizontal-padding: 16px;

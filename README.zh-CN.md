@@ -472,7 +472,7 @@ Angular 使用方需要 `CUSTOM_ELEMENTS_SCHEMA`；Vue 使用方需要为每个 
 - 菜单密度以 4dp 步长偏移实现；过滤、指针离开时
   关闭子菜单、退出过渡、感知起点的涟漪（ripple）以及完整的
   Expressive 弹簧和形状动效仍未完成。
-- 子菜单在视口边缘翻转；在紧凑窗口中用底部面板替代
+- 菜单和子菜单在水平和垂直方向都朝视口中空间更大的一侧打开，并保持在视口内；在紧凑窗口中用底部面板替代
   尚未实现。嵌套多选目前归属于各个子菜单；
   根菜单的 `selectedIds` 不汇总子菜单的选择。
 - 只实现了自带的标准对比度浅色/深色预设。
@@ -497,7 +497,7 @@ Angular 集成仍未完成。
 在发布身份、许可证和发布检查确认之前，该包保持私有。
 本阶段不会进行发布。
 
-## 0.2.0 版组件目录
+## 0.2.1 版组件目录
 
 该包现在注册了全部 36 个目录条目：原有的菜单和
 下列 35 个新增组件。每个新增组件都有可用的原生控件或语义化
@@ -549,6 +549,19 @@ Angular 集成仍未完成。
 | 时间选择器           | `bolle-time-picker`            | 格式化的只读字段；模态表盘和输入模式；12/24 小时制；AM/PM；键盘表盘导航；在 24 小时制内外圈之间按指针角度拖动；min/max/step 校验                                                                                         | 无连续的分钟表盘，无精确的 M3 表盘几何                                                                                                                                            |
 | 工具栏               | `bolle-toolbar`                | docked/floating；standard/vibrant；水平/垂直；原生控件的方向键/Home/End 焦点导航                                                                                                                                                                                 | 无自适应溢出菜单、展开、停靠过渡或 FAB 变形                                                                                                                          |
 | Tooltip               | `bolle-tooltip`                | 顶层的 plain 或 rich 内容；hover、focus 和 Escape；plain tooltip 偏移 4，rich 偏移 8；rich tooltip 保持打开，直到被外部点击、Escape 或其关闭控件关闭；rich 内容/操作 slot；触发元素的无障碍描述                      | 在真实触发元素上使用 `aria-description`，而非跨 shadow 的 `aria-describedby`；触发元素必须是原生/Bolle 按钮、链接或 input；触摸行为取决于平台                |
+
+### Schiuma
+
+Schiuma 收录面向管理类应用的高级组件。它们使用与 Material 目录相同的 token 和规则，但没有 Material 3 对应组件，因此其接口由 Bolle 自行定义。
+
+| Schiuma 条目 | 公共元素        | 支持                                                                                                                                                                                                                       | 尚存限制                                                                                                       |
+| ------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Sidebar      | `bolle-sidebar` | 最多三级的导航树，带 `aria-current` 和 `aria-expanded`；行高 40/40/36px，第三级有贯通全高的引导线；带高亮匹配和实时结果计数的筛选，可显示为文本框（`search="field"`）、`contained` 或 `divided` 搜索栏，或用 `search="none"` 隐藏；计数；过长标签以省略号结尾并在 tooltip 中显示全文；带徽标的 rail 形态，分组在旁边的菜单中打开；内侧边缘的调整手柄，220–480px，支持指针和键盘；`edge` 和 `card` 形态；RTL | 更深的树会抛出错误；无拖拽排序、固定项或宽度持久化：由应用保存 `navigate`、`expand`、`collapse` 和 `resize` 事件报告的内容 |
+| 应用外壳 | `bolle-app-shell` | 以插槽提供应用区域——`bar`、`navigation`、默认内容、`supporting`、`status`、`bottom-bar`——形态按自身宽度决定：低于 840px 时导航移到底部栏、辅助面板变为抽屉，高于 1240px 时导航保持展开；`form` 可强制形态，`form-change` 报告实测形态；辅助面板在内容旁作为列显示，打开时获得焦点 | 外壳不负责路由或持久化：应用填充插槽并响应 `form-change` 与 `supporting-close`。断点固定为 840 与 1240。会在自身设置 `data-form` 供页面样式使用 |
+| 仪表板 | `bolle-dashboard` | 十二列的 `bolle-widget` 块网格；每个块声明 `span` 与 `min-span`，带有把手、标题、可选副标题、操作插槽，以及宽度、前后移动和隐藏的菜单；可通过指针拖拽重新排序：副本跟随指针，落点处显示虚线空位，指针提示显示位置，边缘自动滚动，Esc 取消；也可用 Alt 加方向键或菜单；可通过角把手、方向键或菜单调整宽度；每次操作都有实时区域播报 | 组件只移动和调整给定的块，并通过 `layout-change`、`widget-hide` 报告；顺序、宽度和隐藏状态归应用所有。宽度为整列，不用像素 |
+| 看板 | `bolle-kanban` | 列与卡片组成的看板：卡片由应用声明，包含 `id`、`column`、可选的 `lane` 以及用于播报的 `title`；可在列之间移动和重新排序，方式是带指针跟随副本、虚线占位符、错误角色表示的拒绝列和边缘自动滚动的指针拖拽，或从卡片把手使用 Alt 加方向键；`restrict` 返回拒绝移动的原因；每列的 `wip` 只作为超出提示，从不阻塞；`collapsed` 折叠列；`lanes` 与 `laneLabel` 按泳道把卡片分组为堆叠条带；`addable` 快速添加；`cardActions` 与 `columnActions` 提供卡片和列菜单；加载、错误和空状态；`comfortable` 与 `compact` 密度；纵向滚动属于列，不属于看板 | 组件从不移动卡片、不施加流转规则、不保存顺序：它通过 `card-move` 请求，通过 `card-move-blocked` 报告拒绝，并由 `restrict` 决定。顺序、折叠状态和卡片归应用所有，应用响应 `card-move`、`card-move-blocked`、`card-open`、`card-action`、`column-action`、`column-collapse`、`card-add` 和 `retry`。宿主需要高度，因为看板会填满它。`card` 返回的标记位于 shadow root 中，其 CSS 需通过 `contentStyles` 传入。不支持列排序、按列排序和跨看板拖拽 |
+| 数据表格 | `bolle-data-table` | 受控表格的行：应用声明列，可设明确宽度，以及 `align`、`pinned`、`hidden`、`groupable`、`sortable`、`value` 和 `render`；单列与多列排序，带序号标记和 `aria-sort`；表头菜单可排序、分组、固定、移动和隐藏列；拖拽列，Esc 取消，Alt 加方向键为无需拖拽的方式；可用指针、双击和方向键调整列宽；表头固定；固定列带边缘阴影；选择支持整页与不确定状态；行详情；分组带计数和应用提供的汇总；带范围的分页器；`virtual` 窗口化渲染；加载、更新、空和错误状态；`card` 与 `free` 形态；`comfortable` 与 `compact` 密度 | 组件不排序、不过滤、不分页：数据归应用所有，应用响应 `sort`、`page-change`、`select`、`expand`、`group`、`column-change`、`row-action`、`row-activate` 和 `retry` 事件。`virtual` 需要宿主有高度。`render`、`detail` 和 `groupSummary` 返回的标记位于 shadow root 中，其 CSS 需通过 `contentStyles` 传入。不支持行内编辑、导出、列合并和拖拽行排序 |
+
 
 ### 公共取值与事件
 

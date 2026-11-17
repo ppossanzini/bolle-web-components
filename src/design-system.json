@@ -1,16 +1,74 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.3",
   "specification": "Material Design 3",
   "sourceDate": "2026-11-10",
   "tokenSnapshot": "34.0.21",
   "framework": "Lit 3.3.3",
   "realization": "Project-owned native browser components",
   "colorUtilitiesVersion": null,
-  "contexts": ["standard-contrast-light", "standard-contrast-dark"],
+  "contexts": [
+    "standard-contrast-light",
+    "standard-contrast-dark"
+  ],
   "fullConformanceVerified": false,
-  "componentEntries": 38,
+  "componentEntries": 40,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "`bolle-dashboard` takes the drag interaction promoted with `bolle-kanban`: dragging a tile by its handle now carries a copy that follows the pointer, opens a dashed gap in the slot the tile will occupy, names the position in the pointer note, refuses a drop outside the dashboard and scrolls the page or the nearest scroll container at the edges; Escape cancels with an announcement. Tile hover becomes a state layer on the surface, because the lift belongs to the moving copy, and Alt+arrows and the tile menu keep working as the path without dragging."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "New Schiuma component `bolle-kanban` promoted from the approved prototype. The board renders columns and cards the application owns, moves them by pointer drag with a copy that follows the pointer, a dashed placeholder, a refused column in the error role and edge autoscroll, or by Alt+arrows from the card handle, and asks with `card-move` while `restrict` returns the reason a move is refused. Columns report the advised `wip` overrun without blocking, fold with `collapsed`, and carry the vertical scrolling so the board itself does not scroll; `lanes` stacks the cards in strips and `addable` offers a quick add. Card and column menus come from `cardActions` and `columnActions`, and the loading, error and empty states follow the table and shell contract."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "New Schiuma components `bolle-app-shell` and `bolle-dashboard` with `bolle-widget`, promoted from the approved prototype. The shell lays out the bar, navigation, content, supporting pane, status and bottom bar as slots and picks the form from its own width, with `form` to force one and `form-change` to report it. The dashboard arranges twelve-column tiles that declare `span` and `min-span`, reorder them by drag, Alt+arrows or menu and resize them by handle, arrows or menu, reporting every change in `layout-change` and `widget-hide` while keeping the layout with the application."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "Documentation site: App shell and Dashboard pages in the Schiuma section, with an interactive application preview that adapts to the stage width, a standalone dashboard preview that prints the layout it reports, controls for form, density, columns and supporting pane, and generated HTML, Vue and React snippets."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "New Schiuma component `bolle-data-table`: a controlled table whose application owns rows, sorting, paging, grouping and selection and answers them through events. Columns carry width, alignment, pinning, grouping and a renderer; sorting keeps ranks and `aria-sort`; the header menu covers sorting, grouping, pinning, moving and hiding; columns drag with Escape and Alt+arrows; the resize handle works by pointer, double click and arrows. Selection, row details, group summaries, a pager, windowed rendering, loading/updating/empty/error states, `card` and `free` forms and two densities. Markup returned by renderers is styled through `contentStyles`."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "Documentation site: Data table page in the Schiuma section with an interactive preview (sorting, grouping, paging, selection, details, column menu), controls, HTML/Vue/React snippets and the generated API table. The playground gives this entry the full width with the parameters underneath."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "corrective",
+      "description": "`bolle-menu` opens towards the wider side of the viewport on both axes: a menu under or over its anchor, a submenu beside its item, then clamps inside the viewport. Before, it opened below and in the reading direction and flipped only on overflow. Placement now reads the layout size of the surface: measuring during the entry animation read a scaled box, so the menu ran past its anchor and a submenu covered its parent."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "`bolle-sidebar` gains `search`: `field` (default text field), `contained` or `divided` to filter with `bolle-search` in that appearance, `none` to hide the filter. The documentation site gives sidebar variants a column wide and tall enough to show the whole panel."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "New Schiuma group for admin applications, outside the Material catalogue. First component `bolle-sidebar`: navigation tree up to three levels, filter, counters, ellipsis with a tooltip on cut labels, rail form with a menu beside it, resize grip (220–480px) and `edge`/`card` forms, built only on existing tokens."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "additive",
+      "description": "Tail is optional: `tail=\"none\"` on card, menu, tooltip, FAB menu and snackbar drops the narrow corner and keeps the same radius on all four corners. Documented in foundations, README and the component controls."
+    },
+    {
+      "date": "2026-11-16",
+      "classification": "corrective",
+      "description": "Token set cleanup: one declaration of `--md-sys-elevation-level2` (the second copy only repeated the value), and the two menu item shapes removed because item corners now derive from the container radius."
+    },
     {
       "date": "2026-11-16",
       "classification": "corrective",

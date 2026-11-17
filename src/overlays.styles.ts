@@ -363,6 +363,9 @@ export const overlayStyles = css`
     font: var(--md-sys-typescale-body-medium-font);
     margin-inline: auto;
   }
+  :host([tail="none"]) .snackbar {
+    border-end-start-radius: var(--bb-radius-m);
+  }
   .snackbar > span {
     font: var(--md-sys-typescale-body-medium-font);
     letter-spacing: var(--md-sys-typescale-body-medium-tracking);

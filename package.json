@@ -1,6 +1,6 @@
 {
   "name": "bolle-web-components",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A material based web component library",
   "type": "module",
   "repository": {
@@ -42,15 +42,15 @@
     "@fontsource/jetbrains-mono": "5.3.0",
     "@fontsource/roboto": "5.3.0",
     "@material/material-color-utilities": "^0.4.0",
-    "@tabler/icons": "^3.51.0",
-    "@tabler/icons-webfont": "^3.51.0",
+    "@tabler/icons": "^3.52.0",
+    "@tabler/icons-webfont": "^3.52.0",
     "lit": "3.3.3"
   },
   "devDependencies": {
-    "@tabler/icons": "3.51.0",
-    "playwright": "^1.65.0",
-    "prettier": "^3.6.0",
+    "@tabler/icons": "3.52.0",
+    "playwright": "^1.65.1",
+    "prettier": "^3.10.1",
     "typescript": "7.0.2",
-    "vite": "8.3.7"
+    "vite": "8.3.8"
   }
 }

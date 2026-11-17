@@ -91,7 +91,13 @@ export class BolleToolbar extends BolleElement {
     </div>`;
   }
 }
-export type CardTail = "bottom-start" | "bottom-end" | "top-start" | "top-end";
+/** `none` drops the narrow corner: the card keeps the same radius on all four corners. */
+export type CardTail =
+  | "bottom-start"
+  | "bottom-end"
+  | "top-start"
+  | "top-end"
+  | "none";
 export class BolleCard extends BolleElement {
   static properties = {
     variant: { reflect: true },

@@ -264,6 +264,7 @@ bolle-docs {
   overflow: auto;
 }
 
+.preview-surface > demo-data-table,
 .preview-surface > bolle-app-bar,
 .preview-surface > bolle-toolbar,
 .preview-surface > bolle-tabs,
@@ -299,6 +300,228 @@ bolle-docs {
 
 .preview-surface bolle-carousel {
   min-inline-size: 0;
+}
+
+/* Shell and dashboard are whole panels: they need the full stage and a height. */
+.preview-surface > demo-dashboard {
+  inline-size: 100%;
+}
+/* The board is a whole panel too: full stage, its own surface and a height. */
+.preview-surface:has(> demo-kanban) {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.preview-surface > demo-kanban {
+  flex: 1 1 100%;
+  inline-size: 100%;
+}
+demo-kanban {
+  display: block;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 16px;
+  border-radius: 22px;
+  box-shadow: var(--bb-float-1);
+  background: var(--md-sys-color-surface);
+}
+.preview-surface > demo-kanban {
+  block-size: 620px;
+  /* Narrower columns so the documented board shows three whole columns at once. */
+  --bb-kanban-column-min-width: 220px;
+}
+/* A board cannot be judged in a 332px cell: one variant per row, full width. */
+.variant-grid.is-panel:has(demo-kanban) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.variant-grid.is-panel .variant-stage > demo-kanban {
+  inline-size: 100%;
+  block-size: 480px;
+  padding: 10px;
+  --bb-kanban-column-min-width: 220px;
+}
+/* A wide panel starts at the edge of the stage instead of being centred and clipped. */
+.preview-surface:has(> demo-app-shell) {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+demo-app-shell {
+  display: block;
+  flex: none;
+  /* The shell measures itself, so the preview shows the form the stage allows. */
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 620px;
+  min-inline-size: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--bb-float-1);
+  background: var(--md-sys-color-surface);
+}
+demo-app-shell > bolle-app-shell {
+  block-size: 100%;
+}
+demo-dashboard {
+  display: block;
+  min-inline-size: 0;
+}
+/* The menu button only belongs to the form where the navigation leaves the side. */
+demo-app-shell:not([data-form="compact"]) .menu-button {
+  display: none;
+}
+demo-app-shell .brand {
+  font: var(--md-sys-typescale-title-medium-font);
+  font-weight: 700;
+}
+demo-app-shell .content-pad {
+  padding: 20px 24px 28px;
+}
+demo-app-shell .content-pad h2 {
+  margin: 0 0 4px;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+demo-app-shell .content-sub {
+  margin: 0 0 18px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+demo-app-shell .num,
+demo-dashboard .num {
+  font-variant-numeric: tabular-nums;
+}
+demo-app-shell .kpi-value,
+demo-dashboard .kpi-value {
+  margin: 2px 0;
+  font-family: "Fredoka", sans-serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+demo-app-shell .kpi-detail,
+demo-dashboard .kpi-detail {
+  margin: 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+demo-app-shell .list,
+demo-dashboard .list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+demo-app-shell .list li,
+demo-dashboard .list li {
+  display: grid;
+  gap: 3px;
+  padding: 7px 6px;
+  border-radius: 10px;
+  font: var(--md-sys-typescale-body-small-font);
+}
+demo-app-shell .list li:hover,
+demo-dashboard .list li:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+demo-app-shell .row,
+demo-dashboard .row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+demo-app-shell .code,
+demo-dashboard .code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--md-sys-color-primary);
+}
+demo-app-shell .late,
+demo-dashboard .late {
+  color: var(--md-sys-color-error);
+  font-weight: 600;
+}
+demo-app-shell .muted,
+demo-dashboard .muted {
+  color: var(--md-sys-color-on-surface-variant);
+}
+demo-app-shell .bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4ch;
+  align-items: center;
+  gap: 8px;
+}
+demo-app-shell .revenue-bars {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: end;
+  gap: 6px;
+  block-size: 96px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+demo-app-shell .revenue-bars li {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: 2px;
+  block-size: 100%;
+  padding: 0;
+}
+demo-app-shell .revenue-bars .bar {
+  inline-size: 62%;
+  align-self: end;
+  border-radius: 3px 3px 0 0;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 38%, transparent);
+}
+demo-app-shell .revenue-bars .month {
+  font-size: 10px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+demo-app-shell .open-row {
+  justify-self: start;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: var(--md-sys-typescale-label-small-font);
+  cursor: pointer;
+}
+demo-app-shell .status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: var(--md-sys-typescale-label-small-font);
+}
+demo-dashboard .layout-feedback {
+  margin: 12px 0 0;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The data table needs the full row: it is a whole panel, not a specimen. */
+.preview-surface > demo-data-table {
+  inline-size: 100%;
+}
+/* An admin table is a panel with its own height: the header and the pager stay put. */
+demo-data-table {
+  display: block;
+  block-size: 520px;
+}
+demo-data-table > bolle-data-table {
+  block-size: 100%;
+}
+demo-data-table {
+  min-inline-size: 0;
+}
+/* The sidebar fills its column: the stage gives it an application height. */
+.preview-surface > bolle-sidebar {
+  flex: 0 0 auto;
+  block-size: 560px;
+  max-inline-size: 100%;
 }
 
 .divider-row {
@@ -1243,6 +1466,29 @@ docs-select bolle-button {
   margin: 12px;
 }
 
+/* A whole panel needs the full width: the parameters go under the preview. */
+.playground-stage:has(.preview-surface[data-group="Data table"]),
+.playground-stage:has(.preview-surface[data-group="App shell"]),
+.playground-stage:has(.preview-surface[data-group="Dashboard"]),
+.playground-stage:has(.preview-surface[data-group="Kanban"]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.playground-stage:has(.preview-surface[data-group="Data table"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="App shell"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="Dashboard"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="Kanban"]) .playground-side {
+  border-inline-start: 0;
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  max-block-size: none;
+}
+.playground-stage:has(.preview-surface[data-group="Data table"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="App shell"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="Dashboard"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="Kanban"]) .side-body {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start;
+}
+
 .playground-side {
   position: relative;
   min-inline-size: 0;
@@ -1363,6 +1609,28 @@ docs-select bolle-button {
 
 .variant-grid.is-wide {
   grid-template-columns: minmax(0, 1fr);
+}
+
+/* Panel variants (sidebar) keep their own width and an application height. */
+.variant-grid.is-panel {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 332px), 1fr));
+}
+
+.variant-grid.is-panel .variant-stage {
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 16px;
+}
+
+.variant-grid.is-panel .variant-stage > demo-data-table,
+.variant-grid.is-panel .variant-stage > demo-app-shell,
+.variant-grid.is-panel .variant-stage > demo-dashboard {
+  inline-size: 100%;
+}
+
+.variant-grid.is-panel .variant-stage > bolle-sidebar {
+  block-size: 480px;
+  max-inline-size: 100%;
 }
 
 .variant-cell {

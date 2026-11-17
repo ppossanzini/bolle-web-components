@@ -1,0 +1,598 @@
+/* PROTOTIPO USA E GETTA. Non promuovere a codice di produzione. */
+html,
+body {
+  margin: 0;
+  block-size: 100%;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.icon {
+  display: inline-flex;
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+}
+.icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+  stroke-width: 1.75;
+}
+
+/* Shell of the page ------------------------------------------------------ */
+proto-kanban-app {
+  display: block;
+}
+.app {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  block-size: 100dvh;
+  overflow: hidden;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 24px 12px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 16px 16px 16px 5px;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.brand h1 {
+  margin: 0;
+  font: var(--md-sys-typescale-headline-small-font);
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+}
+.brand-sub {
+  margin: 2px 0 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ksearch {
+  inline-size: min(340px, 60vw);
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 24px 12px;
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-inline-start: auto;
+}
+.lane-select {
+  inline-size: 190px;
+}
+
+/* Board ------------------------------------------------------------------ */
+/* The board itself does not scroll: every column scrolls its own list, so the
+   headers stay put and only the cards move. With lanes the board scrolls, because
+   the lanes are stacked. */
+.board {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: auto;
+  /* The gutters stay reserved: toggling them re-triggers the overflow and loops the layout. */
+  scrollbar-gutter: stable;
+  padding: 16px 24px 24px;
+  background: var(--md-sys-color-surface);
+}
+.klane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-block-size: 0;
+  margin-block-end: 20px;
+}
+/* With lanes the strips are stacked: the lane grows with its content and the board
+   scrolls, so the lists inside it must not be capped by a fixed strip height. */
+/* A single strip fills the board; stacked lanes grow with their own content. */
+.board:not(.has-lanes) .klane {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  margin-block-end: 0;
+}
+.board.has-lanes .klane {
+  flex: 0 0 auto;
+}
+.board.has-lanes .kcolumns {
+  flex: 0 0 auto;
+  min-block-size: 0;
+  overflow-y: clip;
+}
+.klane-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.klane-head h2 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-small-font);
+}
+.kcolumns {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 16px;
+  align-items: stretch;
+  min-block-size: 200px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block-end: 2px;
+}
+.kcolumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-inline-size: 260px;
+  max-inline-size: 360px;
+  min-block-size: 0;
+  padding: 8px;
+  border-radius: 20px 20px 20px 6px;
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid transparent;
+  transition: border-color 120ms, background 120ms;
+}
+.kcolumn.over {
+  border-color: var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 6%, var(--md-sys-color-surface-container-low));
+}
+.kcolumn.refused {
+  border-color: var(--md-sys-color-error);
+  background: color-mix(in srgb, var(--md-sys-color-error) 6%, var(--md-sys-color-surface-container-low));
+}
+.kcolumn-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 8px 10px;
+}
+.kcolumn-head h2 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-small-font);
+}
+.kcount {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-small-font);
+  font-variant-numeric: tabular-nums;
+}
+.kcount.over {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  font-weight: 700;
+}
+.kcolumn-head bolle-icon-button:nth-of-type(1) {
+  margin-inline-start: auto;
+}
+.kcolumn.collapsed {
+  flex: 0 0 auto;
+  min-inline-size: 0;
+  padding: 0;
+}
+.kcollapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  block-size: 100%;
+  padding: 16px 10px;
+  border: 0;
+  border-radius: 20px 20px 20px 6px;
+  background: var(--md-sys-color-surface-container-low);
+  color: inherit;
+  cursor: pointer;
+}
+.kcolumn-label {
+  writing-mode: vertical-rl;
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+/* Cards ------------------------------------------------------------------ */
+.klist {
+  display: grid;
+  /* The implicit auto track can be wider than the box once the scrollbar appears. */
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px 4px 0;
+  list-style: none;
+  min-block-size: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+/* Bolle scrollbars: no arrow buttons, round track and thumb. */
+.board::-webkit-scrollbar,
+.kcolumns::-webkit-scrollbar,
+.klist::-webkit-scrollbar {
+  inline-size: 10px;
+  block-size: 10px;
+  background: transparent;
+}
+.board::-webkit-scrollbar-button,
+.kcolumns::-webkit-scrollbar-button,
+.klist::-webkit-scrollbar-button {
+  display: none;
+  inline-size: 0;
+  block-size: 0;
+}
+.board::-webkit-scrollbar-track,
+.kcolumns::-webkit-scrollbar-track,
+.klist::-webkit-scrollbar-track {
+  margin: 4px;
+  border-radius: 9999px;
+  background: transparent;
+}
+.board::-webkit-scrollbar-thumb,
+.kcolumns::-webkit-scrollbar-thumb,
+.klist::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 26%, transparent) padding-box;
+}
+/* The shadow and the ring live on the card box itself: no outer padding, and the
+   card radius is published to the card so the shadow follows its corners. */
+.kcard {
+  --md-comp-card-padding: 12px;
+  --bb-card-radius: 18px;
+  display: block;
+  padding: 0;
+  border-radius: var(--bb-card-radius);
+  cursor: pointer;
+}
+.app[data-density="compact"] .kcard {
+  --md-comp-card-padding: 9px;
+  --bb-card-radius: 14px;
+}
+/* Hover is a state layer on the card surface, not a lift: the lift is the drag ghost. */
+.kcard:hover {
+  --md-sys-color-surface: var(--md-sys-color-surface-container);
+}
+.kcard:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+.kcard.selected {
+  box-shadow: inset 0 0 0 2px var(--md-sys-color-primary);
+}
+.kcard.dragging,
+.kcard.dragging:hover {
+  --md-sys-color-surface: var(--md-sys-color-surface);
+  opacity: 0.35;
+}
+
+.app.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* Drag and drop ---------------------------------------------------------- */
+.kghost-drop {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+}
+.kghost {
+  --md-comp-card-padding: 12px;
+  --bb-card-radius: 18px;
+  display: block;
+  border-radius: var(--bb-card-radius);
+  box-shadow: var(--bb-float-4);
+  rotate: -1.2deg;
+  transition: box-shadow 120ms;
+}
+.kghost.refused {
+  box-shadow: 0 0 0 2px var(--md-sys-color-error), var(--bb-float-4);
+}
+.kghost-note {
+  inline-size: max-content;
+  max-inline-size: min(300px, 80vw);
+  margin: 6px 0 0;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font: var(--md-sys-typescale-label-small-font);
+}
+.kghost.refused + .kghost-note {
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+.kplaceholder {
+  border-radius: 18px;
+  border: 2px dashed var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 7%, transparent);
+}
+.kplaceholder.refused {
+  border-color: var(--md-sys-color-error);
+  background: color-mix(in srgb, var(--md-sys-color-error) 7%, transparent);
+}
+.kcard-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-end: 4px;
+}
+.kgrip {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--md-sys-color-outline);
+  cursor: grab;
+  opacity: 0.45;
+  touch-action: none;
+  transition: opacity 120ms;
+}
+.kgrip .icon {
+  inline-size: 16px;
+  block-size: 16px;
+}
+.kcard:hover .kgrip,
+.kcard:focus-within .kgrip {
+  opacity: 1;
+}
+.kgrip:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 1px;
+}
+.kcode {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  color: var(--md-sys-color-primary);
+}
+.kspacer {
+  flex: 1;
+}
+.ktitle {
+  margin: 0 0 2px;
+  font: var(--md-sys-typescale-title-small-font);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kclient {
+  margin: 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ktags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-block-start: 8px;
+}
+/* Codes, dates and amounts keep their reading direction inside an RTL page. */
+.kcode,
+.kdue,
+.kamount,
+.knum,
+.kcount,
+.ktag {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+.ktag {
+  padding: 1px 8px;
+  border-radius: 9px 9px 9px 3px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: var(--md-sys-typescale-label-small-font);
+}
+.kprogress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4ch;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 8px;
+}
+.knum {
+  font: var(--md-sys-typescale-label-small-font);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.kfoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 10px;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.kavatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  font-weight: 700;
+}
+.kmanager {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kdue {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+.kdue.late {
+  color: var(--md-sys-color-error);
+  font-weight: 700;
+}
+.kamount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.app[data-density="compact"] .kfoot {
+  margin-block-start: 6px;
+}
+.app[data-density="compact"] .ktags,
+.app[data-density="compact"] .kprogress {
+  margin-block-start: 6px;
+}
+.kempty {
+  margin: 8px 6px;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Composer --------------------------------------------------------------- */
+.kcomposer {
+  margin-block-start: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.kcomposer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: 6px;
+}
+
+/* States ------------------------------------------------------------------ */
+.kstate {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 72px 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.kstate p {
+  margin: 0;
+}
+.kstate-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 24px 24px 24px 8px;
+  background: var(--md-sys-color-surface-container-high);
+}
+.kstate-icon.error {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* Drag hint -------------------------------------------------------------- */
+/* Detail ----------------------------------------------------------------- */
+.kdetail {
+  display: grid;
+  gap: 10px;
+  padding: 4px 0 16px;
+}
+.kdetail-title {
+  margin: 0;
+  font: var(--md-sys-typescale-title-large-font);
+}
+.kfacts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 6px 0 0;
+}
+.kfacts dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.kfacts dd {
+  margin: 2px 0 0;
+}
+.kprogress.big {
+  margin-block-start: 6px;
+}
+.kdetail-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    padding: 12px 14px 10px;
+  }
+  .toolbar {
+    padding: 0 14px 10px;
+  }
+  .board {
+    padding: 12px 14px 20px;
+  }
+  .ksearch {
+    inline-size: 100%;
+  }
+  .topbar-actions {
+    inline-size: 100%;
+  }
+  .kcolumns {
+    flex-wrap: nowrap;
+    padding-block-end: 8px;
+  }
+  .kcolumn {
+    flex: 0 0 82vw;
+    max-inline-size: none;
+  }
+  .density {
+    display: none;
+  }
+}

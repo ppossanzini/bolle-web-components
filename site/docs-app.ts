@@ -119,9 +119,25 @@ const WIDE_GROUPS = new Set<string>([
   "Toolbars",
 ]);
 
-const orderedEntries = groups.flatMap((group) =>
-  entries.filter((entry) => entry.group === group),
-);
+/** Groups whose variants are whole panels: each cell gets room for the panel at its own size. */
+const PANEL_GROUPS = new Set<string>([
+  "Sidebar",
+  "Data table",
+  "App shell",
+  "Dashboard",
+  "Kanban",
+]);
+
+const SCHIUMA = "Schiuma";
+const coreEntries = entries.filter((entry) => !entry.section);
+const schiumaEntries = entries.filter((entry) => entry.section === SCHIUMA);
+/** Material families first, then the Schiuma components for admin applications. */
+const orderedEntries = [
+  ...groups.flatMap((group) =>
+    coreEntries.filter((entry) => entry.group === group),
+  ),
+  ...schiumaEntries,
+];
 
 /** Fills the `{name}` placeholders of a translated string with template parts. */
 const withParts = (translated: string, parts: Record<string, unknown>) =>
@@ -231,7 +247,8 @@ export class DocsApp extends LitElement {
       .filter(
         (group) => entries.filter((entry) => entry.group === group).length > 1,
       )
-      .map((group) => `${GROUP_PREFIX}${group}`);
+      .map((group) => `${GROUP_PREFIX}${group}`)
+      .concat(`${GROUP_PREFIX}${SCHIUMA}`);
     this.states = Object.fromEntries(
       entries.map((entry) => [entry.tag, initialState(entry)]),
     );
@@ -571,16 +588,20 @@ export class DocsApp extends LitElement {
     if (query)
       return orderedEntries
         .filter((entry) =>
-          [entry.title, entry.navLabel ?? "", entry.group, entry.tag].some((text) =>
-            text.toLowerCase().includes(query),
-          ),
+          [
+            entry.title,
+            entry.navLabel ?? "",
+            entry.group,
+            entry.section ?? "",
+            entry.tag,
+          ].some((text) => text.toLowerCase().includes(query)),
         )
         .map((entry) => ({ id: entry.tag, label: entry.navLabel ?? entry.title }));
 
     const families = groups
       .map((group) => ({
         group,
-        list: entries.filter((entry) => entry.group === group),
+        list: coreEntries.filter((entry) => entry.group === group),
       }))
       .filter((family) => family.list.length > 0);
 
@@ -598,6 +619,18 @@ export class DocsApp extends LitElement {
               })),
             },
       ),
+      ...(schiumaEntries.length
+        ? [
+            {
+              id: `${GROUP_PREFIX}${SCHIUMA}`,
+              label: SCHIUMA,
+              items: schiumaEntries.map((entry) => ({
+                id: entry.tag,
+                label: entry.navLabel ?? entry.title,
+              })),
+            },
+          ]
+        : []),
     ];
   }
 
@@ -957,7 +990,9 @@ export class DocsApp extends LitElement {
             >
               ${entry.render(initialState(entry), this.ctx)}
             </div>
-            <span class="overview-tag">${entry.group}</span>
+            <span class="overview-tag"
+              >${entry.section ? `${entry.section} · ${entry.group}` : entry.group}</span
+            >
             <h3>${entry.title}</h3>
             <p>${l(entry.summary)}</p>
           </bolle-card>`,
@@ -1811,7 +1846,7 @@ export class DocsApp extends LitElement {
           <nav class="breadcrumb" aria-label=${l("Percorso")}>
             <a href=${routeHref("overview")}>${l("Componenti")}</a>
             <span aria-hidden="true">/</span>
-            <span>${entry.group}</span>
+            <span>${entry.section ?? entry.group}</span>
           </nav>
           <div class="doc-title-row">
             <h1>${entry.title}</h1>
@@ -2010,7 +2045,9 @@ export class DocsApp extends LitElement {
       ${controls.map(
         (control) => html`<div class="variant-group">
           <h3>${l(control.label)} <code>${kebab(control.prop)}</code></h3>
-          <div class="variant-grid ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""}">
+          <div
+            class="variant-grid ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""} ${PANEL_GROUPS.has(entry.group) ? "is-panel" : ""}"
+          >
             ${control.options.map(
               (option) => html`<figure class="variant-cell">
                 <div class="variant-stage">

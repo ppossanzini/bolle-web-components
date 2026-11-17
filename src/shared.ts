@@ -14,6 +14,9 @@ export interface BolleItem {
   expanded?: boolean;
 }
 
+/** `auto` points the narrow corner at the opener; `none` keeps all four corners equal. */
+export type SurfaceTail = "auto" | "none";
+
 /** Points the narrow corner of a floating surface toward the element it came from. */
 export function placeTail(
   surface: HTMLElement,
@@ -32,6 +35,21 @@ export function placeTail(
       ? "left"
       : "right";
   surface.dataset.tail = `${vertical}-${horizontal}`;
+}
+
+/**
+ * Applies the tail requested by the component: `auto` points the narrow corner at
+ * the opener, `none` keeps every corner equal. Both keep the same corner radius,
+ * because `[data-tail]` alone sets `--bb-shape` to the round corner value.
+ */
+export function applyTail(
+  surface: HTMLElement,
+  tail: SurfaceTail,
+  anchor: DOMRect,
+  target?: { left: number; top: number; width: number; height: number },
+) {
+  if (tail === "none") surface.dataset.tail = "none";
+  else placeTail(surface, anchor, target);
 }
 
 const FOCUSABLE =

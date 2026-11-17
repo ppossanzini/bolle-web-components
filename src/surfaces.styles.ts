@@ -246,6 +246,9 @@ export const surfaceStyles = css`
       var(--bb-card-radius)
     );
   }
+  :host([tail="none"]) .card {
+    border-radius: var(--bb-card-radius);
+  }
   :host([tail="top-end"]) .card {
     border-end-start-radius: var(--bb-card-radius);
     border-start-end-radius: min(

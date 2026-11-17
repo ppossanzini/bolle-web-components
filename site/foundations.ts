@@ -128,6 +128,9 @@ export function renderFoundations(): TemplateResult {
           </div>
         </div>
         <p class="fd-rule">
+          ${l("La coda non è obbligatoria: card, menu, tooltip, azioni del FAB e snackbar accettano tail=\"none\" e tornano bolle con i quattro angoli uguali, senza cambiare raggio.")}
+        </p>
+        <p class="fd-rule">
           ${l("Una superficie dentro un'altra prende il raggio del contenitore meno il padding che il contenitore applica, con un minimo di 2px. Il contenitore lo pubblica in --bb-inset-radius e la superficie interna lo eredita: card dentro dialog, fogli o altre card, media nelle card, voci nei menu e campi nei picker.")}
         </p>
         ${tokenTable([

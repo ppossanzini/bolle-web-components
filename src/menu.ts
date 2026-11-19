@@ -4,7 +4,7 @@ import { menuStyles } from "./menu.styles.js";
 import { checkIcon } from "./icons.js";
 import { bolleStyles } from "./shared.styles.js";
 import { applyTail, type SurfaceTail } from "./shared.js";
-import { menuLabels } from "./localization.js";
+import { menuLabels, type MenuLabels } from "./localization.js";
 import {
   flattenMenu,
   isAction,
@@ -37,6 +37,7 @@ export class BolleMenu extends LitElement {
     filterable: { type: Boolean, reflect: true },
     filter: { attribute: "filter", reflect: true },
     locale: {},
+    labels: { attribute: false },
     compactWidth: { attribute: "compact-width", type: Number },
     tail: { reflect: true },
     density: { type: Number, reflect: true },
@@ -58,6 +59,7 @@ export class BolleMenu extends LitElement {
   filterable = false;
   filter = "";
   locale = "";
+  labels: Partial<MenuLabels> = {};
   compactWidth = 480;
   tail: SurfaceTail = "auto";
   density = 0;
@@ -561,18 +563,20 @@ export class BolleMenu extends LitElement {
       ${
         showsIndicator
           ? html`<span
+              part="icon"
               class=${selected ? "indicator" : "indicator icon"}
               aria-hidden="true"
               >${selected ? checkIcon() : (item.icon ?? "")}</span
             >`
           : nothing
       }
-      <span class="content"
-        >${item.label}${item.supportingText ? html`<span class="supporting">${item.supportingText}</span>` : nothing}</span
+      <span part="label" class="content"
+        ><span part="label-text">${item.label}</span
+        >${item.supportingText ? html`<span part="support" class="supporting">${item.supportingText}</span>` : nothing}</span
       >
-      ${item.trailingText ? html`<span class="trailing">${item.trailingText}</span>` : nothing}
-      ${item.badge ? html`<span>${item.badge}</span>` : nothing}
-      ${item.children ? html`<span aria-hidden="true">${this.surface?.dir === "rtl" ? "‹" : "›"}</span>` : nothing}`;
+      ${item.trailingText ? html`<span part="trailing" class="trailing">${item.trailingText}</span>` : nothing}
+      ${item.badge ? html`<span part="badge">${item.badge}</span>` : nothing}
+      ${item.children ? html`<span part="submenu-indicator" aria-hidden="true">${this.surface?.dir === "rtl" ? "‹" : "›"}</span>` : nothing}`;
     const click = (event: MouseEvent) => this.activate(event, item);
     const enter = () => {
       clearTimeout(this.hoverTimer);
@@ -594,6 +598,7 @@ export class BolleMenu extends LitElement {
     };
     if (item.href)
       return html`<a
+        part="item"
         data-item
         href=${item.href}
         role=${role}
@@ -609,6 +614,7 @@ export class BolleMenu extends LitElement {
         >${content}</a
       >`;
     return html`<button
+      part="item"
       data-item
       type="button"
       role=${role}
@@ -631,18 +637,25 @@ export class BolleMenu extends LitElement {
 
   private renderEntry(entry: MenuEntry, next: () => number) {
     if (isGroup(entry))
-      return html`<div class="group" role="group" aria-label=${entry.label}>
-        <div class="group-label" aria-hidden="true">${entry.label}</div>
+      return html`<div
+        part="group"
+        class="group"
+        role="group"
+        aria-label=${entry.label}
+      >
+        <div part="group-label" class="group-label" aria-hidden="true">
+          ${entry.label}
+        </div>
         ${entry.items.map((item) => this.renderItem(item, next()))}
       </div>`;
     if (isAction(entry)) return this.renderItem(entry, next());
-    return html`<div role="separator"></div>`;
+    return html`<div part="divider" role="separator"></div>`;
   }
 
   render() {
     let index = 0;
     const next = () => index++;
-    const text = menuLabels(this.locale);
+    const text = menuLabels(this.locale, this.labels);
     const filtering = this.query !== "";
     return html`<div
         id=${this.surfaceId}
@@ -653,7 +666,7 @@ export class BolleMenu extends LitElement {
         class=${this._compact ? "compact" : nothing}
         style=${
           this.density
-            ? `--md-comp-menu-item-target-height: calc(48px + ${this.density * 4}px)`
+            ? `--md-comp-menu-item-target-height: calc(var(--md-comp-menu-item-target-height-base, 48px) + ${this.density} * var(--md-comp-menu-density-step, 4px))`
             : nothing
         }
         @keydown=${this.onKey}
@@ -664,12 +677,16 @@ export class BolleMenu extends LitElement {
       >
         ${
           this._compact
-            ? html`<div class="grabber" aria-hidden="true"></div>`
+            ? html`<div
+                part="compact-grabber"
+                class="grabber"
+                aria-hidden="true"
+              ></div>`
             : nothing
         }
         ${
           this.filterable
-            ? html`<div class="filter">
+            ? html`<div part="filter-container" class="filter">
                 <input
                   type="search"
                   part="filter"
@@ -687,7 +704,7 @@ export class BolleMenu extends LitElement {
         }
         ${
           filtering && !this.actions.length
-            ? html`<p class="empty" aria-live="polite">
+            ? html`<p part="empty" class="empty" aria-live="polite">
                 ${fill(text.noResults, { query: this.filter.trim() })}
               </p>`
             : this.entries.map((entry) => this.renderEntry(entry, next))
@@ -701,6 +718,7 @@ export class BolleMenu extends LitElement {
               .colorScheme=${this.colorScheme}
               .selectionMode=${this.selectionMode}
               .locale=${this.locale}
+              .labels=${this.labels}
               .quick=${this.quick}
               .menuLabel=${this.actions[this._active]?.label ?? this.menuLabel}
               @pointerover=${this.cancelChildClose}

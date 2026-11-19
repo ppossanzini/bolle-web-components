@@ -43,6 +43,7 @@ export class BolleWidget extends BolleElement {
     minSpan: { type: Number, attribute: "min-span" },
     removable: { type: Boolean, reflect: true },
     menuLabel: { attribute: "menu-label" },
+    labels: { attribute: false },
     _dragging: { state: true },
     _resizing: { state: true },
   };
@@ -55,12 +56,13 @@ export class BolleWidget extends BolleElement {
   minSpan = 2;
   removable = true;
   menuLabel = "";
+  labels: Partial<ShellLabels> = {};
   private _dragging = false;
   private _resizing = false;
   private static counter = 0;
 
   private get text(): ShellLabels {
-    return shellLabels("");
+    return shellLabels(document.documentElement.lang, this.labels);
   }
 
   connectedCallback() {
@@ -164,6 +166,7 @@ export class BolleDashboard extends BolleElement {
     label: {},
     density: { reflect: true },
     columns: { type: Number },
+    labels: { attribute: false },
     _drag: { state: true },
     _announcement: { state: true },
   };
@@ -172,20 +175,14 @@ export class BolleDashboard extends BolleElement {
   label = "";
   density: "comfortable" | "compact" = "comfortable";
   columns = DASHBOARD_COLUMNS;
+  labels: Partial<ShellLabels> = {};
   private _announcement = "";
   private _drag?: DashboardDrag;
   private placeholder?: HTMLElement;
-  private resize?: {
-    widget: BolleWidget;
-    startX: number;
-    startSpan: number;
-    span: number;
-    column: number;
-  };
   private menuWidget?: BolleWidget;
 
   private get text(): ShellLabels {
-    return shellLabels("");
+    return shellLabels(document.documentElement.lang, this.labels);
   }
 
   private get widgets() {
@@ -199,7 +196,10 @@ export class BolleDashboard extends BolleElement {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("widget-grip", this.onGrip as EventListener);
-    this.addEventListener("widget-resize-start", this.onResizeStart as EventListener);
+    this.addEventListener(
+      "widget-resize-start",
+      this.onResizeStart as EventListener,
+    );
     this.addEventListener("widget-key", this.onKey as EventListener);
     this.addEventListener("widget-menu", this.onWidgetMenu as EventListener);
     this.addEventListener("menu-select", this.onMenuSelect as EventListener);
@@ -207,7 +207,10 @@ export class BolleDashboard extends BolleElement {
 
   disconnectedCallback() {
     this.removeEventListener("widget-grip", this.onGrip as EventListener);
-    this.removeEventListener("widget-resize-start", this.onResizeStart as EventListener);
+    this.removeEventListener(
+      "widget-resize-start",
+      this.onResizeStart as EventListener,
+    );
     this.removeEventListener("widget-key", this.onKey as EventListener);
     this.removeEventListener("widget-menu", this.onWidgetMenu as EventListener);
     this.removeEventListener("menu-select", this.onMenuSelect as EventListener);
@@ -253,7 +256,9 @@ export class BolleDashboard extends BolleElement {
 
   /* Reordering --------------------------------------------------------- */
 
-  private onGrip = (event: CustomEvent<{ event: PointerEvent; widget: BolleWidget }>) => {
+  private onGrip = (
+    event: CustomEvent<{ event: PointerEvent; widget: BolleWidget }>,
+  ) => {
     const widget = event.detail.widget;
     if (!this.widgets.includes(widget)) return;
     const pointer = event.detail.event;
@@ -278,7 +283,10 @@ export class BolleDashboard extends BolleElement {
     const place = (x: number, y: number) => {
       const bounds = this.getBoundingClientRect();
       const outside =
-        x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom;
+        x < bounds.left ||
+        x > bounds.right ||
+        y < bounds.top ||
+        y > bounds.bottom;
       const index = this.insertionIndex(x, y, widget);
       this.insertAt(widget, index);
       this._drag = {
@@ -303,7 +311,9 @@ export class BolleDashboard extends BolleElement {
       /* The page scroller spans the whole document: its edge is the viewport edge. */
       const page = scroller === document.scrollingElement;
       const top = page ? 0 : scroller.getBoundingClientRect().top;
-      const bottom = page ? window.innerHeight : scroller.getBoundingClientRect().bottom;
+      const bottom = page
+        ? window.innerHeight
+        : scroller.getBoundingClientRect().bottom;
       const edge = 64;
       if (drag.y < top + edge) scroller.scrollTop -= 14;
       else if (drag.y > bottom - edge) scroller.scrollTop += 14;
@@ -354,7 +364,10 @@ export class BolleDashboard extends BolleElement {
   }
 
   private spanOf(widget: BolleWidget) {
-    return Math.min(this.columns, Math.max(widget.minSpan, Math.round(widget.span)));
+    return Math.min(
+      this.columns,
+      Math.max(widget.minSpan, Math.round(widget.span)),
+    );
   }
 
   /** Puts the placeholder where the tile would land, keeping the grid order. */
@@ -384,7 +397,10 @@ export class BolleDashboard extends BolleElement {
     let node = this.parentElement;
     while (node && node !== document.body) {
       const style = getComputedStyle(node);
-      if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight)
+      if (
+        /(auto|scroll)/.test(style.overflowY) &&
+        node.scrollHeight > node.clientHeight
+      )
         return node;
       node = node.parentElement;
     }
@@ -394,7 +410,9 @@ export class BolleDashboard extends BolleElement {
   /** Puts the tile in the slot the placeholder showed. */
   private applyMove(widget: BolleWidget, index: number) {
     const reference = this.othersOf(widget)[index];
-    const unchanged = reference ? reference === widget.nextElementSibling : !widget.nextElementSibling;
+    const unchanged = reference
+      ? reference === widget.nextElementSibling
+      : !widget.nextElementSibling;
     if (!unchanged) {
       if (reference) reference.before(widget);
       else this.append(widget);
@@ -412,7 +430,8 @@ export class BolleDashboard extends BolleElement {
   private moveWidget(widget: BolleWidget, target: number) {
     const widgets = this.widgets;
     const from = widgets.indexOf(widget);
-    if (from < 0 || target < 0 || target >= widgets.length || from === target) return;
+    if (from < 0 || target < 0 || target >= widgets.length || from === target)
+      return;
     const reference = widgets[target];
     if (from < target) reference.after(widget);
     else reference.before(widget);
@@ -435,7 +454,8 @@ export class BolleDashboard extends BolleElement {
     const handle = pointer.currentTarget as HTMLElement;
     if (!this.clientWidth) return;
     const gap = Number.parseFloat(getComputedStyle(this).columnGap || "0") || 0;
-    const column = (this.clientWidth - gap * (this.columns - 1)) / this.columns + gap;
+    const column =
+      (this.clientWidth - gap * (this.columns - 1)) / this.columns + gap;
     const rtl = getComputedStyle(this).direction === "rtl";
     handle.setPointerCapture(pointer.pointerId);
     const state = {
@@ -445,10 +465,10 @@ export class BolleDashboard extends BolleElement {
       span: widget.span,
       column,
     };
-    this.resize = state;
     widget.resizing = true;
     const move = (moveEvent: PointerEvent) => {
-      const delta = ((moveEvent.clientX - state.startX) * (rtl ? -1 : 1)) / column;
+      const delta =
+        ((moveEvent.clientX - state.startX) * (rtl ? -1 : 1)) / column;
       state.span = Math.max(
         widget.minSpan,
         Math.min(this.columns, Math.round(state.startSpan + delta)),
@@ -460,7 +480,6 @@ export class BolleDashboard extends BolleElement {
       handle.removeEventListener("pointermove", move);
       handle.removeEventListener("pointerup", stop);
       handle.removeEventListener("pointercancel", stop);
-      this.resize = undefined;
       widget.resizing = false;
       if (state.span === state.startSpan) return;
       this.setSpan(widget, state.span);
@@ -474,14 +493,18 @@ export class BolleDashboard extends BolleElement {
     const value = Math.max(widget.minSpan, Math.min(this.columns, span));
     widget.span = value;
     this.announce(
-      this.text.resized.replace("{title}", widget.title).replace("{count}", String(value)),
+      this.text.resized
+        .replace("{title}", widget.title)
+        .replace("{count}", String(value)),
     );
     this.changed();
   }
 
   /* Keyboard ------------------------------------------------------------ */
 
-  private onKey = (event: CustomEvent<{ event: KeyboardEvent; widget: BolleWidget }>) => {
+  private onKey = (
+    event: CustomEvent<{ event: KeyboardEvent; widget: BolleWidget }>,
+  ) => {
     const { event: keyEvent, widget } = event.detail;
     const rtl = getComputedStyle(this).direction === "rtl";
     const onResize =
@@ -612,8 +635,13 @@ export class BolleDashboard extends BolleElement {
         <slot></slot>
       </div>
       ${this.renderGhost()}
-      <span class="sr-only" role="status" aria-live="polite">${this._announcement}</span>
-      <bolle-menu menu-label=${label} @menu-select=${this.onMenuSelect}></bolle-menu>
+      <span class="sr-only" role="status" aria-live="polite"
+        >${this._announcement}</span
+      >
+      <bolle-menu
+        menu-label=${label}
+        @menu-select=${this.onMenuSelect}
+      ></bolle-menu>
     </div>`;
   }
 }

@@ -136,7 +136,7 @@ export class BolleSelect extends BolleFormElement {
       missing ? { valueMissing: true } : {},
       missing
         ? (messages(this.lang || document.documentElement.lang, {}).required ??
-          "")
+            "")
         : "",
       control ?? undefined,
     );
@@ -151,10 +151,11 @@ export class BolleSelect extends BolleFormElement {
   protected render() {
     const { entries } = this.readOptions();
     const selected = this.selectedOption;
-    return html`<div class="field">
+    return html`<div class="field" part="field">
       <button
         type="button"
         class="control"
+        part="control"
         aria-haspopup="menu"
         aria-expanded=${String(this.open)}
         aria-invalid=${this.error ? "true" : nothing}
@@ -163,29 +164,35 @@ export class BolleSelect extends BolleFormElement {
         @click=${this.toggle}
         @keydown=${this.keydown}
       >
-        <span class="field-label"
-          >${this.label}${this.required
-            ? html`<span class="required" aria-hidden="true"> *</span>`
-            : nothing}</span
+        <span class="field-label" part="label"
+          >${this.label}${
+            this.required
+              ? html`<span class="required" aria-hidden="true"> *</span>`
+              : nothing
+          }</span
         >
-        <span class="field-body">
-          <span class="value ${selected ? "" : "placeholder"}"
+        <span class="field-body" part="body">
+          <span
+            class="value ${selected ? "" : "placeholder"}"
+            part=${selected ? "value" : "value placeholder"}
             >${selected ? selected.label : this.placeholder}</span
           >
-          <span class="chevron" aria-hidden="true"
-            ><svg viewBox="0 0 24 24" focusable="false"
-              ><path
+          <span class="chevron" part="chevron" aria-hidden="true"
+            ><svg viewBox="0 0 24 24" focusable="false">
+              <path
                 fill="currentColor"
                 d="M12 15.4 6.6 10 8 8.6l4 4 4-4L17.4 10Z"
               /></svg
-            ></span
-          >
+          ></span>
         </span>
       </button>
-      <span class="support-row">
-        <span class="support" id="support">${this.supportingText}</span>
+      <span class="support-row" part="supporting">
+        <span class="support" id="support" part="supporting-text"
+          ><slot name="supporting">${this.supportingText}</slot></span
+        >
       </span>
       <bolle-menu
+        part="menu"
         ${ref(this.menuRef)}
         menu-label=${this.label || this.placeholder || "Select"}
         selection-mode="single"

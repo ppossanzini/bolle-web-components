@@ -50,10 +50,7 @@ export class BolleBreadcrumb extends BolleElement {
   private _expanded = false;
 
   private get text(): BreadcrumbLabels {
-    return breadcrumbLabels(
-      document.documentElement.lang,
-      this.labels as Partial<BreadcrumbLabels>,
-    );
+    return breadcrumbLabels(document.documentElement.lang, this.labels);
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
@@ -71,7 +68,11 @@ export class BolleBreadcrumb extends BolleElement {
   /** Shown levels: the first, a gap, then the last `maxItems - 1`. */
   private get visible(): Array<BreadcrumbItem | "gap"> {
     if (!this.collapsed) return this.items;
-    return [this.items[0], "gap", ...this.items.slice(this.items.length - (this.maxItems - 1))];
+    return [
+      this.items[0],
+      "gap",
+      ...this.items.slice(this.items.length - (this.maxItems - 1)),
+    ];
   }
 
   private isCurrent(item: BreadcrumbItem, index: number) {
@@ -82,7 +83,9 @@ export class BolleBreadcrumb extends BolleElement {
     if (this.separator === "none") return nothing;
     return this.separator === "slash"
       ? html`<span class="separator slash" aria-hidden="true">/</span>`
-      : html`<span class="separator chevron" aria-hidden="true">${nextPageIcon()}</span>`;
+      : html`<span class="separator chevron" aria-hidden="true"
+          >${nextPageIcon()}</span
+        >`;
   }
 
   protected render() {
@@ -90,14 +93,17 @@ export class BolleBreadcrumb extends BolleElement {
     return html`<nav aria-label=${this.label || this.text.label}>
       <ol>
         ${shown.map((entry, position) => {
-          const item =
-            entry === "gap" ? undefined : entry;
+          const item = entry === "gap" ? undefined : entry;
           const index = item ? this.items.indexOf(item) : -1;
           const current = item ? this.isCurrent(item, index) : false;
           const content = item
-            ? html`${item.icon
-                ? html`<span class="icon" aria-hidden="true">${item.icon}</span>`
-                : nothing}<span class="txt" dir="auto">${item.label}</span>`
+            ? html`${
+                  item.icon
+                    ? html`<span class="icon" aria-hidden="true"
+                        >${item.icon}</span
+                      >`
+                    : nothing
+                }<span class="txt" dir="auto">${item.label}</span>`
             : html`<button
                 class="ellipsis"
                 type="button"
@@ -108,17 +114,21 @@ export class BolleBreadcrumb extends BolleElement {
               </button>`;
           return html`<li>
             ${position > 0 ? this.renderSeparator() : nothing}
-            ${!item
-              ? content
-              : current || !item.href
-                ? html`<span class="current" aria-current=${current ? "page" : nothing}
-                    >${content}</span
-                  >`
-                : html`<a
-                    href=${item.href}
-                    @click=${() => this.emit<BreadcrumbItem>("breadcrumb-select", item)}
-                    >${content}</a
-                  >`}
+            ${
+              !item
+                ? content
+                : current || !item.href
+                  ? html`<span
+                      class="current"
+                      aria-current=${current ? "page" : nothing}
+                      >${content}</span
+                    >`
+                  : html`<a
+                      href=${item.href}
+                      @click=${() => this.emit<BreadcrumbItem>("breadcrumb-select", item)}
+                      >${content}</a
+                    >`
+            }
           </li>`;
         })}
       </ol>

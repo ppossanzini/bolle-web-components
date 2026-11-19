@@ -1,4 +1,4 @@
-import { html, nothing, type PropertyValues, type TemplateResult } from "lit";
+import { html, nothing, type PropertyValues } from "lit";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { appShellStyles } from "./app-shell.styles.js";
@@ -24,9 +24,14 @@ export class BolleAppShell extends BolleElement {
   static properties = {
     label: {},
     form: { reflect: true },
-    supportingOpen: { type: Boolean, attribute: "supporting-open", reflect: true },
+    supportingOpen: {
+      type: Boolean,
+      attribute: "supporting-open",
+      reflect: true,
+    },
     supportingLabel: { attribute: "supporting-label" },
     closeLabel: { attribute: "close-label" },
+    labels: { attribute: false },
     _form: { state: true },
     _hasBar: { state: true },
     _hasNavigation: { state: true },
@@ -42,6 +47,7 @@ export class BolleAppShell extends BolleElement {
   supportingOpen = false;
   supportingLabel = "";
   closeLabel = "";
+  labels: Partial<ShellLabels> = {};
   private _form: AppShellForm = "expanded";
   private _hasBar = false;
   private _hasNavigation = false;
@@ -51,7 +57,7 @@ export class BolleAppShell extends BolleElement {
   private observer?: ResizeObserver;
 
   private get text(): ShellLabels {
-    return shellLabels("");
+    return shellLabels(document.documentElement.lang, this.labels);
   }
 
   connectedCallback() {
@@ -140,23 +146,40 @@ export class BolleAppShell extends BolleElement {
 
   protected render() {
     const form = this._form;
-    return html`<div class="shell" data-form=${form} role="group" aria-label=${this.label || nothing}>
-      ${this._hasBar
-        ? html`<div class="bar"><slot name="bar"></slot></div>`
-        : nothing}
+    return html`<div
+      class="shell"
+      data-form=${form}
+      role="group"
+      aria-label=${this.label || nothing}
+    >
+      ${
+        this._hasBar
+          ? html`<div class="bar"><slot name="bar"></slot></div>`
+          : nothing
+      }
       <div class="body">
-        ${this._hasNavigation && form !== "compact"
-          ? html`<div class="navigation"><slot name="navigation"></slot></div>`
-          : nothing}
+        ${
+          this._hasNavigation && form !== "compact"
+            ? html`<div class="navigation">
+                <slot name="navigation"></slot>
+              </div>`
+            : nothing
+        }
         <main class="content" id="app-content"><slot></slot></main>
         ${this.renderSupporting()}
       </div>
-      ${this._hasStatus
-        ? html`<div class="status" role="contentinfo"><slot name="status"></slot></div>`
-        : nothing}
-      ${this._hasBottom && form === "compact"
-        ? html`<div class="bottom"><slot name="bottom-bar"></slot></div>`
-        : nothing}
+      ${
+        this._hasStatus
+          ? html`<div class="status" role="contentinfo">
+              <slot name="status"></slot>
+            </div>`
+          : nothing
+      }
+      ${
+        this._hasBottom && form === "compact"
+          ? html`<div class="bottom"><slot name="bottom-bar"></slot></div>`
+          : nothing
+      }
     </div>`;
   }
 }

@@ -2,7 +2,10 @@ import { css } from "lit";
 import { checkMaskStyles } from "./icons.js";
 export const surfaceStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
+    --bb-glint-color: rgb(
+      from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b /
+        0.5
+    );
     /* A card nested in a padded surface takes the radius that surface publishes. */
     --bb-card-radius: var(
       --bb-inset-radius,
@@ -121,15 +124,15 @@ export const surfaceStyles = css`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    min-block-size: 64px;
-    padding-inline: 16px;
+    gap: var(--md-comp-toolbar-gap, 8px);
+    min-block-size: var(--md-comp-toolbar-height, 64px);
+    padding-inline: var(--md-comp-toolbar-inline-space, 16px);
     border-radius: var(--md-sys-shape-corner-none);
     background: var(--md-sys-color-surface-container);
   }
   :host([variant="floating"]) .toolbar {
-    gap: 4px;
-    padding: 8px;
+    gap: var(--md-comp-toolbar-floating-gap, 4px);
+    padding: var(--md-comp-toolbar-floating-padding, 8px);
     border-radius: var(--md-sys-shape-corner-full);
     box-shadow: var(--md-sys-elevation-level3);
   }
@@ -153,13 +156,14 @@ export const surfaceStyles = css`
     overflow: clip;
     /* Nested surfaces: container radius minus the container padding, never below 2px. */
     --bb-inset-radius: max(
-      2px,
+      var(--md-comp-card-min-radius, 2px),
       calc(var(--bb-card-radius) - var(--md-comp-card-padding))
     );
   }
   :host([variant="outlined"]) .card {
     background: var(--md-sys-color-surface);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: var(--md-comp-card-outline-width, 1px) solid
+      var(--md-sys-color-outline-variant);
   }
   :host([variant="elevated"]) .card {
     background: var(--md-sys-color-surface-container-low);
@@ -178,7 +182,7 @@ export const surfaceStyles = css`
   /* Media is content inside the card padding: it follows the same nested radius. */
   ::slotted([slot="media"]) {
     border-radius: max(
-      2px,
+      var(--md-comp-card-min-radius, 2px),
       calc(var(--bb-card-radius) - var(--md-comp-card-padding))
     );
   }
@@ -226,8 +230,9 @@ export const surfaceStyles = css`
     opacity: 0.1;
   }
   .card.is-link:has(> a:focus-visible) {
-    outline: 2px solid var(--md-sys-color-primary);
-    outline-offset: 2px;
+    outline: var(--md-comp-card-focus-indicator-width, 2px) solid
+      var(--md-sys-color-primary);
+    outline-offset: var(--md-comp-card-focus-indicator-offset, 2px);
   }
   :host([variant="elevated"]) .card.is-link:hover {
     box-shadow: var(--bb-float-3, var(--md-sys-elevation-level2));
@@ -296,7 +301,7 @@ export const surfaceStyles = css`
   }
   .divider {
     border: 0;
-    block-size: 1px;
+    block-size: var(--md-comp-divider-thickness, 1px);
     background: var(--md-sys-color-outline-variant);
     margin: 0;
   }
@@ -315,7 +320,7 @@ export const surfaceStyles = css`
     block-size: 100%;
   }
   :host([vertical]) .divider {
-    inline-size: 1px;
+    inline-size: var(--md-comp-divider-thickness, 1px);
     block-size: 100%;
     min-block-size: var(--md-comp-action-target);
   }
@@ -324,12 +329,17 @@ export const surfaceStyles = css`
     padding: 0;
     margin: 0;
   }
-  .list-item > span[aria-hidden="true"] {
+  .list-item > span[aria-hidden="true"],
+  .list-item > slot[part="list-leading"] > span[aria-hidden="true"] {
     display: inline-grid;
     place-items: center;
-    inline-size: 24px;
-    block-size: 24px;
-    font-size: 24px;
+    inline-size: var(--md-comp-list-icon-size, 24px);
+    block-size: var(--md-comp-list-icon-size, 24px);
+    font-size: var(--md-comp-list-icon-size, 24px);
+  }
+  .list-item > slot[part="list-leading"],
+  .list-item > slot[part="list-trailing"] {
+    display: contents;
   }
   .list-item {
     display: flex;
@@ -341,7 +351,8 @@ export const surfaceStyles = css`
     letter-spacing: var(--md-sys-typescale-body-medium-tracking);
     min-block-size: var(--md-comp-list-item-height);
     padding: var(--md-comp-list-item-top-space)
-      var(--md-comp-list-item-trailing-space) var(--md-comp-list-item-bottom-space)
+      var(--md-comp-list-item-trailing-space)
+      var(--md-comp-list-item-bottom-space)
       var(--md-comp-list-item-leading-space);
     color: inherit;
     text-decoration: none;
@@ -349,10 +360,10 @@ export const surfaceStyles = css`
     text-align: start;
   }
   .list-item:has(.support) {
-    min-block-size: 72px;
+    min-block-size: var(--md-comp-list-item-two-line-height, 72px);
   }
   .list-item:has(.support:has(+ .support)) {
-    min-block-size: 88px;
+    min-block-size: var(--md-comp-list-item-three-line-height, 88px);
   }
   .list-text {
     display: grid;
@@ -409,8 +420,9 @@ export const surfaceStyles = css`
   a.list-item {
     cursor: pointer;
     border-radius: var(--bb-list-item-shape, var(--md-sys-shape-corner-full));
-    transition: background-color var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-standard),
+    transition:
+      background-color var(--md-sys-motion-duration-short2)
+        var(--md-sys-motion-easing-standard),
       var(--bb-shape-motion);
   }
   button.list-item:focus-visible,
@@ -440,8 +452,8 @@ export const surfaceStyles = css`
     cursor: pointer;
   }
   .list-disclosure svg {
-    inline-size: 20px;
-    block-size: 20px;
+    inline-size: var(--md-comp-list-disclosure-icon-size, 20px);
+    block-size: var(--md-comp-list-disclosure-icon-size, 20px);
   }
   .list-sublist {
     padding-inline-start: var(--md-comp-field-padding);
@@ -453,7 +465,8 @@ export const surfaceStyles = css`
     align-items: center;
     block-size: var(--md-comp-chip-height);
     border-radius: var(--md-sys-shape-corner-small);
-    border: 1px solid var(--md-sys-color-outline);
+    border: var(--md-comp-chip-outline-width, 1px) solid
+      var(--md-sys-color-outline);
   }
   :host([elevated]) .chip {
     border-color: transparent;
@@ -469,8 +482,10 @@ export const surfaceStyles = css`
     min-block-size: var(--md-comp-action-target);
     margin-block: calc(
       (
-          var(--md-comp-chip-height) - 2px -
-            var(--md-comp-action-target)
+          var(--md-comp-chip-height) -
+            (var(--md-comp-chip-outline-width, 1px) * 2) - var(
+              --md-comp-action-target
+            )
         ) /
         2
     );
@@ -495,8 +510,8 @@ export const surfaceStyles = css`
   }
   .chip input {
     position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
+    inline-size: var(--md-comp-chip-control-size, 1px);
+    block-size: var(--md-comp-chip-control-size, 1px);
     opacity: 0;
     margin: 0;
     pointer-events: none;

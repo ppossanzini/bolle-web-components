@@ -2,7 +2,10 @@ import { css } from "lit";
 import { checkMaskStyles } from "./icons.js";
 export const formStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
+    --bb-glint-color: rgb(
+      from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b /
+        0.5
+    );
   }
   :host {
     display: inline-block;
@@ -26,8 +29,9 @@ export const formStyles = css`
     inline-size: var(--md-comp-selection-size);
     block-size: var(--md-comp-selection-size);
     margin: 0;
-    border: 2px solid var(--md-sys-color-on-surface-variant);
-    border-radius: 2px;
+    border: var(--md-comp-selection-outline-width, 2px) solid
+      var(--md-sys-color-on-surface-variant);
+    border-radius: var(--md-comp-checkbox-shape, 2px);
     background: transparent;
     cursor: pointer;
     transition:
@@ -42,13 +46,16 @@ export const formStyles = css`
   }
   input[type="checkbox"]::after {
     content: "";
-    inline-size: 10px;
-    block-size: 6px;
-    border-inline-start: 2px solid var(--md-sys-color-on-primary);
-    border-block-end: 2px solid var(--md-sys-color-on-primary);
+    inline-size: var(--md-comp-checkbox-check-width, 10px);
+    block-size: var(--md-comp-checkbox-check-height, 6px);
+    border-inline-start: var(--md-comp-selection-outline-width, 2px) solid
+      var(--md-sys-color-on-primary);
+    border-block-end: var(--md-comp-selection-outline-width, 2px) solid
+      var(--md-sys-color-on-primary);
     transform: translateY(-1px) rotate(-45deg) scale(0);
-    transition: transform var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-emphasized-decelerate),
+    transition:
+      transform var(--md-sys-motion-duration-short2)
+        var(--md-sys-motion-easing-emphasized-decelerate),
       var(--bb-shape-motion);
   }
   input[type="checkbox"]:checked,
@@ -60,7 +67,7 @@ export const formStyles = css`
     transform: translateY(-1px) rotate(-45deg) scale(1);
   }
   input[type="checkbox"]:indeterminate::after {
-    inline-size: 10px;
+    inline-size: var(--md-comp-checkbox-check-width, 10px);
     block-size: 0;
     border-block-end: 2px solid var(--md-sys-color-on-primary);
     border-inline-start: 0;
@@ -68,17 +75,19 @@ export const formStyles = css`
   }
   input[type="radio"]::after {
     content: "";
-    inline-size: 10px;
-    block-size: 10px;
+    inline-size: var(--md-comp-radio-dot-size, 10px);
+    block-size: var(--md-comp-radio-dot-size, 10px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-on-primary);
     transform: scale(0);
-    transition: transform var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-emphasized-decelerate),
+    transition:
+      transform var(--md-sys-motion-duration-short2)
+        var(--md-sys-motion-easing-emphasized-decelerate),
       var(--bb-shape-motion);
   }
   input[type="radio"]:checked {
-    border: 5px solid var(--md-sys-color-primary);
+    border: var(--md-comp-radio-selected-outline-width, 5px) solid
+      var(--md-sys-color-primary);
   }
   input[type="radio"]:checked::after {
     transform: scale(0);
@@ -112,7 +121,8 @@ export const formStyles = css`
     inline-size: var(--md-comp-switch-width);
     block-size: var(--md-comp-switch-height);
     border-radius: var(--md-sys-shape-corner-full);
-    border: 2px solid var(--md-sys-color-outline);
+    border: var(--md-comp-selection-outline-width, 2px) solid
+      var(--md-sys-color-outline);
     background: var(--md-sys-color-surface-container-highest);
     transition:
       background-color var(--md-sys-motion-duration-short2)
@@ -125,10 +135,10 @@ export const formStyles = css`
     position: absolute;
     display: grid;
     place-items: center;
-    inline-size: 16px;
-    block-size: 16px;
-    inset-block-start: 6px;
-    inset-inline-start: 8px;
+    inline-size: var(--md-comp-switch-handle-size-off, 16px);
+    block-size: var(--md-comp-switch-handle-size-off, 16px);
+    inset-block-start: var(--md-comp-switch-handle-offset-block-off, 6px);
+    inset-inline-start: var(--md-comp-switch-handle-offset-inline-off, 8px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-outline);
     color: var(--md-sys-color-surface-container-highest);
@@ -146,13 +156,13 @@ export const formStyles = css`
   :host([switch]) .switch-icon {
     display: grid;
     place-items: center;
-    font-size: 16px;
+    font-size: var(--md-comp-switch-icon-size, 16px);
     line-height: 1;
   }
   :host([switch]) .switch-icon svg,
   :host([switch]) .switch-icon .icon {
-    inline-size: 16px;
-    block-size: 16px;
+    inline-size: var(--md-comp-switch-icon-size, 16px);
+    block-size: var(--md-comp-switch-icon-size, 16px);
   }
   :host([switch]) .switch-icon-on {
     display: none;
@@ -162,10 +172,10 @@ export const formStyles = css`
     border-color: var(--md-sys-color-primary);
   }
   :host([switch]) input:checked + .switch-ui .switch-handle {
-    inline-size: 24px;
-    block-size: 24px;
-    inset-block-start: 2px;
-    inset-inline-start: 20px;
+    inline-size: var(--md-comp-switch-handle-size-on, 24px);
+    block-size: var(--md-comp-switch-handle-size-on, 24px);
+    inset-block-start: var(--md-comp-switch-handle-offset-block-on, 2px);
+    inset-inline-start: var(--md-comp-switch-handle-offset-inline-on, 20px);
     background: var(--md-sys-color-on-primary);
     color: var(--md-sys-color-on-primary-container);
   }
@@ -211,7 +221,7 @@ export const formStyles = css`
     display: flex;
     align-items: center;
     gap: var(--md-comp-action-gap);
-    min-block-size: 56px;
+    min-block-size: var(--md-comp-search-bar-height, 56px);
     padding-inline: var(--md-comp-search-bar-leading-space)
       var(--md-comp-search-bar-trailing-space);
     border-radius: var(--md-sys-shape-corner-full);
@@ -342,7 +352,10 @@ export const formStyles = css`
     inset: auto;
     z-index: 20;
     box-sizing: border-box;
-    max-block-size: min(320px, calc(100dvh - 16px));
+    max-block-size: min(
+      var(--md-comp-autocomplete-max-height, 320px),
+      calc(100dvh - var(--md-comp-popup-viewport-margin, 16px))
+    );
     margin: 0;
     border: 0;
     padding: var(--md-comp-menu-container-padding);
@@ -400,7 +413,7 @@ export const formStyles = css`
     outline: none;
     inline-size: 100%;
     min-inline-size: 0;
-    block-size: 24px;
+    block-size: var(--md-comp-field-input-height, 24px);
     padding: 0;
     color: inherit;
     font: var(--md-sys-typescale-body-large-font);
@@ -408,7 +421,7 @@ export const formStyles = css`
   }
   .field textarea {
     block-size: auto;
-    min-block-size: 24px;
+    min-block-size: var(--md-comp-field-input-height, 24px);
     resize: vertical;
   }
   .field span {
@@ -423,7 +436,7 @@ export const formStyles = css`
   }
   .choice {
     display: grid;
-    gap: 2px;
+    gap: var(--md-comp-choice-support-gap, 2px);
   }
   .choice-support {
     font: var(--md-sys-typescale-body-small-font);
@@ -457,7 +470,7 @@ export const formStyles = css`
     align-items: center;
     justify-content: center;
     gap: var(--md-comp-action-gap);
-    min-block-size: 40px;
+    min-block-size: var(--md-comp-segmented-button-height, 40px);
     padding-inline: var(--md-comp-field-padding);
     border: 1px solid var(--md-sys-color-outline);
     border-inline-start-width: 0;
@@ -510,8 +523,8 @@ export const formStyles = css`
     position: relative;
     display: inline-flex;
     flex-wrap: wrap;
-    gap: 2px;
-    padding: 4px;
+    gap: var(--md-comp-segmented-button-gap, 2px);
+    padding: var(--md-comp-segmented-button-padding, 4px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-surface-container-high);
   }
@@ -521,7 +534,8 @@ export const formStyles = css`
   }
   fieldset label {
     z-index: 1;
-    transition: color var(--md-sys-motion-duration-short4),
+    transition:
+      color var(--md-sys-motion-duration-short4),
       var(--bb-shape-motion);
   }
   .drop {

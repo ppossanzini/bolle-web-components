@@ -16,8 +16,11 @@ export const menuStyles = css`
     --menu-container: var(--md-sys-color-surface-container);
     --menu-selected: var(--md-sys-color-secondary-container);
     --menu-on-selected: var(--md-sys-color-on-secondary-container);
-    --md-comp-menu-item-horizontal-padding: 12px;
-    --md-comp-menu-icon-size: 24px;
+    --md-comp-menu-item-horizontal-padding: var(
+      --md-comp-menu-baseline-item-horizontal-padding,
+      12px
+    );
+    --md-comp-menu-icon-size: var(--md-comp-menu-baseline-icon-size, 24px);
   }
   :host([color-scheme="vibrant"]) {
     --menu-container: var(
@@ -59,7 +62,7 @@ export const menuStyles = css`
       var(--md-comp-menus-standard-menu-container-shape)
     );
     --menu-item-radius: max(
-      2px,
+      var(--md-comp-menu-item-radius-min, 2px),
       calc(var(--menu-radius) - var(--md-comp-menu-container-padding-block))
     );
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
@@ -88,7 +91,10 @@ export const menuStyles = css`
     inline-size: auto;
     min-inline-size: 0;
     max-inline-size: none;
-    max-block-size: min(70dvh, 32rem);
+    max-block-size: min(
+      var(--md-comp-menu-compact-viewport-height, 70dvh),
+      var(--md-comp-menu-compact-max-height, 32rem)
+    );
     border-start-start-radius: var(--md-sys-shape-corner-extra-large);
     border-start-end-radius: var(--md-sys-shape-corner-extra-large);
     border-end-start-radius: 0;
@@ -121,9 +127,10 @@ export const menuStyles = css`
     }
   }
   .grabber {
-    inline-size: 32px;
-    block-size: 4px;
-    margin: 4px auto 8px;
+    inline-size: var(--md-comp-menu-compact-grabber-width, 32px);
+    block-size: var(--md-comp-menu-compact-grabber-height, 4px);
+    margin: var(--md-comp-menu-compact-grabber-margin-block-start, 4px) auto
+      var(--md-comp-menu-compact-grabber-margin-block-end, 8px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-outline-variant);
   }
@@ -136,7 +143,8 @@ export const menuStyles = css`
     inline-size: 100%;
     min-block-size: var(--md-comp-menu-item-height);
     padding-inline: var(--md-comp-menu-item-between-space);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: var(--md-comp-menu-filter-border-width, 1px) solid
+      var(--md-sys-color-outline-variant);
     border-radius: var(--menu-item-radius);
     background: transparent;
     color: inherit;
@@ -189,7 +197,7 @@ export const menuStyles = css`
   a::after {
     content: "";
     position: absolute;
-    inset: -2px 0;
+    inset: calc(-1 * var(--md-comp-menu-item-hit-area-overhang, 2px)) 0;
   }
   :host([variant="baseline"]) button,
   :host([variant="baseline"]) a {
@@ -266,7 +274,8 @@ export const menuStyles = css`
     color: var(--menu-secondary);
   }
   .group + .group {
-    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+    border-block-start: var(--md-comp-menu-group-divider-width, 1px) solid
+      var(--md-sys-color-outline-variant);
   }
   [aria-checked="true"] {
     background: var(--menu-selected);
@@ -326,10 +335,12 @@ export const menuStyles = css`
   }
   @media (forced-colors: active) {
     [popover] {
-      border: 1px solid CanvasText;
+      border: var(--md-comp-menu-forced-colors-border-width, 1px) solid
+        CanvasText;
     }
     [aria-checked="true"] {
-      outline: 1px solid Highlight;
+      outline: var(--md-comp-menu-forced-colors-outline-width, 1px) solid
+        Highlight;
     }
     button::before,
     a::before {

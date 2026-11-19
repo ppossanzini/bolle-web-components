@@ -50,7 +50,7 @@ export const selectStyles = css`
     align-items: center;
     gap: var(--md-comp-action-gap);
     min-inline-size: 0;
-    min-block-size: 24px;
+    min-block-size: var(--md-comp-select-value-height, 24px);
   }
   .value {
     flex: 1;
@@ -71,8 +71,9 @@ export const selectStyles = css`
     inline-size: var(--md-comp-icon-size);
     block-size: var(--md-comp-icon-size);
     color: var(--md-sys-color-on-surface-variant);
-    transition: rotate var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-standard),
+    transition:
+      rotate var(--md-sys-motion-duration-short2)
+        var(--md-sys-motion-easing-standard),
       var(--bb-shape-motion);
   }
   .chevron svg {

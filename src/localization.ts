@@ -139,8 +139,15 @@ export const menuMessages = {
 
 export type MenuLabels = { [K in keyof typeof menuMessages.en]: string };
 
-export const menuLabels = (locale = "") =>
-  menuMessages[supportedLocale(locale || document.documentElement.lang)];
+export function menuLabels(
+  locale = "",
+  overrides: Partial<MenuLabels> = {},
+): MenuLabels {
+  return {
+    ...menuMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...overrides,
+  };
+}
 
 /** Built-in labels of controls the caller cannot name: tab scroll buttons, tooltip dismiss. */
 export const controlMessages = {
@@ -162,8 +169,21 @@ export const controlMessages = {
   zh: { previousTabs: "上一组标签", nextTabs: "下一组标签", dismiss: "关闭" },
 } as const;
 
-export const controlLabels = (locale: string) =>
-  controlMessages[supportedLocale(locale || document.documentElement.lang)];
+export type ControlLabels = {
+  [K in keyof typeof controlMessages.en]: string;
+};
+
+export function controlLabels(
+  locale: string,
+  overrides: Partial<ControlLabels> = {},
+): ControlLabels {
+  return {
+    ...controlMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ],
+    ...overrides,
+  };
+}
 
 /** Built-in texts of the sidebar. `{count}` and `{query}` are filled at runtime. */
 export const sidebarMessages = {
@@ -232,9 +252,9 @@ export const dataTableMessages = {
     hideColumn: "Hide the column",
     showColumn: "Show the column",
     resizeColumn: "Column width {column}",
-    rowActions: "Actions for {key}",
-    expandRow: "Show the details of {key}",
-    collapseRow: "Hide the details of {key}",
+    rowActions: "Actions for {row}",
+    expandRow: "Show the details of {row}",
+    collapseRow: "Hide the details of {row}",
     details: "Details",
     rows: "Rows",
     perPage: "Rows per page",
@@ -246,6 +266,7 @@ export const dataTableMessages = {
     lastPage: "Last page",
     columnPanel: "Columns",
     moved: "{column} moved to position {index} of {count}.",
+    moveCancelled: "Move cancelled for {column}.",
     moveBlocked: "{column} cannot move further.",
     pinned: "{column} is pinned to the start.",
     unpinned: "{column} is no longer pinned.",
@@ -290,6 +311,7 @@ export const dataTableMessages = {
     lastPage: "Ultima pagina",
     columnPanel: "Colonne",
     moved: "{column} spostata in posizione {index} di {count}.",
+    moveCancelled: "Spostamento annullato per {column}.",
     moveBlocked: "{column} non può essere spostata oltre.",
     pinned: "{column} è fissata all'inizio.",
     unpinned: "{column} non è più fissata.",
@@ -334,6 +356,7 @@ export const dataTableMessages = {
     lastPage: "Dernière page",
     columnPanel: "Colonnes",
     moved: "{column} déplacée en position {index} sur {count}.",
+    moveCancelled: "Déplacement annulé pour {column}.",
     moveBlocked: "{column} ne peut pas aller plus loin.",
     pinned: "{column} est fixée au début.",
     unpinned: "{column} n'est plus fixée.",
@@ -377,6 +400,7 @@ export const dataTableMessages = {
     lastPage: "最后一页",
     columnPanel: "列",
     moved: "{column} 已移至第 {index} 位，共 {count} 列。",
+    moveCancelled: "已取消移动 {column}。",
     moveBlocked: "{column} 无法继续移动。",
     pinned: "{column} 已固定在开头。",
     unpinned: "{column} 已取消固定。",
@@ -596,6 +620,9 @@ export const navigationTrailMessages = {
 export type BreadcrumbLabels = {
   label: string;
   expand: string;
+};
+
+export type AvatarGroupLabels = {
   group: string;
   more: string;
 };
@@ -604,10 +631,28 @@ export function breadcrumbLabels(
   locale: string,
   overrides: Partial<BreadcrumbLabels> = {},
 ): BreadcrumbLabels {
-  return {
-    ...navigationTrailMessages[
+  const messages =
+    navigationTrailMessages[
       supportedLocale(locale || document.documentElement.lang)
-    ],
+    ];
+  return {
+    label: messages.label,
+    expand: messages.expand,
+    ...overrides,
+  };
+}
+
+export function avatarGroupLabels(
+  locale: string,
+  overrides: Partial<AvatarGroupLabels> = {},
+): AvatarGroupLabels {
+  const messages =
+    navigationTrailMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ];
+  return {
+    group: messages.group,
+    more: messages.more,
     ...overrides,
   };
 }
@@ -928,5 +973,16 @@ export function ganttLabels(
   };
 }
 
-export const sidebarLabels = (locale = "") =>
-  sidebarMessages[supportedLocale(locale || document.documentElement.lang)];
+export type SidebarLabels = { [K in keyof typeof sidebarMessages.en]: string };
+
+export function sidebarLabels(
+  locale = "",
+  overrides: Partial<SidebarLabels> = {},
+): SidebarLabels {
+  return {
+    ...sidebarMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ],
+    ...overrides,
+  };
+}

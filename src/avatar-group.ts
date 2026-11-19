@@ -2,7 +2,7 @@ import { html, nothing, type PropertyValues } from "lit";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { avatarGroupStyles } from "./avatar-group.styles.js";
-import { breadcrumbLabels, type BreadcrumbLabels } from "./localization.js";
+import { avatarGroupLabels, type AvatarGroupLabels } from "./localization.js";
 import type { BolleAvatar } from "./avatar.js";
 
 export interface AvatarGroupSelectDetail {
@@ -29,7 +29,6 @@ export class BolleAvatarGroup extends BolleElement {
     label: {},
     labels: { attribute: false },
     _more: { state: true },
-    _count: { state: true },
   };
   static styles = [commonStyles, avatarGroupStyles];
 
@@ -38,7 +37,6 @@ export class BolleAvatarGroup extends BolleElement {
   /** People in the group when not every one of them is passed as an avatar. */
   total = 0;
   size: "xs" | "small" | "medium" | "large" | "xl" = "medium";
-  /** Share of an avatar the next one covers, from 0 to 1. */
   /**
    * Share of an avatar the next one covers, from 0 to 1. Kept small so two
    * initials stay readable under the avatar that follows.
@@ -48,16 +46,11 @@ export class BolleAvatarGroup extends BolleElement {
   interactive = false;
   /** Accessible name of the group. */
   label = "";
-  labels: Partial<BreadcrumbLabels> = {};
+  labels: Partial<AvatarGroupLabels> = {};
 
   private _more = 0;
-  private _count = 0;
-
-  private get text(): BreadcrumbLabels {
-    return breadcrumbLabels(
-      document.documentElement.lang,
-      this.labels as Partial<BreadcrumbLabels>,
-    );
+  private get text(): AvatarGroupLabels {
+    return avatarGroupLabels(document.documentElement.lang, this.labels);
   }
 
   private get avatars() {
@@ -69,10 +62,13 @@ export class BolleAvatarGroup extends BolleElement {
     this.setAttribute("role", "group");
   }
 
-  protected updated(changed: PropertyValues<this>) {
+  protected willUpdate(changed: PropertyValues<this>) {
+    if (changed.has("max") || changed.has("total")) this.refresh();
+  }
+
+  protected updated() {
     this.style.setProperty("--bb-avatar-group-overlap", String(this.overlap));
     this.setAttribute("aria-label", this.accessibleName);
-    if (changed.has("max") || changed.has("total")) this.refresh();
   }
 
   /** Hides the avatars past `max` and counts the people behind the bubble. */
@@ -86,7 +82,6 @@ export class BolleAvatarGroup extends BolleElement {
       if (hide) hidden += 1;
     });
     const declared = this.total || avatars.length;
-    this._count = declared;
     this._more = Math.max(0, hidden + Math.max(0, declared - avatars.length));
   }
 
@@ -99,21 +94,25 @@ export class BolleAvatarGroup extends BolleElement {
     const label = fill(this.text.more, { count: more });
     return html`<span class="group">
       <slot @slotchange=${() => this.refresh()}></slot>
-      ${more > 0
-        ? this.interactive
-          ? html`<button
-              class="more"
-              type="button"
-              aria-label=${label}
-              @click=${() =>
-                this.emit<AvatarGroupSelectDetail>("avatar-group-select", {
-                  count: more,
-                })}
-            >
-              +${more}
-            </button>`
-          : html`<span class="more" role="img" aria-label=${label}>+${more}</span>`
-        : nothing}
+      ${
+        more > 0
+          ? this.interactive
+            ? html`<button
+                class="more"
+                type="button"
+                aria-label=${label}
+                @click=${() =>
+                  this.emit<AvatarGroupSelectDetail>("avatar-group-select", {
+                    count: more,
+                  })}
+              >
+                +${more}
+              </button>`
+            : html`<span class="more" role="img" aria-label=${label}
+                >+${more}</span
+              >`
+          : nothing
+      }
     </span>`;
   }
 }

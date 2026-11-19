@@ -1,5 +1,6 @@
-import { controlLabels } from "./localization.js";
+import { controlLabels, type ControlLabels } from "./localization.js";
 import { html, nothing } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import { BolleElement, moveFocus, type BolleItem } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { navigationStyles, tabsLayoutStyles } from "./navigation.styles.js";
@@ -19,18 +20,35 @@ export class BolleNavigationBar extends BolleElement {
   variant = "standard";
   layout = "vertical";
   protected content(item: BolleItem) {
-    return html`<span class="indicator"
-        >${item.icon ? html`<span class="icon" aria-hidden="true">${item.icon}</span>` : nothing}</span
-      ><span>${item.label}</span>`;
+    return html`<span class="indicator" part="indicator navigation-indicator"
+        >${item.icon ? html`<span class="icon" part="icon navigation-icon" aria-hidden="true">${item.icon}</span>` : nothing}</span
+      ><span part="label navigation-label">${item.label}</span>`;
   }
   protected select(item: BolleItem) {
     this.value = item.id;
     this.emit("navigate", { id: item.id });
   }
   protected render() {
-    return html`<nav aria-label=${this.label}>
-      <ul class="destinations">
-        ${this.items.map((item) => html`<li>${item.href && !item.disabled ? html`<a class="destination" href=${item.href} aria-current=${this.value === item.id ? "page" : nothing} @click=${() => this.select(item)}>${this.content(item)}</a>` : html`<button class="destination" ?disabled=${item.disabled} aria-current=${this.value === item.id ? "page" : nothing} @click=${() => this.select(item)}>${this.content(item)}</button>`}</li>`)}
+    return html`<nav
+      part=${
+        this.hasAttribute("rail")
+          ? "navigation navigation-rail"
+          : "navigation navigation-bar"
+      }
+      aria-label=${this.label}
+    >
+      <ul class="destinations" part="destinations">
+        ${repeat(
+          this.items,
+          (item) => item.id,
+          (item) =>
+            html`<li
+              part="destination-item navigation-destination-item"
+              data-id=${item.id}
+            >
+              ${item.href && !item.disabled ? html`<a class="destination" part="destination navigation-destination" href=${item.href} aria-current=${this.value === item.id ? "page" : nothing} @click=${() => this.select(item)}>${this.content(item)}</a>` : html`<button class="destination" part="destination navigation-destination" ?disabled=${item.disabled} aria-current=${this.value === item.id ? "page" : nothing} @click=${() => this.select(item)}>${this.content(item)}</button>`}
+            </li>`,
+        )}
       </ul>
     </nav>`;
   }
@@ -55,6 +73,7 @@ export class BolleTabs extends BolleElement {
     variant: { reflect: true },
     activation: {},
     scrollable: { type: Boolean, reflect: true },
+    labels: { attribute: false },
   };
   static styles = [commonStyles, navigationStyles, tabsLayoutStyles];
   items: BolleItem[] = [];
@@ -63,6 +82,10 @@ export class BolleTabs extends BolleElement {
   variant = "primary";
   activation: "automatic" | "manual" = "automatic";
   scrollable = false;
+  labels: Partial<ControlLabels> = {};
+  private get text(): ControlLabels {
+    return controlLabels(this.lang, this.labels);
+  }
   private atStart = true;
   private atEnd = true;
   private onScroll = () => this.syncScrollState();
@@ -120,6 +143,7 @@ export class BolleTabs extends BolleElement {
   }
   private chevron(direction: -1 | 1) {
     return html`<svg
+      part="scroll-icon"
       viewBox="0 0 24 24"
       aria-hidden="true"
       fill="none"
@@ -135,6 +159,7 @@ export class BolleTabs extends BolleElement {
     const active = this.selectedId();
     const list = html`<div
       class=${this.scrollable ? "tab-scroll" : nothing}
+      part="tablist"
       role="tablist"
       aria-label=${this.label}
       @keydown=${(event: KeyboardEvent) => {
@@ -155,15 +180,37 @@ export class BolleTabs extends BolleElement {
         }
       }}
     >
-      ${this.items.map((item, index) => html`<button class="destination" role="tab" id=${`tab-${index}`} data-id=${item.id} aria-selected=${String(active === item.id)} aria-controls=${`panel-${index}`} tabindex=${active === item.id ? 0 : -1} ?disabled=${item.disabled} @click=${() => this.select(item.id)}>${item.icon ? html`<span class="tab-icon icon" aria-hidden="true">${item.icon}</span>` : nothing}<span>${item.label}</span>${item.badge ? html`<span class="tab-badge">${item.badge}</span>` : nothing}</button>`)}
+      ${repeat(
+        this.items,
+        (item) => item.id,
+        (item) =>
+          html`<button
+            class="destination"
+            part="tab"
+            role="tab"
+            id=${`tab-${encodeURIComponent(item.id)}`}
+            data-id=${item.id}
+            aria-selected=${String(active === item.id)}
+            aria-controls=${`panel-${encodeURIComponent(item.id)}`}
+            tabindex=${active === item.id ? 0 : -1}
+            ?disabled=${item.disabled}
+            @click=${() => this.select(item.id)}
+          >
+            ${item.icon ? html`<span class="tab-icon icon" part="tab-icon" aria-hidden="true">${item.icon}</span>` : nothing}<span
+              part="tab-label"
+              >${item.label}</span
+            >${item.badge ? html`<span class="tab-badge" part="tab-badge">${item.badge}</span>` : nothing}
+          </button>`,
+      )}
     </div>`;
     return html`${
       this.scrollable
-        ? html`<div class="tab-scroller">
+        ? html`<div class="tab-scroller" part="tab-scroller">
             <button
               class="tab-scroll-button"
+              part="scroll-button scroll-button-previous"
               type="button"
-              aria-label=${controlLabels(this.lang).previousTabs}
+              aria-label=${this.text.previousTabs}
               ?disabled=${this.atStart}
               @click=${() => this.scrollTabs(-1)}
             >
@@ -172,8 +219,9 @@ export class BolleTabs extends BolleElement {
             ${list}
             <button
               class="tab-scroll-button"
+              part="scroll-button scroll-button-next"
               type="button"
-              aria-label=${controlLabels(this.lang).nextTabs}
+              aria-label=${this.text.nextTabs}
               ?disabled=${this.atEnd}
               @click=${() => this.scrollTabs(1)}
             >
@@ -182,6 +230,23 @@ export class BolleTabs extends BolleElement {
           </div>`
         : list
     }
-    ${this.items.map((item, index) => html`<section role="tabpanel" id=${`panel-${index}`} aria-labelledby=${`tab-${index}`} tabindex="0" ?hidden=${active !== item.id}><slot name=${item.id}></slot></section>`)}`;
+    ${repeat(
+      this.items,
+      (item) => item.id,
+      (item) =>
+        html`<section
+          part="tabpanel"
+          role="tabpanel"
+          id=${`panel-${encodeURIComponent(item.id)}`}
+          data-id=${item.id}
+          aria-labelledby=${`tab-${encodeURIComponent(item.id)}`}
+          tabindex="0"
+          ?hidden=${active !== item.id}
+        >
+          <slot part="tab-content" name=${`content-${item.id}`}
+            ><slot name=${item.id}></slot
+          ></slot>
+        </section>`,
+    )}`;
   }
 }

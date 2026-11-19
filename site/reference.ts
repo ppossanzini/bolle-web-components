@@ -1,4 +1,5 @@
 import readme from "../README.md?raw";
+import anatomy from "./component-anatomy.json";
 import { l } from "./i18n.js";
 
 export interface ApiRow {
@@ -13,6 +14,11 @@ export interface ApiRow {
 export interface SupportInfo {
   support: string[];
   limits: string[];
+}
+
+export interface ComponentSurface {
+  slots: string[];
+  parts: string[];
 }
 
 interface DeclaredProperty {
@@ -35,7 +41,8 @@ function inferType(declared: DeclaredProperty, value: unknown): string {
   if (name) return name.toLowerCase();
   if (Array.isArray(value)) return "array";
   if (value !== null && typeof value === "object") return "object";
-  if (typeof value === "boolean" || typeof value === "number") return typeof value;
+  if (typeof value === "boolean" || typeof value === "number")
+    return typeof value;
   return "string";
 }
 
@@ -51,10 +58,14 @@ export function componentApi(tag: string): ApiRow[] {
       })
     | undefined;
   if (!ctor?.elementProperties) return [];
-  const sample = document.createElement(tag) as unknown as Record<string, unknown>;
+  const sample = document.createElement(tag) as unknown as Record<
+    string,
+    unknown
+  >;
   const rows: ApiRow[] = [];
   for (const [key, declared] of ctor.elementProperties) {
-    if (typeof key !== "string" || key.startsWith("_") || declared.state) continue;
+    if (typeof key !== "string" || key.startsWith("_") || declared.state)
+      continue;
     const value = sample[key];
     const attribute =
       declared.attribute === false
@@ -73,6 +84,21 @@ export function componentApi(tag: string): ApiRow[] {
   rows.sort((left, right) => left.name.localeCompare(right.name));
   apiCache.set(tag, rows);
   return rows;
+}
+
+const surfaceCache = new Map<string, ComponentSurface>();
+
+/** Public slots and CSS parts extracted from the component class hierarchy. */
+export function componentSurface(tag: string): ComponentSurface {
+  const cached = surfaceCache.get(tag);
+  if (cached) return cached;
+  const ctor = customElements.get(tag);
+  const result = anatomy[ctor?.name as keyof typeof anatomy] ?? {
+    slots: [],
+    parts: [],
+  };
+  surfaceCache.set(tag, result);
+  return result;
 }
 
 const splitClauses = (cell: string) =>
@@ -106,6 +132,7 @@ export interface PageMarkdown {
   code: string;
   codeLanguage: string;
   api: ApiRow[];
+  surface?: ComponentSurface;
   support?: SupportInfo;
 }
 
@@ -137,9 +164,32 @@ export function pageMarkdown(page: PageMarkdown): string {
       ),
     );
   }
+  if (page.surface?.slots.length || page.surface?.parts.length) {
+    lines.push("", l("## Anatomia pubblica"));
+    if (page.surface.slots.length)
+      lines.push(
+        "",
+        `${l("Slot")}: ${page.surface.slots.map((slot) => `\`${slot}\``).join(", ")}`,
+      );
+    if (page.surface.parts.length)
+      lines.push(
+        "",
+        `${l("CSS part")}: ${page.surface.parts.map((part) => `\`${part}\``).join(", ")}`,
+      );
+  }
   if (page.support) {
-    lines.push("", l("## Supporto"), "", ...page.support.support.map((item) => `- ${item}`));
-    lines.push("", l("## Limiti aperti"), "", ...page.support.limits.map((item) => `- ${item}`));
+    lines.push(
+      "",
+      l("## Supporto"),
+      "",
+      ...page.support.support.map((item) => `- ${item}`),
+    );
+    lines.push(
+      "",
+      l("## Limiti aperti"),
+      "",
+      ...page.support.limits.map((item) => `- ${item}`),
+    );
   }
   return `${lines.join("\n")}\n`;
 }

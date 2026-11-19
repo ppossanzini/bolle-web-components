@@ -4,9 +4,12 @@ import { bolleStyles } from "./shared.styles.js";
 import { sliderStyles } from "./slider.styles.js";
 
 const clampPercent = (value: number, min: number, max: number) =>
-  max > min ? Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100)) : 0;
+  max > min
+    ? Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100))
+    : 0;
 const reducedMotion = () =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
+let sliderLabelId = 0;
 
 export type SliderVariant = "bubble" | "liquid" | "membrane" | "range";
 
@@ -46,6 +49,7 @@ export class BolleSlider extends BolleFormElement {
   protected _width = 340;
   private initialUpper = 100;
   private observed: Element | null = null;
+  private readonly labelId = `bolle-slider-label-${++sliderLabelId}`;
   private resize = new ResizeObserver(([entry]) => {
     this._width = Math.max(56, entry.contentRect.width);
   });
@@ -105,8 +109,11 @@ export class BolleSlider extends BolleFormElement {
   ) {
     return html`<input
       type="range"
+      part="input"
+      name=${this.name || nothing}
       data-end=${end ?? nothing}
-      aria-label=${label}
+      aria-label=${label !== this.label ? label : nothing}
+      aria-labelledby=${label === this.label ? this.labelId : nothing}
       aria-valuetext=${`${current}${this.suffix}`}
       min=${this.min}
       max=${this.max}
@@ -127,10 +134,15 @@ export class BolleSlider extends BolleFormElement {
   }
 
   private head(output: string | typeof nothing) {
-    return html`<p class="label">
-      <span>${this.label}</span>${output === nothing
-        ? nothing
-        : html`<strong>${output}</strong>`}
+    return html`<p id=${this.labelId} class="label" part="label">
+      <span><slot name="label">${this.label}</slot></span
+      >${
+        output === nothing
+          ? nothing
+          : html`<strong part="value"
+              ><slot name="value">${output}</slot></strong
+            >`
+      }
     </p>`;
   }
 
@@ -156,8 +168,9 @@ export class BolleSlider extends BolleFormElement {
 
     if (this.variant === "liquid")
       return html`${this.head(`${v}${this.suffix}`)}
-        <div class="slider liquid" style=${`--v:${p}`}>
-          <span class="icon-slot" aria-hidden="true">${this.icon ?? nothing}</span
+        <div class="slider liquid" part="slider liquid" style=${`--v:${p}`}>
+          <span class="icon-slot" part="icon" aria-hidden="true"
+            ><slot name="icon">${this.icon ?? nothing}</slot></span
           >${single}
         </div>`;
 
@@ -173,6 +186,7 @@ export class BolleSlider extends BolleFormElement {
       return html`${this.head(nothing)}
         <div
           class="slider membrane"
+          part="slider membrane"
           ?data-pointer=${this._pointer}
           @pointerdown=${this.onPointerDown}
           @pointerup=${this.onPointerUp}
@@ -185,19 +199,19 @@ export class BolleSlider extends BolleFormElement {
               <stop class="membrane-on" offset=${x / w}></stop><stop class="membrane-off" offset=${x / w}></stop>
             </linearGradient></defs>
             <text class="membrane-value" text-anchor="middle" x=${x} y=${base + dip - 26}>${v}${this.suffix}</text>
-            <path d=${d} fill="none" stroke="url(#membrane-fill)" stroke-width="8" stroke-linecap="round"></path>
-            <circle class="membrane-thumb" cx=${x} cy=${base + dip} r=${this._pressed ? 16 : 13}></circle>`}
+            <path part="track" d=${d} fill="none" stroke="url(#membrane-fill)" stroke-width="8" stroke-linecap="round"></path>
+            <circle class="membrane-thumb" part="thumb" cx=${x} cy=${base + dip} r=${this._pressed ? 16 : 13}></circle>`}
           </svg>
           ${single}
         </div>`;
     }
 
     return html`${this.head(this.compact ? `${v}${this.suffix}` : nothing)}
-      <div class="slider" style=${`--v:${p}`}>
-        <div class="track"></div>
-        <div class="thumb"></div>
-        <output class="bubble" aria-hidden="true"
-          ><span>${v}${this.suffix}</span></output
+      <div class="slider" part="slider" style=${`--v:${p}`}>
+        <div class="track" part="track"></div>
+        <div class="thumb" part="thumb"></div>
+        <output class="bubble" part="bubble" aria-hidden="true"
+          ><span part="bubble-value">${v}${this.suffix}</span></output
         >${single}
       </div>`;
   }
@@ -210,14 +224,15 @@ export class BolleSlider extends BolleFormElement {
     return html`${this.head(`${lo} – ${hi}${this.suffix}`)}
       <div
         class=${ph - pl < 16 ? "range merged" : "range"}
+        part=${ph - pl < 16 ? "range range-merged" : "range"}
         style=${`--lo:${pl};--hi:${ph}`}
         ?data-pointer=${this._pointer}
         @pointerdown=${() => (this._pointer = true)}
         @keydown=${this.onKeyDown}
       >
-        <div class="bridge"></div>
-        <div class="drop thumb-lo"></div>
-        <div class="drop thumb-hi"></div>
+        <div class="bridge" part="bridge"></div>
+        <div class="drop thumb-lo" part="thumb thumb-lower"></div>
+        <div class="drop thumb-hi" part="thumb thumb-upper"></div>
         ${this.input(
           lo,
           this.label,
@@ -248,12 +263,16 @@ export class BolleSteps extends BolleFormElement {
     ...BolleFormElement.properties,
     options: {
       converter: (value: string | null) =>
-        (value ?? "").split(",").map((option) => option.trim()).filter(Boolean),
+        (value ?? "")
+          .split(",")
+          .map((option) => option.trim())
+          .filter(Boolean),
     },
   };
   static styles = [bolleStyles, sliderStyles];
   options: string[] = [];
   value = "0";
+  private readonly labelId = `bolle-steps-label-${++sliderLabelId}`;
 
   protected syncForm() {
     const label = this.options[Number(this.value)];
@@ -294,15 +313,27 @@ export class BolleSteps extends BolleFormElement {
   protected render() {
     const current = Number(this.value);
     const count = this.options.length;
-    return html`<p class="label">
-        <span>${this.label}: <strong>${this.options[current] ?? ""}</strong></span>
+    return html`<p id=${this.labelId} class="label" part="label">
+        <span
+          ><slot name="label">${this.label}</slot>:
+          <strong part="value">${this.options[current] ?? ""}</strong></span
+        >
       </p>
-      <div class="steps" role="radiogroup" aria-label=${this.label}>
+      <div
+        class="steps"
+        part="steps"
+        role="radiogroup"
+        aria-label=${this.label}
+        aria-labelledby=${this.labelId}
+      >
         ${this.options.map((option, index) => {
-          const size = Math.round(16 + 30 * (count === 1 ? 1 : index / (count - 1)));
+          const size = Math.round(
+            16 + 30 * (count === 1 ? 1 : index / (count - 1)),
+          );
           return html`<button
             type="button"
             class="step"
+            part="step"
             role="radio"
             aria-label=${option}
             aria-checked=${String(index === current)}
@@ -311,7 +342,11 @@ export class BolleSteps extends BolleFormElement {
             @click=${() => this.select(index)}
             @keydown=${(event: KeyboardEvent) => this.onKey(event, index)}
           >
-            <span class="dot" style=${`--size:${size}px`}></span>
+            <span
+              class="dot"
+              part="step-dot"
+              style=${`--size:${size}px`}
+            ></span>
           </button>`;
         })}
       </div>`;

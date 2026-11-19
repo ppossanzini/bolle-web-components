@@ -58,9 +58,10 @@ export class BolleCheckbox extends BolleFormElement {
     this.emit("change", { checked: this.checked, value: this.value });
   }
   protected render() {
-    return html`<span class="choice">
-      <label
+    return html`<span class="choice" part="container">
+      <label part="label"
         ><input
+          part="control"
           type=${this.inputType}
           role=${this.hasAttribute("switch") ? "switch" : nothing}
           .checked=${this.checked}
@@ -70,9 +71,9 @@ export class BolleCheckbox extends BolleFormElement {
           aria-invalid=${this.error ? "true" : nothing}
           aria-describedby=${this.supportingText ? "choice-support" : nothing}
           @change=${this.change}
-        /><span><slot>${this.label}</slot></span></label
+        /><span part="label-text"><slot>${this.label}</slot></span></label
       >
-      ${this.supportingText ? html`<span class="choice-support" id="choice-support">${this.supportingText}</span>` : nothing}
+      ${this.supportingText ? html`<span class="choice-support" id="choice-support" part="supporting-text">${this.supportingText}</span>` : nothing}
     </span>`;
   }
 }
@@ -90,9 +91,10 @@ export class BolleSwitch extends BolleCheckbox {
     this.setAttribute("switch", "");
   }
   protected render() {
-    return html`<span class="choice">
-      <label
+    return html`<span class="choice" part="container">
+      <label part="label"
         ><input
+          part="control"
           type="checkbox"
           role="switch"
           .checked=${this.checked}
@@ -101,17 +103,17 @@ export class BolleSwitch extends BolleCheckbox {
           aria-invalid=${this.error ? "true" : nothing}
           aria-describedby=${this.supportingText ? "choice-support" : nothing}
           @change=${this.change}
-        /><span class="switch-ui" aria-hidden="true"
-          ><span class="switch-handle"
-            ><span class="switch-icon switch-icon-off"
+        /><span class="switch-ui" part="track" aria-hidden="true"
+          ><span class="switch-handle" part="handle"
+            ><span class="switch-icon switch-icon-off" part="icon icon-off"
               >${this.icon ?? nothing}</span
-            ><span class="switch-icon switch-icon-on"
+            ><span class="switch-icon switch-icon-on" part="icon icon-on"
               >${this.iconSelected ?? nothing}</span
             ></span
           ></span
-        ><span><slot>${this.label}</slot></span></label
+        ><span part="label-text"><slot>${this.label}</slot></span></label
       >
-      ${this.supportingText ? html`<span class="choice-support" id="choice-support">${this.supportingText}</span>` : nothing}
+      ${this.supportingText ? html`<span class="choice-support" id="choice-support" part="supporting-text">${this.supportingText}</span>` : nothing}
     </span>`;
   }
 }
@@ -167,15 +169,16 @@ export class BolleRadioButton extends BolleCheckbox {
     peers.forEach((radio) => radio.syncGroup());
   }
   protected render() {
-    return html`<label
+    return html`<label part="label"
       ><input
+        part="control"
         type="radio"
         .checked=${this.checked}
         ?disabled=${this.isDisabled}
         aria-required=${String(this.required)}
         @change=${this.change}
         @keydown=${this.keydown}
-      /><span><slot>${this.label}</slot></span></label
+      /><span part="label-text"><slot>${this.label}</slot></span></label
     >`;
   }
   private keydown(event: KeyboardEvent) {
@@ -237,6 +240,13 @@ export class BolleTextField extends BolleFormElement {
     autocomplete: {},
     rows: { type: Number },
     maxlength: { type: Number },
+    minlength: { type: Number },
+    inputmode: {},
+    enterkeyhint: {},
+    autocapitalize: {},
+    spellcheck: {
+      converter: (value: string | null) => value !== "false",
+    },
     prefix: {},
     suffix: {},
     counter: { type: Boolean },
@@ -256,6 +266,11 @@ export class BolleTextField extends BolleFormElement {
   autocomplete = "";
   rows = 3;
   maxlength = -1;
+  minlength = -1;
+  inputmode = "";
+  enterkeyhint = "";
+  autocapitalize = "";
+  spellcheck = true;
   prefix = "";
   suffix = "";
   counter = false;
@@ -270,10 +285,17 @@ export class BolleTextField extends BolleFormElement {
   protected renderInput() {
     if (this.multiline)
       return html`<textarea
+        part="input"
+        name=${this.name || nothing}
         .value=${this.value}
         placeholder=${this.placeholder}
         rows=${this.rows}
         maxlength=${this.maxlength < 0 ? nothing : this.maxlength}
+        minlength=${this.minlength < 0 ? nothing : this.minlength}
+        inputmode=${this.inputmode || nothing}
+        enterkeyhint=${this.enterkeyhint || nothing}
+        autocapitalize=${this.autocapitalize || nothing}
+        spellcheck=${this.spellcheck}
         ?required=${this.required}
         ?readonly=${this.readonly}
         ?disabled=${this.isDisabled}
@@ -283,7 +305,9 @@ export class BolleTextField extends BolleFormElement {
         @change=${this.onChange}
       ></textarea>`;
     return html`<input
+      part="input"
       type=${this.type}
+      name=${this.name || nothing}
       .value=${this.value}
       placeholder=${this.placeholder}
       min=${this.min || nothing}
@@ -291,6 +315,11 @@ export class BolleTextField extends BolleFormElement {
       step=${this.step || nothing}
       pattern=${this.pattern || nothing}
       maxlength=${this.maxlength < 0 ? nothing : this.maxlength}
+      minlength=${this.minlength < 0 ? nothing : this.minlength}
+      inputmode=${this.inputmode || nothing}
+      enterkeyhint=${this.enterkeyhint || nothing}
+      autocapitalize=${this.autocapitalize || nothing}
+      spellcheck=${this.spellcheck}
       autocomplete=${this.autocomplete || nothing}
       ?required=${this.required}
       ?readonly=${this.readonly}
@@ -310,22 +339,24 @@ export class BolleTextField extends BolleFormElement {
     return nothing;
   }
   protected render() {
-    return html`<div class="field">
-      <label>
-        <span class="field-label"
+    return html`<div class="field" part="field">
+      <label part="surface">
+        <span class="field-label" part="label"
           >${this.label}${this.required ? html`<span class="required" aria-hidden="true"> *</span>` : nothing}</span
         >
-        <span class="field-body">
-          <slot name="leading"></slot>
-          ${this.prefix ? html`<span class="affix">${this.prefix}</span>` : nothing}
+        <span class="field-body" part="body">
+          <slot name="leading" part="leading"></slot>
+          <slot name="prefix" class="affix" part="prefix">${this.prefix}</slot>
           ${this.renderInput()}
-          ${this.suffix ? html`<span class="affix">${this.suffix}</span>` : nothing}
-          <slot name="trailing"></slot>
+          <slot name="suffix" class="affix" part="suffix">${this.suffix}</slot>
+          <slot name="trailing" part="trailing"></slot>
         </span>
       </label>
-      <span class="support-row">
-        <span class="support" id="support">${this.supportingText}</span>
-        ${this.counter ? html`<span class="counter">${this.counterText}</span>` : nothing}
+      <span class="support-row" part="supporting">
+        <span class="support" id="support" part="supporting-text"
+          ><slot name="supporting">${this.supportingText}</slot></span
+        >
+        ${this.counter ? html`<span class="counter" part="counter">${this.counterText}</span>` : nothing}
       </span>
       ${this.renderPopup()}
     </div>`;
@@ -417,8 +448,9 @@ export class BolleSearch extends BolleTextField {
   }
   protected render() {
     const items = this.visibleSuggestions;
-    return html`<search class="search" data-layout=${this.layout}>
+    return html`<search class="search" part="search" data-layout=${this.layout}>
       <form
+        part="search-form"
         @submit=${(event: SubmitEvent) => {
           event.preventDefault();
           this.emit("search", { value: this.value });
@@ -439,6 +471,7 @@ export class BolleSearch extends BolleTextField {
       ${
         items.length
           ? html`<ul
+              part="suggestions"
               id="search-suggestions"
               class="search-suggestions"
               role="listbox"
@@ -448,6 +481,7 @@ export class BolleSearch extends BolleTextField {
               ${items.map(
                 (item, index) =>
                   html`<li
+                    part="suggestion"
                     id=${`search-suggestion-${index}`}
                     role="option"
                     aria-selected=${String(index === this._active)}
@@ -460,7 +494,11 @@ export class BolleSearch extends BolleTextField {
             </ul>`
           : nothing
       }
-      <div class="search-results" ?hidden=${this.layout !== "docked"}>
+      <div
+        class="search-results"
+        part="search-results"
+        ?hidden=${this.layout !== "docked"}
+      >
         <slot name="results"></slot>
       </div>
     </search>`;
@@ -548,30 +586,40 @@ export class BolleSegmentedButtons extends BolleFormElement {
     set.style.setProperty("--drop-h", `${checked.offsetHeight}px`);
   }
   protected render() {
-    return html`<fieldset ?disabled=${this.isDisabled}>
-      <legend>${this.label}</legend>
-      <span class="segments"><span class="drop" aria-hidden="true"></span>
-      ${this.items.map(
-        (item) =>
-          html`<label
-            ><input
-              type=${this.multiple ? "checkbox" : "radio"}
-              name="segments"
-              .checked=${this.multiple ? this.values.includes(item.id) : this.value === item.id}
-              ?disabled=${item.disabled}
-              @change=${(event: Event) => {
-                const checked = (event.target as HTMLInputElement).checked;
-                if (this.multiple)
-                  this.values = checked
-                    ? [...this.values, item.id]
-                    : this.values.filter((value) => value !== item.id);
-                else this.value = item.id;
-                this.syncForm();
-                this.emit("change", { value: this.value, values: this.values });
-              }}
-            />${item.icon ? html`<span aria-hidden="true">${item.icon}</span>` : nothing}${item.label}</label
-          >`,
-      )}</span>
+    return html`<fieldset part="group" ?disabled=${this.isDisabled}>
+      <legend part="label">${this.label}</legend>
+      <span class="segments" part="segments"
+        ><span class="drop" part="indicator" aria-hidden="true"></span>
+        ${this.items.map(
+          (item) =>
+            html`<label part="segment"
+              ><input
+                part="segment-control"
+                type=${this.multiple ? "checkbox" : "radio"}
+                name=${this.name || nothing}
+                .checked=${this.multiple ? this.values.includes(item.id) : this.value === item.id}
+                ?disabled=${item.disabled || this.isDisabled}
+                ?required=${this.required}
+                @change=${(event: Event) => {
+                  const checked = (event.target as HTMLInputElement).checked;
+                  if (this.multiple)
+                    this.values = checked
+                      ? [...this.values, item.id]
+                      : this.values.filter((value) => value !== item.id);
+                  else this.value = item.id;
+                  this.syncForm();
+                  this.emit("change", {
+                    value: this.value,
+                    values: this.values,
+                  });
+                }}
+              />${item.icon ? html`<span part="segment-icon" aria-hidden="true">${item.icon}</span>` : nothing}<span
+                part="segment-label"
+                >${item.label}</span
+              ></label
+            >`,
+        )}</span
+      >
     </fieldset>`;
   }
 }
@@ -674,9 +722,8 @@ export class BolleAutocomplete extends BolleTextField {
   }
 
   private reposition = () => {
-    const list = this.renderRoot.querySelector<HTMLElement>(
-      ".autocomplete-list",
-    );
+    const list =
+      this.renderRoot.querySelector<HTMLElement>(".autocomplete-list");
     if (list?.matches(":popover-open")) this.positionList(list);
   };
 
@@ -690,9 +737,8 @@ export class BolleAutocomplete extends BolleTextField {
     const below = rect.bottom + 4;
     const fitsBelow = below + height <= innerHeight - 8;
     const fitsAbove = rect.top - height - 4 >= 8;
-    list.style.top = fitsBelow || !fitsAbove
-      ? `${below}px`
-      : `${rect.top - height - 4}px`;
+    list.style.top =
+      fitsBelow || !fitsAbove ? `${below}px` : `${rect.top - height - 4}px`;
   }
 
   private open() {
@@ -758,9 +804,8 @@ export class BolleAutocomplete extends BolleTextField {
   protected updated() {
     super.updated();
     this.bindInput();
-    const list = this.renderRoot.querySelector<HTMLElement>(
-      ".autocomplete-list",
-    );
+    const list =
+      this.renderRoot.querySelector<HTMLElement>(".autocomplete-list");
     if (list) {
       if (!list.matches(":popover-open")) {
         if (typeof list.showPopover === "function") list.showPopover();
@@ -792,6 +837,7 @@ export class BolleAutocomplete extends BolleTextField {
     if (!this._open || !items.length) return nothing;
     return html`<ul
       class="autocomplete-list"
+      part="list"
       id="autocomplete-list"
       role="listbox"
       popover="manual"
@@ -800,6 +846,7 @@ export class BolleAutocomplete extends BolleTextField {
       ${items.map(
         (entry, index) =>
           html`<li
+            part="option"
             id=${`autocomplete-${index}`}
             role="option"
             aria-selected=${String(index === this._active)}

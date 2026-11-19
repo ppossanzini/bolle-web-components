@@ -2,7 +2,7 @@ import { html, nothing, type PropertyValues, type TemplateResult } from "lit";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { sidebarStyles } from "./sidebar.styles.js";
-import { sidebarLabels } from "./localization.js";
+import { sidebarLabels, type SidebarLabels } from "./localization.js";
 import {
   chevronDownIcon,
   sidebarCollapseIcon,
@@ -85,6 +85,7 @@ export class BolleSidebar extends BolleElement {
     width: { type: Number },
     variant: { reflect: true },
     search: { reflect: true },
+    labels: { attribute: false },
     _query: { state: true },
     _truncated: { state: true },
     _flyout: { state: true },
@@ -100,13 +101,14 @@ export class BolleSidebar extends BolleElement {
   variant: "edge" | "card" = "edge";
   /** `field` is the text field, `contained` and `divided` use `bolle-search`, `none` hides the filter. */
   search: "field" | "contained" | "divided" | "none" = "field";
+  labels: Partial<SidebarLabels> = {};
   private _query = "";
   private _truncated = new Set<string>();
   private _flyout = "";
   private resizeObserver?: ResizeObserver;
 
-  private get text() {
-    return sidebarLabels();
+  private get text(): SidebarLabels {
+    return sidebarLabels(document.documentElement.lang, this.labels);
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
@@ -135,7 +137,9 @@ export class BolleSidebar extends BolleElement {
   }
 
   protected updated() {
-    this.measureLabels();
+    requestAnimationFrame(() => {
+      if (this.isConnected) this.measureLabels();
+    });
   }
 
   /** Labels cut by the ellipsis get the full text in a tooltip. */

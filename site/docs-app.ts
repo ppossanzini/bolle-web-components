@@ -19,6 +19,7 @@ import {
 import { buildHtml, buildReact, buildVue } from "./codegen.js";
 import {
   componentApi,
+  componentSurface,
   componentSupport,
   pageMarkdown,
   type ApiRow,
@@ -78,16 +79,26 @@ import {
 const GROUP_PREFIX = "group:";
 
 const ALGORITHM_HINTS: Record<string, string> = {
-  "tonal-spot": m("Predefinito M3: secondary e tertiary sono varianti tenui della tinta del seme."),
+  "tonal-spot": m(
+    "Predefinito M3: secondary e tertiary sono varianti tenui della tinta del seme.",
+  ),
   vibrant: m("Come tonal spot, con colori più saturi."),
-  expressive: m("Ruota le tinte di secondary e tertiary in modo marcato rispetto al seme."),
-  fidelity: m("Primary e container restano molto vicini al seme, anche se saturo."),
-  content: m("Pensato per colori estratti da immagini: fedele al seme, accenti per temperatura."),
+  expressive: m(
+    "Ruota le tinte di secondary e tertiary in modo marcato rispetto al seme.",
+  ),
+  fidelity: m(
+    "Primary e container restano molto vicini al seme, anche se saturo.",
+  ),
+  content: m(
+    "Pensato per colori estratti da immagini: fedele al seme, accenti per temperatura.",
+  ),
   rainbow: m("Accenti colorati con superfici grigie."),
   "fruit-salad": m("Tinte ruotate e giocose per tutti gli accenti."),
   neutral: m("Quasi senza colore: utile per interfacce sobrie."),
   monochrome: m("Solo grigi: il seme non conta."),
-  complementary: m("Secondary e tertiary sul lato opposto della ruota (+180°)."),
+  complementary: m(
+    "Secondary e tertiary sul lato opposto della ruota (+180°).",
+  ),
   analogous: m("Secondary e tertiary accanto al seme (−30° e +30°)."),
   split: m("I due vicini del complementare (+150° e +210°)."),
   triadic: m("Tre tinte equidistanti (+120° e +240°)."),
@@ -157,7 +168,9 @@ const bySchiumaOrder = (a: Entry, b: Entry) => {
   return index(a) - index(b);
 };
 const coreEntries = entries.filter((entry) => !entry.section);
-const schiumaEntries = entries.filter((entry) => entry.section === SCHIUMA).sort(bySchiumaOrder);
+const schiumaEntries = entries
+  .filter((entry) => entry.section === SCHIUMA)
+  .sort(bySchiumaOrder);
 /** Material families first, then the Schiuma components for admin applications. */
 const orderedEntries = [
   ...groups.flatMap((group) =>
@@ -168,12 +181,10 @@ const orderedEntries = [
 
 /** Fills the `{name}` placeholders of a translated string with template parts. */
 const withParts = (translated: string, parts: Record<string, unknown>) =>
-  translated
-    .split(/(\{\w+\})/)
-    .map((segment) => {
-      const key = /^\{(\w+)\}$/.exec(segment)?.[1];
-      return key && key in parts ? parts[key] : segment;
-    });
+  translated.split(/(\{\w+\})/).map((segment) => {
+    const key = /^\{(\w+)\}$/.exec(segment)?.[1];
+    return key && key in parts ? parts[key] : segment;
+  });
 
 const kebab = (name: string) =>
   name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
@@ -255,6 +266,7 @@ export class DocsApp extends LitElement {
   declare quoteLines: Quote[];
   declare hoverToken: string;
   private usageRetry = 0;
+  private usagePending = false;
   private quoteObserver?: ResizeObserver;
 
   constructor() {
@@ -307,9 +319,9 @@ export class DocsApp extends LitElement {
 
   private ctx: PreviewContext = {
     show: (id, event) => {
-      const host = this.querySelector<{ show?: (opener?: HTMLElement) => void }>(
-        `#${id}`,
-      );
+      const host = this.querySelector<{
+        show?: (opener?: HTMLElement) => void;
+      }>(`#${id}`);
       host?.show?.(event.currentTarget as HTMLElement);
     },
     close: (id, value) => {
@@ -345,9 +357,7 @@ export class DocsApp extends LitElement {
 
   protected updated() {
     if (this.isHome || this.isTokens || this.isPage) return;
-    const element = this.querySelector(
-      `.preview-surface ${this.entry.tag}`,
-    );
+    const element = this.querySelector(`.preview-surface ${this.entry.tag}`);
     if (!element) return;
     const root = element.shadowRoot;
     const ready = !!root && root.childElementCount > 0;
@@ -359,8 +369,7 @@ export class DocsApp extends LitElement {
       this.usageTag !== this.entry.tag ||
       JSON.stringify(this.usage) !== JSON.stringify(usage)
     ) {
-      this.usage = usage;
-      this.usageTag = this.entry.tag;
+      this.scheduleUsage();
     }
     if (!ready && this.usageRetry < 5) {
       this.usageRetry += 1;
@@ -376,6 +385,30 @@ export class DocsApp extends LitElement {
   }
 
   private quotePending = false;
+
+  private scheduleUsage() {
+    if (this.usagePending) return;
+    this.usagePending = true;
+    requestAnimationFrame(() => {
+      this.usagePending = false;
+      if (!this.isConnected || this.isHome || this.isTokens || this.isPage)
+        return;
+      const element = this.querySelector(`.preview-surface ${this.entry.tag}`);
+      if (!element) return;
+      const root = element.shadowRoot;
+      const usage = componentTokenUsage(
+        this.entry.tag,
+        root?.childElementCount ? element : undefined,
+      );
+      if (
+        this.usageTag !== this.entry.tag ||
+        JSON.stringify(this.usage) !== JSON.stringify(usage)
+      ) {
+        this.usage = usage;
+        this.usageTag = this.entry.tag;
+      }
+    });
+  }
 
   private scheduleQuotes() {
     if (this.quotePending) return;
@@ -416,7 +449,8 @@ export class DocsApp extends LitElement {
       tag === "foundations" ||
       tag === "overview" ||
       !!entryByTag(tag);
-    if (requested && requested !== locale()) this.applyLocale(requested as Locale);
+    if (requested && requested !== locale())
+      this.applyLocale(requested as Locale);
     // Known routes without a language (old bookmarks) get the current one, without a history step.
     if (!requested && known)
       history.replaceState(null, "", routeHref(tag === "home" ? "" : tag));
@@ -444,8 +478,10 @@ export class DocsApp extends LitElement {
       if (section.getBoundingClientRect().top <= 140) current = section.id;
     }
     const atBottom =
-      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-    if (atBottom && sections.length > 0) current = sections[sections.length - 1].id;
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 4;
+    if (atBottom && sections.length > 0)
+      current = sections[sections.length - 1].id;
     if (current !== this.activeSection) this.activeSection = current;
   };
 
@@ -511,9 +547,9 @@ export class DocsApp extends LitElement {
       entries.map((entry) => [entry.tag, initialState(entry)]),
     );
     // Pickers read their language when created; existing ones get it explicitly.
-    for (const picker of this.querySelectorAll<HTMLElement & { locale: string }>(
-      "bolle-date-picker, bolle-time-picker",
-    ))
+    for (const picker of this.querySelectorAll<
+      HTMLElement & { locale: string }
+    >("bolle-date-picker, bolle-time-picker"))
       picker.locale = document.documentElement.lang;
   }
 
@@ -525,7 +561,8 @@ export class DocsApp extends LitElement {
   };
 
   private renderLocaleSelect(): TemplateResult {
-    const current = LOCALES.find((item) => item.id === this.language) ?? LOCALES[0];
+    const current =
+      LOCALES.find((item) => item.id === this.language) ?? LOCALES[0];
     return html`<docs-select
       class="locale-select"
       label=${l("Lingua")}
@@ -548,7 +585,10 @@ export class DocsApp extends LitElement {
   /** Index of the current page for Foundations and Tokens; null on component pages. */
   private pageSections(): BolleItem[] | null {
     if (this.isFoundations)
-      return FOUNDATION_SECTIONS.map(([id, label]) => ({ id, label: l(label) }));
+      return FOUNDATION_SECTIONS.map(([id, label]) => ({
+        id,
+        label: l(label),
+      }));
     if (!this.isTokens) return null;
     const colors = this.tokenSet.colors;
     const swatch = (token: string) =>
@@ -607,7 +647,9 @@ export class DocsApp extends LitElement {
         .value=${this.activeSection || sections[0].id}
         @change=${this.onSectionNav}
       ></bolle-list>
-      <a class="nav-back" href=${routeHref("overview")}>${l("Tutti i componenti →")}</a>`;
+      <a class="nav-back" href=${routeHref("overview")}
+        >${l("Tutti i componenti →")}</a
+      >`;
   }
 
   private navItems(): BolleItem[] {
@@ -623,7 +665,10 @@ export class DocsApp extends LitElement {
             entry.tag,
           ].some((text) => text.toLowerCase().includes(query)),
         )
-        .map((entry) => ({ id: entry.tag, label: entry.navLabel ?? entry.title }));
+        .map((entry) => ({
+          id: entry.tag,
+          label: entry.navLabel ?? entry.title,
+        }));
 
     const families = groups
       .map((group) => ({
@@ -676,11 +721,13 @@ export class DocsApp extends LitElement {
   };
 
   private onCodeTab = (event: Event) => {
-    this.codeTab = (event as CustomEvent<{ value: string }>).detail.value as CodeTab;
+    this.codeTab = (event as CustomEvent<{ value: string }>).detail
+      .value as CodeTab;
   };
 
   private onSideTab = (event: Event) => {
-    this.sideTab = (event as CustomEvent<{ value: string }>).detail.value as SideTab;
+    this.sideTab = (event as CustomEvent<{ value: string }>).detail
+      .value as SideTab;
     this.quotes = this.sideTab === "sizes";
     this.scheduleQuotes();
   };
@@ -795,10 +842,18 @@ export class DocsApp extends LitElement {
   }
 
   private exportJson = () =>
-    this.download("bolle-tokens.json", exportThemeJson(this.palettes, this.density), "application/json");
+    this.download(
+      "bolle-tokens.json",
+      exportThemeJson(this.palettes, this.density),
+      "application/json",
+    );
 
   private exportCss = () =>
-    this.download("bolle-tokens.css", exportThemeCss(this.palettes), "text/css");
+    this.download(
+      "bolle-tokens.css",
+      exportThemeCss(this.palettes),
+      "text/css",
+    );
 
   private applyImport(text: string) {
     try {
@@ -809,7 +864,9 @@ export class DocsApp extends LitElement {
       applyTokens(this.tokenSet, this.density);
       this.importError = "";
       this.importText = "";
-      this.notify(l("Token importati: {count} valori", { count: result.count }));
+      this.notify(
+        l("Token importati: {count} valori", { count: result.count }),
+      );
     } catch (error) {
       this.importError = error instanceof Error ? error.message : String(error);
     }
@@ -906,10 +963,7 @@ export class DocsApp extends LitElement {
     }
   }
 
-  private renderControl(
-    control: Control,
-    state: State,
-  ): TemplateResult {
+  private renderControl(control: Control, state: State): TemplateResult {
     const value = state[control.prop];
     switch (control.kind) {
       case "bool":
@@ -960,7 +1014,10 @@ export class DocsApp extends LitElement {
             )}
         ></bolle-text-field>`;
       case "enum":
-        if (control.options.length <= 4 && control.options.join("").length <= 22)
+        if (
+          control.options.length <= 4 &&
+          control.options.join("").length <= 22
+        )
           return html`<bolle-segmented-buttons
             .label=${l(control.label)}
             .items=${control.options.map((option) => ({
@@ -1004,25 +1061,26 @@ export class DocsApp extends LitElement {
 
       <div class="overview-grid">
         ${orderedEntries.map(
-          (entry) => html`<bolle-card
-            class="overview-card"
-            variant="elevated"
-            href=${routeHref(entry.tag)}
-            label=${entry.title}
-          >
-            <div
-              class="overview-stage ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""}"
-              aria-hidden="true"
-              inert
+          (entry) =>
+            html`<bolle-card
+              class="overview-card"
+              variant="elevated"
+              href=${routeHref(entry.tag)}
+              label=${entry.title}
             >
-              ${entry.render(initialState(entry), this.ctx)}
-            </div>
-            <span class="overview-tag"
-              >${entry.section ? `${entry.section} · ${entry.group}` : entry.group}</span
-            >
-            <h3>${entry.title}</h3>
-            <p>${l(entry.summary)}</p>
-          </bolle-card>`,
+              <div
+                class="overview-stage ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""}"
+                aria-hidden="true"
+                inert
+              >
+                ${entry.render(initialState(entry), this.ctx)}
+              </div>
+              <span class="overview-tag"
+                >${entry.section ? `${entry.section} · ${entry.group}` : entry.group}</span
+              >
+              <h3>${entry.title}</h3>
+              <p>${l(entry.summary)}</p>
+            </bolle-card>`,
         )}
       </div>
       ${renderStateMatrix()}`;
@@ -1030,7 +1088,8 @@ export class DocsApp extends LitElement {
 
   private inspect = (event: Event) => {
     const host = (event.composedPath() as Element[]).find(
-      (node) => node instanceof HTMLElement && node.tagName.startsWith("BOLLE-"),
+      (node) =>
+        node instanceof HTMLElement && node.tagName.startsWith("BOLLE-"),
     ) as HTMLElement | undefined;
     if (!host) return this.clearInspect();
     const box =
@@ -1046,7 +1105,12 @@ export class DocsApp extends LitElement {
       this.inspectedElement = host;
     }
     const tag = host.tagName.toLowerCase();
-    this.inspected = { tag, usage: componentTokenUsage(tag, host), x: box.x, y: box.y };
+    this.inspected = {
+      tag,
+      usage: componentTokenUsage(tag, host),
+      x: box.x,
+      y: box.y,
+    };
   };
 
   private clearInspect = () => {
@@ -1059,40 +1123,61 @@ export class DocsApp extends LitElement {
     const info = this.inspected;
     if (!info) return nothing;
     const colors = this.tokenSet.colors;
-    const roles = COLOR_ROLES.filter((role) => info.usage.colors.includes(role.token));
+    const roles = COLOR_ROLES.filter((role) =>
+      info.usage.colors.includes(role.token),
+    );
     const x = Math.min(info.x + 16, window.innerWidth - 336);
     const y = Math.min(info.y + 16, window.innerHeight - 260);
-    return html`<div class="token-inspector" role="status" style=${`left:${x}px;top:${y}px`}>
+    return html`<div
+      class="token-inspector"
+      role="status"
+      style=${`left:${x}px;top:${y}px`}
+    >
       <code class="token-inspector-tag">&lt;${info.tag}&gt;</code>
-      ${roles.length
-        ? html`<p class="token-inspector-head">${l("Colori")}</p>
-            <ul class="token-inspector-colors">
-              ${roles.map(
-                (role) => html`<li>
-                  <span class="token-inspector-swatch" style=${`background:${colors[role.token]}`}></span
-                  ><span>${role.label}</span>
-                </li>`,
-              )}
-            </ul>`
-        : nothing}
-      ${info.usage.shapes.length
-        ? html`<p class="token-inspector-head">${l("Forma")}</p>
-            <p class="token-inspector-list">
-              ${info.usage.shapes
-                .map((shape) => `${shape} ${this.tokenSet.shapes[shape]}px`)
-                .join(" · ")}
-            </p>`
-        : nothing}
-      ${info.usage.typography.length
-        ? html`<p class="token-inspector-head">${l("Tipografia")}</p>
-            <p class="token-inspector-list">${info.usage.typography.join(" · ")}</p>`
-        : nothing}
+      ${
+        roles.length
+          ? html`<p class="token-inspector-head">${l("Colori")}</p>
+              <ul class="token-inspector-colors">
+                ${roles.map(
+                  (role) =>
+                    html`<li>
+                      <span
+                        class="token-inspector-swatch"
+                        style=${`background:${colors[role.token]}`}
+                      ></span
+                      ><span>${role.label}</span>
+                    </li>`,
+                )}
+              </ul>`
+          : nothing
+      }
+      ${
+        info.usage.shapes.length
+          ? html`<p class="token-inspector-head">${l("Forma")}</p>
+              <p class="token-inspector-list">
+                ${info.usage.shapes
+                  .map((shape) => `${shape} ${this.tokenSet.shapes[shape]}px`)
+                  .join(" · ")}
+              </p>`
+          : nothing
+      }
+      ${
+        info.usage.typography.length
+          ? html`<p class="token-inspector-head">${l("Tipografia")}</p>
+              <p class="token-inspector-list">
+                ${info.usage.typography.join(" · ")}
+              </p>`
+          : nothing
+      }
     </div>`;
   }
 
   private renderTokensPreview(): TemplateResult {
     return html`<div class="token-preview">
-      <bolle-app-bar label=${l("Anteprima")} subtitle=${l("Token applicati")}></bolle-app-bar>
+      <bolle-app-bar
+        label=${l("Anteprima")}
+        subtitle=${l("Token applicati")}
+      ></bolle-app-bar>
       <div class="token-type">
         <p class="type-display">Aa</p>
         <h2>${l("Titolo di sezione")}</h2>
@@ -1116,7 +1201,10 @@ export class DocsApp extends LitElement {
         ></bolle-text-field>
         <bolle-switch label=${l("Notifiche")} checked></bolle-switch>
       </div>
-      <bolle-progress-indicator label=${l("Avanzamento")} value="60"></bolle-progress-indicator>
+      <bolle-progress-indicator
+        label=${l("Avanzamento")}
+        value="60"
+      ></bolle-progress-indicator>
       <bolle-card variant="outlined" label=${l("Scheda di esempio")}>
         <h3>${l("Superficie")}</h3>
         <p>${l("Forma, colore e tipografia applicati a una scheda.")}</p>
@@ -1193,7 +1281,9 @@ export class DocsApp extends LitElement {
       </div>
       <p class="usage-note">
         ${withParts(
-          l("Ogni token ha il colore e il numero della sua quota nell'anteprima. La modifica vale per tutti gli esempi di {tag}."),
+          l(
+            "Ogni token ha il colore e il numero della sua quota nell'anteprima. La modifica vale per tutti gli esempi di {tag}.",
+          ),
           { tag: html`<code>&lt;${tag}&gt;</code>` },
         )}
       </p>
@@ -1223,10 +1313,9 @@ export class DocsApp extends LitElement {
       )}
       ${this.quoteLines.map(
         (quote) => svg`<g
-          class="quote ${quote.inside ? "is-inside" : ""} ${active &&
-          active !== quote.token
-            ? "is-muted"
-            : ""}"
+          class="quote ${quote.inside ? "is-inside" : ""} ${
+            active && active !== quote.token ? "is-muted" : ""
+          }"
           style=${`--quote-color:${this.quoteColor(quote.token)}`}
         >
           <title>${quote.token}: ${quote.value}</title>
@@ -1288,18 +1377,30 @@ export class DocsApp extends LitElement {
   /** WCAG checks for the pairs a custom primary is most likely to break. */
   private renderContrastChecks(colors: Record<string, string>): TemplateResult {
     const checks = [
-      { label: l("Testo su Primary"), ratio: contrastRatio(colors["on-primary"], colors.primary), min: 4.5 },
-      { label: l("Primary su Surface"), ratio: contrastRatio(colors.primary, colors.surface), min: 3 },
+      {
+        label: l("Testo su Primary"),
+        ratio: contrastRatio(colors["on-primary"], colors.primary),
+        min: 4.5,
+      },
+      {
+        label: l("Primary su Surface"),
+        ratio: contrastRatio(colors.primary, colors.surface),
+        min: 3,
+      },
     ];
-    return html`<ul class="contrast-checks" aria-label=${l("Verifica del contrasto")}>
+    return html`<ul
+      class="contrast-checks"
+      aria-label=${l("Verifica del contrasto")}
+    >
       ${checks.map(
-        (check) => html`<li class=${check.ratio >= check.min ? "is-pass" : "is-fail"}>
-          <span>${check.label}</span>
-          <strong>${check.ratio.toFixed(1)}:1</strong>
-          <span class="contrast-verdict"
-            >${check.ratio >= check.min ? "ok" : l("sotto {min}:1", { min: check.min })}</span
-          >
-        </li>`,
+        (check) =>
+          html`<li class=${check.ratio >= check.min ? "is-pass" : "is-fail"}>
+            <span>${check.label}</span>
+            <strong>${check.ratio.toFixed(1)}:1</strong>
+            <span class="contrast-verdict"
+              >${check.ratio >= check.min ? "ok" : l("sotto {min}:1", { min: check.min })}</span
+            >
+          </li>`,
       )}
     </ul>`;
   }
@@ -1316,9 +1417,11 @@ export class DocsApp extends LitElement {
             .options=${COLOR_ALGORITHMS.map((item) => l(item.label))}
             .value=${l(colorAlgorithm(this.algorithm).label)}
             @change=${(event: Event) => {
-              const label = (event as CustomEvent<{ value: string }>).detail.value;
+              const label = (event as CustomEvent<{ value: string }>).detail
+                .value;
               this.algorithm =
-                COLOR_ALGORITHMS.find((item) => l(item.label) === label)?.id ?? "tonal-spot";
+                COLOR_ALGORITHMS.find((item) => l(item.label) === label)?.id ??
+                "tonal-spot";
             }}
           ></docs-select>
         </div>
@@ -1329,8 +1432,11 @@ export class DocsApp extends LitElement {
             .options=${SURFACE_MODES.map((item) => l(item.label))}
             .value=${l(surfaceMode(this.surfaces).label)}
             @change=${(event: Event) => {
-              const label = (event as CustomEvent<{ value: string }>).detail.value;
-              this.surfaces = SURFACE_MODES.find((item) => l(item.label) === label)?.id ?? "white";
+              const label = (event as CustomEvent<{ value: string }>).detail
+                .value;
+              this.surfaces =
+                SURFACE_MODES.find((item) => l(item.label) === label)?.id ??
+                "white";
             }}
           ></docs-select>
         </div>
@@ -1343,29 +1449,49 @@ export class DocsApp extends LitElement {
             @change=${(event: Event) =>
               this.setContrast(
                 String(
-                  contrasts.indexOf((event as CustomEvent<{ value: string }>).detail.value) / 2,
+                  contrasts.indexOf(
+                    (event as CustomEvent<{ value: string }>).detail.value,
+                  ) / 2,
                 ),
               )}
           ></docs-select>
         </div>
       </div>
-      <p class="hct-hint">${l(ALGORITHM_HINTS[colorAlgorithm(this.algorithm).id])}</p>
+      <p class="hct-hint">
+        ${l(ALGORITHM_HINTS[colorAlgorithm(this.algorithm).id])}
+      </p>
       <div class="generator-actions">
         <bolle-switch
           label=${l("Mantieni il primario esatto")}
           ?checked=${this.keepSeed}
           @change=${(event: Event) =>
-            (this.keepSeed = (event as CustomEvent<{ checked: boolean }>).detail.checked)}
+            (this.keepSeed = (
+              event as CustomEvent<{ checked: boolean }>
+            ).detail.checked)}
         ></bolle-switch>
-        <bolle-button @click=${this.generateHct}>${l("Genera da Primary")}</bolle-button>
+        <bolle-button @click=${this.generateHct}
+          >${l("Genera da Primary")}</bolle-button
+        >
       </div>
       <p class="hct-hint">
-        ${this.dark
-          ? l("Il seme è il valore corrente di Primary; la generazione sostituisce tutti gli altri ruoli del tema scuro.")
-          : l("Il seme è il valore corrente di Primary; la generazione sostituisce tutti gli altri ruoli del tema chiaro.")}
-        ${this.keepSeed
-          ? l("Primary resta il colore scelto; il testo sopra diventa il tono più leggibile.")
-          : l("Come in Material 3, Primary diventa il tono 40 (chiaro) o 80 (scuro) della palette del seme.")}
+        ${
+          this.dark
+            ? l(
+                "Il seme è il valore corrente di Primary; la generazione sostituisce tutti gli altri ruoli del tema scuro.",
+              )
+            : l(
+                "Il seme è il valore corrente di Primary; la generazione sostituisce tutti gli altri ruoli del tema chiaro.",
+              )
+        }
+        ${
+          this.keepSeed
+            ? l(
+                "Primary resta il colore scelto; il testo sopra diventa il tono più leggibile.",
+              )
+            : l(
+                "Come in Material 3, Primary diventa il tono 40 (chiaro) o 80 (scuro) della palette del seme.",
+              )
+        }
       </p>
       ${this.renderContrastChecks(this.tokenSet.colors)}
     </div>`;
@@ -1375,56 +1501,76 @@ export class DocsApp extends LitElement {
     const set = this.tokenSet;
     const previous = this.previousColors;
     const changed = previous
-      ? COLOR_ROLES.filter((role) => previous[role.token] !== set.colors[role.token])
+      ? COLOR_ROLES.filter(
+          (role) => previous[role.token] !== set.colors[role.token],
+        )
       : [];
     return html`<div class="roles-summary" role="status">
-        ${previous
-          ? html`<span
-                >${withParts(
-                  l("{changed} di {total} ruoli cambiati nell'ultima operazione: a sinistra il colore precedente."),
-                  { changed: html`<strong>${changed.length}</strong>`, total: COLOR_ROLES.length },
+        ${
+          previous
+            ? html`<span
+                  >${withParts(
+                    l(
+                      "{changed} di {total} ruoli cambiati nell'ultima operazione: a sinistra il colore precedente.",
+                    ),
+                    {
+                      changed: html`<strong>${changed.length}</strong>`,
+                      total: COLOR_ROLES.length,
+                    },
+                  )}</span
+                >
+                <bolle-button variant="text" size="xs" @click=${this.undoColors}
+                  >${l("Annulla")}</bolle-button
+                >`
+            : html`<span
+                >${l(
+                  "{total} ruoli. Dopo una generazione i ruoli cambiati mostrano il colore precedente accanto al nuovo.",
+                  { total: COLOR_ROLES.length },
                 )}</span
-              >
-              <bolle-button variant="text" size="xs" @click=${this.undoColors}
-                >${l("Annulla")}</bolle-button
               >`
-          : html`<span
-              >${l(
-                "{total} ruoli. Dopo una generazione i ruoli cambiati mostrano il colore precedente accanto al nuovo.",
-                { total: COLOR_ROLES.length },
-              )}</span
-            >`}
+        }
       </div>
       ${COLOR_ROLE_GROUPS.map(
-        (group) => html`<div class="role-group" id=${`tk-${group.toLowerCase()}`} data-section>
-          <h3>${group}</h3>
-          <div class="role-grid">
-            ${COLOR_ROLES.filter((role) => role.group === group).map((role) => {
-              const value = set.colors[role.token];
-              const before = previous?.[role.token];
-              const isChanged = before !== undefined && before !== value;
-              const used = this.inspected?.usage.colors.includes(role.token) ?? false;
-              const tile = html`<docs-color
-                tile
-                class="role-tile ${used ? "is-used" : ""}"
-                .label=${role.label}
-                .token=${`--md-sys-color-${role.token}`}
-                .value=${value}
-                .previous=${isChanged ? (before ?? "") : ""}
-                @change=${(event: Event) =>
-                  this.setColor(role.token, (event as CustomEvent<{ value: string }>).detail.value)}
-              ></docs-color>`;
-              // Compact tiles show only the value: name and token move into a tooltip.
-              return this.paletteDensity === "compact"
-                ? html`<bolle-tooltip
-                    class="role-tip"
-                    .label=${`${role.label} · --md-sys-color-${role.token}${isChanged ? l(" · prima {color}", { color: before ?? "" }) : ""}`}
-                    >${tile}</bolle-tooltip
-                  >`
-                : tile;
-            })}
-          </div>
-        </div>`,
+        (group) =>
+          html`<div
+            class="role-group"
+            id=${`tk-${group.toLowerCase()}`}
+            data-section
+          >
+            <h3>${group}</h3>
+            <div class="role-grid">
+              ${COLOR_ROLES.filter((role) => role.group === group).map(
+                (role) => {
+                  const value = set.colors[role.token];
+                  const before = previous?.[role.token];
+                  const isChanged = before !== undefined && before !== value;
+                  const used =
+                    this.inspected?.usage.colors.includes(role.token) ?? false;
+                  const tile = html`<docs-color
+                    tile
+                    class="role-tile ${used ? "is-used" : ""}"
+                    .label=${role.label}
+                    .token=${`--md-sys-color-${role.token}`}
+                    .value=${value}
+                    .previous=${isChanged ? (before ?? "") : ""}
+                    @change=${(event: Event) =>
+                      this.setColor(
+                        role.token,
+                        (event as CustomEvent<{ value: string }>).detail.value,
+                      )}
+                  ></docs-color>`;
+                  // Compact tiles show only the value: name and token move into a tooltip.
+                  return this.paletteDensity === "compact"
+                    ? html`<bolle-tooltip
+                        class="role-tip"
+                        .label=${`${role.label} · --md-sys-color-${role.token}${isChanged ? l(" · prima {color}", { color: before ?? "" }) : ""}`}
+                        >${tile}</bolle-tooltip
+                      >`
+                    : tile;
+                },
+              )}
+            </div>
+          </div>`,
       )}`;
   }
 
@@ -1447,29 +1593,38 @@ export class DocsApp extends LitElement {
     return html`<div class="generator">
       <h3 class="aside-group">${l("Forma")}</h3>
       ${SHAPE_TOKENS.filter((shape) => shape.max > 0).map(
-        (shape) => html`<bolle-slider
-          compact
-          suffix="px"
-          .label=${shape.label}
-          .min=${0}
-          .max=${shape.max}
-          .step=${1}
-          .value=${String(set.shapes[shape.token])}
-          @focusin=${() => (this.activeShape = shape.token)}
-          @pointerenter=${() => (this.activeShape = shape.token)}
-          @pointerleave=${() => (this.activeShape = "")}
-          @value-input=${(event: Event) => {
-            this.activeShape = shape.token;
-            this.setShape(shape.token, Number((event as CustomEvent<{ value: string }>).detail.value));
-          }}
-        ></bolle-slider>`,
+        (shape) =>
+          html`<bolle-slider
+            compact
+            suffix="px"
+            .label=${shape.label}
+            .min=${0}
+            .max=${shape.max}
+            .step=${1}
+            .value=${String(set.shapes[shape.token])}
+            @focusin=${() => (this.activeShape = shape.token)}
+            @pointerenter=${() => (this.activeShape = shape.token)}
+            @pointerleave=${() => (this.activeShape = "")}
+            @value-input=${(event: Event) => {
+              this.activeShape = shape.token;
+              this.setShape(
+                shape.token,
+                Number((event as CustomEvent<{ value: string }>).detail.value),
+              );
+            }}
+          ></bolle-slider>`,
       )}
       <h3 class="aside-group">${l("Densità")}</h3>
       ${this.renderDensitySelect()}
       <p class="hct-hint">
-        ${withParts(l("{compact} porta a tre quarti spaziature e dimensioni dei componenti."), {
-          compact: html`<em>${l("Compatta")}</em>`,
-        })}
+        ${withParts(
+          l(
+            "{compact} porta a tre quarti spaziature e dimensioni dei componenti.",
+          ),
+          {
+            compact: html`<em>${l("Compatta")}</em>`,
+          },
+        )}
       </p>
       <h3 class="aside-group">${l("Tipografia")}</h3>
       <div class="config-field">
@@ -1479,7 +1634,10 @@ export class DocsApp extends LitElement {
           .options=${FONT_KEYS}
           .value=${set.brandFont}
           @change=${(event: Event) =>
-            this.setFont("brandFont", (event as CustomEvent<{ value: string }>).detail.value)}
+            this.setFont(
+              "brandFont",
+              (event as CustomEvent<{ value: string }>).detail.value,
+            )}
         ></docs-select>
       </div>
       <div class="config-field">
@@ -1489,7 +1647,10 @@ export class DocsApp extends LitElement {
           .options=${FONT_KEYS}
           .value=${set.plainFont}
           @change=${(event: Event) =>
-            this.setFont("plainFont", (event as CustomEvent<{ value: string }>).detail.value)}
+            this.setFont(
+              "plainFont",
+              (event as CustomEvent<{ value: string }>).detail.value,
+            )}
         ></docs-select>
       </div>
       <bolle-slider
@@ -1501,7 +1662,9 @@ export class DocsApp extends LitElement {
         .step=${1}
         .value=${String(set.baseSize)}
         @value-input=${(event: Event) =>
-          this.setBaseSize(Number((event as CustomEvent<{ value: string }>).detail.value))}
+          this.setBaseSize(
+            Number((event as CustomEvent<{ value: string }>).detail.value),
+          )}
       ></bolle-slider>
     </div>`;
   }
@@ -1514,10 +1677,12 @@ export class DocsApp extends LitElement {
         const users = this.shapeUsage(shape.token);
         const radius = set.shapes[shape.token];
         return html`<div
-          class="shape-tile ${this.activeShape === shape.token ||
-          this.inspected?.usage.shapes.includes(shape.token)
-            ? "is-active"
-            : ""}"
+          class="shape-tile ${
+            this.activeShape === shape.token ||
+            this.inspected?.usage.shapes.includes(shape.token)
+              ? "is-active"
+              : ""
+          }"
         >
           <div class="shape-sample" style=${`border-radius:${radius}px`}>
             <span class="shape-radius">${radius}px</span>
@@ -1525,9 +1690,11 @@ export class DocsApp extends LitElement {
           <span class="shape-name">${shape.label}</span>
           <code class="shape-token">--md-sys-shape-corner-${shape.token}</code>
           <span class="shape-users" title=${users.join(", ")}
-            >${users.length === 0
-              ? l("Nessun componente: disponibile per il tuo CSS")
-              : `${l("{n} componenti", { n: users.length })} · ${users.slice(0, 3).join(", ")}${users.length > 3 ? "…" : ""}`}</span
+            >${
+              users.length === 0
+                ? l("Nessun componente: disponibile per il tuo CSS")
+                : `${l("{n} componenti", { n: users.length })} · ${users.slice(0, 3).join(", ")}${users.length > 3 ? "…" : ""}`
+            }</span
           >
         </div>`;
       })}
@@ -1538,8 +1705,12 @@ export class DocsApp extends LitElement {
     const set = this.tokenSet;
     return html`<div class="type-sample">
       <div>
-        <span class="config-label">${l("Titoli · {font}", { font: set.brandFont })}</span>
-        <p class="type-sample-brand">${l("Interfacce con tensione superficiale")}</p>
+        <span class="config-label"
+          >${l("Titoli · {font}", { font: set.brandFont })}</span
+        >
+        <p class="type-sample-brand">
+          ${l("Interfacce con tensione superficiale")}
+        </p>
       </div>
       <div>
         <span class="config-label"
@@ -1574,124 +1745,138 @@ export class DocsApp extends LitElement {
       (token) => !isSizeToken(token) && !/color$/.test(token),
     );
 
-    return html`<section class="config-section token-usage" aria-label=${l("Token del componente")}>
+    return html`<section
+      class="config-section token-usage"
+      aria-label=${l("Token del componente")}
+    >
       <div class="config-head">
         <h2>${l("Token del componente")}</h2>
-        ${hasOverrides
-          ? html`<bolle-button
-              variant="text"
-              size="xs"
-              @click=${() => this.resetDetails(tag)}
-              >${l("Reimposta dettaglio")}</bolle-button
-            >`
-          : nothing}
+        ${
+          hasOverrides
+            ? html`<bolle-button
+                variant="text"
+                size="xs"
+                @click=${() => this.resetDetails(tag)}
+                >${l("Reimposta dettaglio")}</bolle-button
+              >`
+            : nothing
+        }
       </div>
       <div class="config-body tokens-config">
         <p class="usage-note">
           ${withParts(
-            l("Elenco dei token che il CSS di {tag} usa, con il valore dichiarato accanto a quello attivo. Ogni valore si scrive per intero (px o altra unità) e la modifica vale per tutti gli esempi del componente. Colori e forma restano token globali del tema attivo; i token dei componenti annidati appartengono al componente che li usa."),
+            l(
+              "Elenco dei token che il CSS di {tag} usa, con il valore dichiarato accanto a quello attivo. Ogni valore si scrive per intero (px o altra unità) e la modifica vale per tutti gli esempi del componente. Colori e forma restano token globali del tema attivo; i token dei componenti annidati appartengono al componente che li usa.",
+            ),
             { tag: html`<code>&lt;${tag}&gt;</code>` },
           )}
         </p>
 
-        ${usage.colors.length > 0
-          ? html`<h4 class="config-subgroup">${l("Colore")}</h4>
-              ${usage.colors.map((token) => {
-                const role = COLOR_ROLES.find((item) => item.token === token);
-                if (!role) return nothing;
-                return html`<div class="config-field">
-                  <span class="config-label">${role.label}</span>
-                  <docs-color
-                    .label=${role.label}
-                    .value=${set.colors[token]}
-                    @change=${(event: Event) =>
-                      this.setColor(
+        ${
+          usage.colors.length > 0
+            ? html`<h4 class="config-subgroup">${l("Colore")}</h4>
+                ${usage.colors.map((token) => {
+                  const role = COLOR_ROLES.find((item) => item.token === token);
+                  if (!role) return nothing;
+                  return html`<div class="config-field">
+                    <span class="config-label">${role.label}</span>
+                    <docs-color
+                      .label=${role.label}
+                      .value=${set.colors[token]}
+                      @change=${(event: Event) =>
+                        this.setColor(
+                          token,
+                          (event as CustomEvent<{ value: string }>).detail
+                            .value,
+                        )}
+                    ></docs-color>
+                  </div>`;
+                })}`
+            : nothing
+        }
+        ${
+          usage.shapes.length > 0
+            ? html`<h4 class="config-subgroup">${l("Forma")}</h4>
+                ${usage.shapes.map((token) => {
+                  const shape = shapes.get(token);
+                  if (!shape) return nothing;
+                  return html`<bolle-slider
+                    .label=${shape.label}
+                    .min=${0}
+                    .max=${shape.max}
+                    .step=${1}
+                    .value=${String(set.shapes[token])}
+                    show-value
+                    @value-input=${(event: Event) =>
+                      this.setShape(
                         token,
+                        Number(
+                          (event as CustomEvent<{ value: string }>).detail
+                            .value,
+                        ),
+                      )}
+                  ></bolle-slider>`;
+                })}`
+            : nothing
+        }
+        ${
+          otherTokens.length > 0
+            ? html`<h4 class="config-subgroup">${l("Altri token")}</h4>
+                <div class="measure-table">
+                  ${otherTokens.map((token) => this.renderTokenRow(tag, token))}
+                </div>`
+            : nothing
+        }
+        ${
+          hasTypography
+            ? html`<h4 class="config-subgroup">${l("Tipografia")}</h4>
+                <p class="usage-scales">
+                  ${usage.typography.map(
+                    (scale) => html`<code>${scale}</code>`,
+                  )}
+                </p>
+                <div class="config-field">
+                  <span class="config-label">${l("Font titoli")}</span>
+                  <docs-select
+                    label=${l("Font titoli")}
+                    .options=${FONT_KEYS}
+                    .value=${set.brandFont}
+                    @change=${(event: Event) =>
+                      this.setFont(
+                        "brandFont",
                         (event as CustomEvent<{ value: string }>).detail.value,
                       )}
-                  ></docs-color>
-                </div>`;
-              })}`
-          : nothing}
-
-        ${usage.shapes.length > 0
-          ? html`<h4 class="config-subgroup">${l("Forma")}</h4>
-              ${usage.shapes.map((token) => {
-                const shape = shapes.get(token);
-                if (!shape) return nothing;
-                return html`<bolle-slider
-                  .label=${shape.label}
-                  .min=${0}
-                  .max=${shape.max}
+                  ></docs-select>
+                </div>
+                <div class="config-field">
+                  <span class="config-label">${l("Font testo")}</span>
+                  <docs-select
+                    label=${l("Font testo")}
+                    .options=${FONT_KEYS}
+                    .value=${set.plainFont}
+                    @change=${(event: Event) =>
+                      this.setFont(
+                        "plainFont",
+                        (event as CustomEvent<{ value: string }>).detail.value,
+                      )}
+                  ></docs-select>
+                </div>
+                <bolle-slider
+                  label=${l("Dimensione base (px)")}
+                  .min=${14}
+                  .max=${20}
                   .step=${1}
-                  .value=${String(set.shapes[token])}
+                  .value=${String(set.baseSize)}
                   show-value
                   @value-input=${(event: Event) =>
-                    this.setShape(
-                      token,
+                    this.setBaseSize(
                       Number(
                         (event as CustomEvent<{ value: string }>).detail.value,
                       ),
                     )}
-                ></bolle-slider>`;
-              })}`
-          : nothing}
-
-        ${otherTokens.length > 0
-          ? html`<h4 class="config-subgroup">${l("Altri token")}</h4>
-              <div class="measure-table">
-                ${otherTokens.map((token) => this.renderTokenRow(tag, token))}
-              </div>`
-          : nothing}
-
-        ${hasTypography
-          ? html`<h4 class="config-subgroup">${l("Tipografia")}</h4>
-              <p class="usage-scales">
-                ${usage.typography.map(
-                  (scale) => html`<code>${scale}</code>`,
-                )}
-              </p>
-              <div class="config-field">
-                <span class="config-label">${l("Font titoli")}</span>
-                <docs-select
-                  label=${l("Font titoli")}
-                  .options=${FONT_KEYS}
-                  .value=${set.brandFont}
-                  @change=${(event: Event) =>
-                    this.setFont(
-                      "brandFont",
-                      (event as CustomEvent<{ value: string }>).detail.value,
-                    )}
-                ></docs-select>
-              </div>
-              <div class="config-field">
-                <span class="config-label">${l("Font testo")}</span>
-                <docs-select
-                  label=${l("Font testo")}
-                  .options=${FONT_KEYS}
-                  .value=${set.plainFont}
-                  @change=${(event: Event) =>
-                    this.setFont(
-                      "plainFont",
-                      (event as CustomEvent<{ value: string }>).detail.value,
-                    )}
-                ></docs-select>
-              </div>
-              <bolle-slider
-                label=${l("Dimensione base (px)")}
-                .min=${14}
-                .max=${20}
-                .step=${1}
-                .value=${String(set.baseSize)}
-                show-value
-                @value-input=${(event: Event) =>
-                  this.setBaseSize(
-                    Number(
-                      (event as CustomEvent<{ value: string }>).detail.value,
-                    ),
-                  )}
-              ></bolle-slider>`
-          : nothing}
+                ></bolle-slider>`
+            : nothing
+        }
       </div>
     </section>`;
   }
@@ -1706,54 +1891,64 @@ export class DocsApp extends LitElement {
       ? Math.abs(parseFloat(value))
       : null;
     return html`<div
-      class="measure-row ${overridden ? "is-overridden" : ""} ${this.hoverToken &&
-      this.hoverToken !== token
-        ? "is-muted"
-        : ""}"
+      class="measure-row ${overridden ? "is-overridden" : ""} ${
+        this.hoverToken && this.hoverToken !== token ? "is-muted" : ""
+      }"
       style=${color ? `--quote-color:${color}` : ""}
       @mouseenter=${() => (this.hoverToken = token)}
       @mouseleave=${() => (this.hoverToken = "")}
     >
       <code class="measure-name" title=${token}>
-        ${number > 0
-          ? html`<span class="measure-index" aria-hidden="true">${number}</span>`
-          : html`<span class="measure-swatch" aria-hidden="true"></span>`}${shortTokenName(
-          token,
-          tag,
-        )}
+        ${
+          number > 0
+            ? html`<span class="measure-index" aria-hidden="true"
+                >${number}</span
+              >`
+            : html`<span class="measure-swatch" aria-hidden="true"></span>`
+        }${shortTokenName(token, tag)}
       </code>
       <span class="measure-meta"
         >${withParts(l("default {value}"), { value: html`<b>${fallback || l("non dichiarato")}</b>` })}</span
       >
-      ${pixels !== null
-        ? html`<span class="measure-field">
-            <input
-              class="measure-input"
-              type="number"
-              inputmode="decimal"
-              step="1"
-              min="0"
+      ${
+        pixels !== null
+          ? html`<span class="measure-field">
+              <input
+                class="measure-input"
+                type="number"
+                inputmode="decimal"
+                step="1"
+                min="0"
+                spellcheck="false"
+                autocomplete="off"
+                aria-label=${l("Valore di {token} in pixel", { token })}
+                .value=${String(pixels)}
+                @change=${(event: Event) =>
+                  this.commitPixels(
+                    tag,
+                    token,
+                    event.target as HTMLInputElement,
+                  )}
+                @keydown=${this.onMeasureKeydown}
+                @wheel=${this.onMeasureWheel}
+              />
+              <span class="measure-unit" aria-hidden="true">px</span>
+            </span>`
+          : html`<input
+              class="measure-input is-text"
+              type="text"
               spellcheck="false"
               autocomplete="off"
-              aria-label=${l("Valore di {token} in pixel", { token })}
-              .value=${String(pixels)}
+              aria-label=${l("Valore di {token}", { token })}
+              .value=${value}
               @change=${(event: Event) =>
-                this.commitPixels(tag, token, event.target as HTMLInputElement)}
-              @keydown=${this.onMeasureKeydown}
-              @wheel=${this.onMeasureWheel}
-            />
-            <span class="measure-unit" aria-hidden="true">px</span>
-          </span>`
-        : html`<input
-            class="measure-input is-text"
-            type="text"
-            spellcheck="false"
-            autocomplete="off"
-            aria-label=${l("Valore di {token}", { token })}
-            .value=${value}
-            @change=${(event: Event) =>
-              this.setDetail(tag, token, (event.target as HTMLInputElement).value)}
-          />`}
+                this.setDetail(
+                  tag,
+                  token,
+                  (event.target as HTMLInputElement).value,
+                )}
+            />`
+      }
       <span class="measure-ruler" aria-hidden="true">
         <span
           class="measure-ruler-bar"
@@ -1763,14 +1958,16 @@ export class DocsApp extends LitElement {
           >${pixels !== null ? `${value}` : value || "—"}</span
         >
       </span>
-      ${overridden
-        ? html`<bolle-button
-            variant="text"
-            size="xs"
-            @click=${() => this.setDetail(tag, token, "")}
-            >${l("Reset")}</bolle-button
-          >`
-        : nothing}
+      ${
+        overridden
+          ? html`<bolle-button
+              variant="text"
+              size="xs"
+              @click=${() => this.setDetail(tag, token, "")}
+              >${l("Reset")}</bolle-button
+            >`
+          : nothing
+      }
     </div>`;
   }
 
@@ -1786,7 +1983,11 @@ export class DocsApp extends LitElement {
       input.value = String(Number.isFinite(current) ? Math.abs(current) : 0);
       return;
     }
-    this.setDetail(tag, token, `${Math.round(Math.max(0, number) * 100) / 100}px`);
+    this.setDetail(
+      tag,
+      token,
+      `${Math.round(Math.max(0, number) * 100) / 100}px`,
+    );
   }
 
   /** Shift widens the step, as with any number input plus a coarse mode. */
@@ -1846,6 +2047,7 @@ export class DocsApp extends LitElement {
       code: code.text,
       codeLanguage: code.tab === "react" ? "jsx" : code.tab,
       api: componentApi(entry.tag),
+      surface: componentSurface(entry.tag),
       support: componentSupport(entry.tag),
     });
     void this.copy(markdown, l("Pagina copiata in Markdown"));
@@ -1855,15 +2057,23 @@ export class DocsApp extends LitElement {
     const code = this.codeFor(entry, state);
     const variants = this.variantControls(entry, state);
     const api = componentApi(entry.tag);
+    const surface = componentSurface(entry.tag);
     const support = componentSupport(entry.tag);
     const index = orderedEntries.indexOf(entry);
     const previous = orderedEntries[index - 1];
     const next = orderedEntries[index + 1];
     const sections: DocSection[] = [
       { id: "sec-preview", label: l("Anteprima") },
-      ...(variants.length > 0 ? [{ id: "sec-variants", label: l("Varianti") }] : []),
+      ...(variants.length > 0
+        ? [{ id: "sec-variants", label: l("Varianti") }]
+        : []),
       ...(api.length > 0 ? [{ id: "sec-api", label: "API" }] : []),
-      ...(support ? [{ id: "sec-support", label: l("Supporto e limiti") }] : []),
+      ...(surface.slots.length || surface.parts.length
+        ? [{ id: "sec-anatomy", label: l("Anatomia pubblica") }]
+        : []),
+      ...(support
+        ? [{ id: "sec-support", label: l("Supporto e limiti") }]
+        : []),
       { id: "sec-a11y", label: l("Accessibilità") },
     ];
     const active = this.activeSection || sections[0].id;
@@ -1881,18 +2091,22 @@ export class DocsApp extends LitElement {
             <div class="doc-pager-mini">
               <bolle-icon-button
                 variant="standard"
-                label=${previous
-                  ? l("Precedente: {name}", { name: previous.title })
-                  : l("Nessun componente precedente")}
+                label=${
+                  previous
+                    ? l("Precedente: {name}", { name: previous.title })
+                    : l("Nessun componente precedente")
+                }
                 ?disabled=${!previous}
                 @click=${() => previous && this.navigate(previous.tag)}
                 >${ti("arrow-left")}</bolle-icon-button
               >
               <bolle-icon-button
                 variant="standard"
-                label=${next
-                  ? l("Successivo: {name}", { name: next.title })
-                  : l("Nessun componente successivo")}
+                label=${
+                  next
+                    ? l("Successivo: {name}", { name: next.title })
+                    : l("Nessun componente successivo")
+                }
                 ?disabled=${!next}
                 @click=${() => next && this.navigate(next.tag)}
                 >${ti("arrow-right")}</bolle-icon-button
@@ -1901,8 +2115,12 @@ export class DocsApp extends LitElement {
           </div>
           <div class="doc-meta">
             <code class="tag">&lt;${entry.tag}&gt;</code>
-            <span class="meta-chip">${l("{n} proprietà", { n: api.length })}</span>
-            <span class="meta-chip">${code.tabs.map((tab) => tab.toUpperCase()).join(" · ")}</span>
+            <span class="meta-chip"
+              >${l("{n} proprietà", { n: api.length })}</span
+            >
+            <span class="meta-chip"
+              >${code.tabs.map((tab) => tab.toUpperCase()).join(" · ")}</span
+            >
           </div>
           <p class="lead">${l(entry.summary)}</p>
           ${entry.note ? html`<p class="note">${l(entry.note)}</p>` : nothing}
@@ -1911,34 +2129,47 @@ export class DocsApp extends LitElement {
         ${this.renderPlayground(entry, state, code)}
         ${variants.length > 0 ? this.renderVariants(entry, state, variants) : nothing}
         ${api.length > 0 ? this.renderApi(api) : nothing}
+        ${
+          surface.slots.length || surface.parts.length
+            ? this.renderAnatomy(entry.tag, surface.slots, surface.parts)
+            : nothing
+        }
         ${support ? this.renderSupport(support) : nothing}
         ${this.renderAccessibility(entry)}
 
         <nav class="pager" aria-label=${l("Altri componenti")}>
-          ${previous
-            ? html`<bolle-card
-                class="pager-card"
-                variant="elevated"
-                tail="top-end"
-                href=${routeHref(previous.tag)}
-                label=${l("Precedente: {name}", { name: previous.title })}
-              >
-                <span class="pager-dir">${ti("arrow-left")} ${l("Precedente")}</span>
-                <span class="pager-title">${previous.title}</span>
-              </bolle-card>`
-            : html`<span></span>`}
-          ${next
-            ? html`<bolle-card
-                class="pager-card is-next"
-                variant="elevated"
-                tail="top-start"
-                href=${routeHref(next.tag)}
-                label=${l("Successivo: {name}", { name: next.title })}
-              >
-                <span class="pager-dir">${l("Successivo")} ${ti("arrow-right")}</span>
-                <span class="pager-title">${next.title}</span>
-              </bolle-card>`
-            : nothing}
+          ${
+            previous
+              ? html`<bolle-card
+                  class="pager-card"
+                  variant="elevated"
+                  tail="top-end"
+                  href=${routeHref(previous.tag)}
+                  label=${l("Precedente: {name}", { name: previous.title })}
+                >
+                  <span class="pager-dir"
+                    >${ti("arrow-left")} ${l("Precedente")}</span
+                  >
+                  <span class="pager-title">${previous.title}</span>
+                </bolle-card>`
+              : html`<span></span>`
+          }
+          ${
+            next
+              ? html`<bolle-card
+                  class="pager-card is-next"
+                  variant="elevated"
+                  tail="top-start"
+                  href=${routeHref(next.tag)}
+                  label=${l("Successivo: {name}", { name: next.title })}
+                >
+                  <span class="pager-dir"
+                    >${l("Successivo")} ${ti("arrow-right")}</span
+                  >
+                  <span class="pager-title">${next.title}</span>
+                </bolle-card>`
+              : nothing
+          }
         </nav>
       </article>
 
@@ -1946,24 +2177,30 @@ export class DocsApp extends LitElement {
         <p class="toc-title">${l("In questa pagina")}</p>
         <ul>
           ${sections.map(
-            (section) => html`<li>
-              <button
-                type="button"
-                class="toc-link ${section.id === active ? "is-active" : ""}"
-                aria-current=${section.id === active ? "location" : "false"}
-                @click=${() => this.scrollToSection(section.id)}
-              >
-                ${section.label}
-              </button>
-            </li>`,
+            (section) =>
+              html`<li>
+                <button
+                  type="button"
+                  class="toc-link ${section.id === active ? "is-active" : ""}"
+                  aria-current=${section.id === active ? "location" : "false"}
+                  @click=${() => this.scrollToSection(section.id)}
+                >
+                  ${section.label}
+                </button>
+              </li>`,
           )}
         </ul>
         <div class="toc-actions">
-          <bolle-button variant="text" size="xs" @click=${() => this.copyPage(entry, code)}
-            ><span slot="icon" aria-hidden="true">${ti("markdown")}</span>${l("Copia pagina")}</bolle-button
+          <bolle-button
+            variant="text"
+            size="xs"
+            @click=${() => this.copyPage(entry, code)}
+            ><span slot="icon" aria-hidden="true">${ti("markdown")}</span
+            >${l("Copia pagina")}</bolle-button
           >
           <bolle-button variant="text" size="xs" @click=${this.openConfig}
-            ><span slot="icon" aria-hidden="true">${ti("palette")}</span>${l("Tema e token")}</bolle-button
+            ><span slot="icon" aria-hidden="true">${ti("palette")}</span
+            >${l("Tema e token")}</bolle-button
           >
         </div>
       </aside>
@@ -1982,14 +2219,23 @@ export class DocsApp extends LitElement {
   ): TemplateResult {
     const hasSizes = this.sizeTokens.length > 0;
     const side = hasSizes ? this.sideTab : "params";
-    const labels: Record<CodeTab, string> = { html: "HTML", vue: "Vue", react: "React" };
+    const labels: Record<CodeTab, string> = {
+      html: "HTML",
+      vue: "Vue",
+      react: "React",
+    };
     const params = html`<div class="side-body" slot="params">
       ${entry.controls.map((control) => this.renderControl(control, state))}
       <bolle-button variant="text" size="xs" @click=${() => this.reset(entry)}
-        ><span slot="icon" aria-hidden="true">${ti("refresh")}</span>${l("Reimposta parametri")}</bolle-button
+        ><span slot="icon" aria-hidden="true">${ti("refresh")}</span
+        >${l("Reimposta parametri")}</bolle-button
       >
     </div>`;
-    return html`<section id="sec-preview" class="doc-section" aria-labelledby="h-preview">
+    return html`<section
+      id="sec-preview"
+      class="doc-section"
+      aria-labelledby="h-preview"
+    >
       <h2 id="h-preview" tabindex="-1">${l("Anteprima")}</h2>
       <div class="playground">
         <div class="playground-stage">
@@ -2001,32 +2247,38 @@ export class DocsApp extends LitElement {
             ${this.quotes && this.quoteLines.length > 0 ? this.renderQuotes() : nothing}
           </div>
           <div class="playground-side">
-            ${hasSizes
-              ? html`<bolle-tabs
-                  variant="secondary"
-                  label=${l("Pannello del playground")}
-                  .items=${[
-                    { id: "params", label: l("Parametri") },
-                    { id: "sizes", label: l("Misure") },
-                  ]}
-                  .value=${side}
-                  @change=${this.onSideTab}
-                >
-                  ${params}
-                  <div class="side-body" slot="sizes">
-                    ${this.renderSizeTable()}
-                    ${this.details[entry.tag]
-                      ? html`<bolle-button
-                          variant="text"
-                          size="xs"
-                          @click=${() => this.resetDetails(entry.tag)}
-                          ><span slot="icon" aria-hidden="true">${ti("refresh")}</span>${l("Reimposta misure")}</bolle-button
-                        >`
-                      : nothing}
-                  </div>
-                </bolle-tabs>`
-              : html`<h3 class="side-title">${l("Parametri")}</h3>
-                  ${params}`}
+            ${
+              hasSizes
+                ? html`<bolle-tabs
+                    variant="secondary"
+                    label=${l("Pannello del playground")}
+                    .items=${[
+                      { id: "params", label: l("Parametri") },
+                      { id: "sizes", label: l("Misure") },
+                    ]}
+                    .value=${side}
+                    @change=${this.onSideTab}
+                  >
+                    ${params}
+                    <div class="side-body" slot="sizes">
+                      ${this.renderSizeTable()}
+                      ${
+                        this.details[entry.tag]
+                          ? html`<bolle-button
+                              variant="text"
+                              size="xs"
+                              @click=${() => this.resetDetails(entry.tag)}
+                              ><span slot="icon" aria-hidden="true"
+                                >${ti("refresh")}</span
+                              >${l("Reimposta misure")}</bolle-button
+                            >`
+                          : nothing
+                      }
+                    </div>
+                  </bolle-tabs>`
+                : html`<h3 class="side-title">${l("Parametri")}</h3>
+                    ${params}`
+            }
           </div>
         </div>
         <div class="playground-code">
@@ -2038,21 +2290,26 @@ export class DocsApp extends LitElement {
             @change=${this.onCodeTab}
           >
             ${code.tabs.map(
-              (tab, index) => html`<div class="code-panel-body" slot=${tab}>
-                <pre
-                  class="code-block"
-                  data-tail=${this.codeTail(index, code.tabs.length)}
-                ><code>${tab === code.tab ? code.text : ""}</code></pre>
-                ${tab === code.tab
-                  ? html`<bolle-button
-                      class="code-copy"
-                      variant="text"
-                      size="xs"
-                      @click=${() => this.copy(code.text)}
-                      ><span slot="icon" aria-hidden="true">${ti("copy")}</span>${l("Copia")}</bolle-button
-                    >`
-                  : nothing}
-              </div>`,
+              (tab, index) =>
+                html`<div class="code-panel-body" slot=${tab}>
+                  <pre
+                    class="code-block"
+                    data-tail=${this.codeTail(index, code.tabs.length)}
+                  ><code>${tab === code.tab ? code.text : ""}</code></pre>
+                  ${
+                    tab === code.tab
+                      ? html`<bolle-button
+                          class="code-copy"
+                          variant="text"
+                          size="xs"
+                          @click=${() => this.copy(code.text)}
+                          ><span slot="icon" aria-hidden="true"
+                            >${ti("copy")}</span
+                          >${l("Copia")}</bolle-button
+                        >`
+                      : nothing
+                  }
+                </div>`,
             )}
           </bolle-tabs>
         </div>
@@ -2065,37 +2322,49 @@ export class DocsApp extends LitElement {
     state: State,
     controls: Extract<Control, { kind: "enum" }>[],
   ): TemplateResult {
-    return html`<section id="sec-variants" class="doc-section" aria-labelledby="h-variants">
+    return html`<section
+      id="sec-variants"
+      class="doc-section"
+      aria-labelledby="h-variants"
+    >
       <h2 id="h-variants" tabindex="-1">${l("Varianti")}</h2>
       <p class="section-lead">
         ${l("Ogni riga cambia un solo attributo; gli altri restano quelli dell'anteprima.")}
       </p>
       ${controls.map(
-        (control) => html`<div class="variant-group">
-          <h3>${l(control.label)} <code>${kebab(control.prop)}</code></h3>
-          <div
-            class="variant-grid ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""} ${PANEL_GROUPS.has(entry.group) ? "is-panel" : ""}"
-          >
-            ${control.options.map(
-              (option) => html`<figure class="variant-cell">
-                <div class="variant-stage">
-                  ${entry.render({ ...state, [control.prop]: option }, this.ctx)}
-                </div>
-                <figcaption><code>${option}</code></figcaption>
-              </figure>`,
-            )}
-          </div>
-        </div>`,
+        (control) =>
+          html`<div class="variant-group">
+            <h3>${l(control.label)} <code>${kebab(control.prop)}</code></h3>
+            <div
+              class="variant-grid ${WIDE_GROUPS.has(entry.group) ? "is-wide" : ""} ${PANEL_GROUPS.has(entry.group) ? "is-panel" : ""}"
+            >
+              ${control.options.map(
+                (option) =>
+                  html`<figure class="variant-cell">
+                    <div class="variant-stage">
+                      ${entry.render({ ...state, [control.prop]: option }, this.ctx)}
+                    </div>
+                    <figcaption><code>${option}</code></figcaption>
+                  </figure>`,
+              )}
+            </div>
+          </div>`,
       )}
     </section>`;
   }
 
   private renderApi(rows: ApiRow[]): TemplateResult {
-    return html`<section id="sec-api" class="doc-section" aria-labelledby="h-api">
+    return html`<section
+      id="sec-api"
+      class="doc-section"
+      aria-labelledby="h-api"
+    >
       <h2 id="h-api" tabindex="-1">API</h2>
       <p class="section-lead">
         ${withParts(
-          l("Proprietà pubbliche lette dalla classe registrata. Array e oggetti si assegnano come proprietà JavaScript; gli attributi booleani valgono per presenza, quindi {example} resta disabilitato."),
+          l(
+            "Proprietà pubbliche lette dalla classe registrata. Array e oggetti si assegnano come proprietà JavaScript; gli attributi booleani valgono per presenza, quindi {example} resta disabilitato.",
+          ),
           { example: html`<code>disabled="false"</code>` },
         )}
       </p>
@@ -2112,13 +2381,18 @@ export class DocsApp extends LitElement {
           </thead>
           <tbody>
             ${rows.map(
-              (row) => html`<tr>
-                <th scope="row"><code>${row.name}</code></th>
-                <td>${row.attribute ? html`<code>${row.attribute}</code>` : html`<span class="muted">${l("solo JS")}</span>`}</td>
-                <td><span class="type">${row.type}</span></td>
-                <td><code>${row.defaultValue}</code></td>
-                <td>${row.reflects ? l("sì") : html`<span class="muted">${l("no")}</span>`}</td>
-              </tr>`,
+              (row) =>
+                html`<tr>
+                  <th scope="row"><code>${row.name}</code></th>
+                  <td>
+                    ${row.attribute ? html`<code>${row.attribute}</code>` : html`<span class="muted">${l("solo JS")}</span>`}
+                  </td>
+                  <td><span class="type">${row.type}</span></td>
+                  <td><code>${row.defaultValue}</code></td>
+                  <td>
+                    ${row.reflects ? l("sì") : html`<span class="muted">${l("no")}</span>`}
+                  </td>
+                </tr>`,
             )}
           </tbody>
         </table>
@@ -2126,14 +2400,70 @@ export class DocsApp extends LitElement {
     </section>`;
   }
 
+  private renderAnatomy(
+    tag: string,
+    slots: string[],
+    parts: string[],
+  ): TemplateResult {
+    const examplePart = parts[0];
+    return html`<section
+      id="sec-anatomy"
+      class="doc-section"
+      aria-labelledby="h-anatomy"
+    >
+      <h2 id="h-anatomy" tabindex="-1">${l("Anatomia pubblica")}</h2>
+      <p class="section-lead">
+        ${l(
+          "Slot e CSS part sono un contratto di composizione. Le parti interne senza elenco restano private al componente.",
+        )}
+      </p>
+      <div class="anatomy-grid">
+        ${
+          slots.length
+            ? html`<div>
+                <h3>Slot</h3>
+                <ul class="anatomy-list">
+                  ${slots.map((slot) => html`<li><code>${slot}</code></li>`)}
+                </ul>
+                <pre class="code-block"><code>${
+                  slots[0] === "default"
+                    ? `<${tag}>…</${tag}>`
+                    : `<${tag}>\n  <span slot="${slots[0]}">…</span>\n</${tag}>`
+                }</code></pre>
+              </div>`
+            : nothing
+        }
+        ${
+          parts.length
+            ? html`<div>
+                <h3>CSS part</h3>
+                <ul class="anatomy-list">
+                  ${parts.map((part) => html`<li><code>${part}</code></li>`)}
+                </ul>
+                <pre class="code-block"><code>${tag}::part(${examplePart}) {
+  /* public override */
+}</code></pre>
+              </div>`
+            : nothing
+        }
+      </div>
+    </section>`;
+  }
+
   private renderInline(text: string): TemplateResult[] {
     return text
       .split("`")
-      .map((part, index) => (index % 2 === 1 ? html`<code>${part}</code>` : html`${part}`));
+      .map((part, index) =>
+        index % 2 === 1 ? html`<code>${part}</code>` : html`${part}`,
+      );
   }
 
   private renderSupport(support: SupportInfo): TemplateResult {
-    return html`<section id="sec-support" class="doc-section" aria-labelledby="h-support">
+    return html`<section
+      id="sec-support"
+      class="doc-section"
+      aria-labelledby="h-support"
+    >
       <h2 id="h-support" tabindex="-1">${l("Supporto e limiti")}</h2>
       <p class="section-lead">
         ${l(
@@ -2159,7 +2489,11 @@ export class DocsApp extends LitElement {
 
   private renderAccessibility(entry: Entry): TemplateResult {
     const shortcut = entry.tag !== "bolle-menu";
-    return html`<section id="sec-a11y" class="doc-section" aria-labelledby="h-a11y">
+    return html`<section
+      id="sec-a11y"
+      class="doc-section"
+      aria-labelledby="h-a11y"
+    >
       <h2 id="h-a11y" tabindex="-1">${l("Accessibilità")}</h2>
       <dl class="a11y-list">
         <div>
@@ -2170,27 +2504,38 @@ export class DocsApp extends LitElement {
             )}
           </dd>
         </div>
-        ${shortcut
-          ? html`<div>
-              <dt>${l("Scorciatoia da tastiera")}</dt>
-              <dd>
-                ${withParts(
-                  l("L'attributo {attribute} usa la sintassi di {syntax}. Se il componente contiene un controllo focalizzabile, la combinazione lo mette a fuoco; bottoni e link vengono anche attivati."),
-                  {
-                    attribute: html`<code>shortcut</code>`,
-                    syntax: html`<code>aria-keyshortcuts</code>`,
-                  },
-                )}
-                <pre class="code-inline"><code>&lt;${entry.tag} shortcut="Alt+S"&gt;&lt;/${entry.tag}&gt;</code></pre>
-              </dd>
-            </div>`
-          : nothing}
+        ${
+          shortcut
+            ? html`<div>
+                <dt>${l("Scorciatoia da tastiera")}</dt>
+                <dd>
+                  ${withParts(
+                    l(
+                      "L'attributo {attribute} usa la sintassi di {syntax}. Se il componente contiene un controllo focalizzabile, la combinazione lo mette a fuoco; bottoni e link vengono anche attivati.",
+                    ),
+                    {
+                      attribute: html`<code>shortcut</code>`,
+                      syntax: html`<code>aria-keyshortcuts</code>`,
+                    },
+                  )}
+                  <pre
+                    class="code-inline"
+                  ><code>&lt;${entry.tag} shortcut="Alt+S"&gt;&lt;/${entry.tag}&gt;</code></pre>
+                </dd>
+              </div>`
+            : nothing
+        }
         <div>
           <dt>${l("Direzione del testo")}</dt>
           <dd>
-            ${withParts(l("Verifica la resa da destra a sinistra con il pulsante {rtl} nella barra in alto."), {
-              rtl: html`<strong>RTL</strong>`,
-            })}
+            ${withParts(
+              l(
+                "Verifica la resa da destra a sinistra con il pulsante {rtl} nella barra in alto.",
+              ),
+              {
+                rtl: html`<strong>RTL</strong>`,
+              },
+            )}
           </dd>
         </div>
       </dl>
@@ -2211,7 +2556,10 @@ export class DocsApp extends LitElement {
           </p>
         </header>
 
-        <section class="panel tokens-colors" aria-labelledby="tokens-colors-title">
+        <section
+          class="panel tokens-colors"
+          aria-labelledby="tokens-colors-title"
+        >
           <div class="section-head">
             <h2 id="tokens-colors-title">${l("Tavolozza")}</h2>
             <div class="palette-actions">
@@ -2224,21 +2572,33 @@ export class DocsApp extends LitElement {
                 ]}
                 .value=${this.paletteDensity}
                 @change=${(event: Event) =>
-                  (this.paletteDensity = (event as CustomEvent<{ value: string }>).detail
-                    .value as "compact" | "medium" | "full")}
+                  (this.paletteDensity = (
+                    event as CustomEvent<{ value: string }>
+                  ).detail.value as "compact" | "medium" | "full")}
               ></bolle-segmented-buttons>
               <bolle-button variant="text" @click=${this.resetTokens}
                 >${l("Reimposta tema")}</bolle-button
               >
             </div>
           </div>
-          <div class=${`palette palette-${this.paletteDensity} ${this.inspected ? "is-inspecting" : ""}`}>${this.renderColorRoles()}</div>
+          <div
+            class=${`palette palette-${this.paletteDensity} ${this.inspected ? "is-inspecting" : ""}`}
+          >
+            ${this.renderColorRoles()}
+          </div>
         </section>
 
-        <section class="panel" id="tk-preview" data-section aria-labelledby="tokens-preview-title">
+        <section
+          class="panel"
+          id="tk-preview"
+          data-section
+          aria-labelledby="tokens-preview-title"
+        >
           <div class="section-head">
             <h2 id="tokens-preview-title">${l("Anteprima")}</h2>
-            <span class="hint">${l("Passa sopra un componente per vedere i token che usa")}</span>
+            <span class="hint"
+              >${l("Passa sopra un componente per vedere i token che usa")}</span
+            >
           </div>
           <div
             class="preview-surface"
@@ -2252,28 +2612,47 @@ export class DocsApp extends LitElement {
           ${this.renderInspector()}
         </section>
 
-        <section class="panel" id="tk-shape" data-section aria-labelledby="tokens-shape-title">
+        <section
+          class="panel"
+          id="tk-shape"
+          data-section
+          aria-labelledby="tokens-shape-title"
+        >
           <div class="section-head">
             <h2 id="tokens-shape-title">${l("Scala delle forme")}</h2>
-            <span class="hint">${l("Raggio degli angoli e componenti che lo usano")}</span>
+            <span class="hint"
+              >${l("Raggio degli angoli e componenti che lo usano")}</span
+            >
           </div>
           ${this.renderShapeScale()}
         </section>
 
-        <section class="panel" id="tk-type" data-section aria-labelledby="tokens-type-title">
+        <section
+          class="panel"
+          id="tk-type"
+          data-section
+          aria-labelledby="tokens-type-title"
+        >
           <div class="section-head">
             <h2 id="tokens-type-title">${l("Tipografia")}</h2>
           </div>
           ${this.renderTypeSample()}
         </section>
 
-        <section class="panel code-panel" id="tk-css" data-section aria-labelledby="tokens-io-title">
+        <section
+          class="panel code-panel"
+          id="tk-css"
+          data-section
+          aria-labelledby="tokens-io-title"
+        >
           <div class="section-head">
             <h2 id="tokens-io-title">${l("Esporta e importa")}</h2>
           </div>
           <p class="section-lead">
             ${withParts(
-              l("Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}."),
+              l(
+                "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}.",
+              ),
               {
                 light: html`<code>:root</code>`,
                 dark: html`<code>:root[data-theme="dark"]</code>`,
@@ -2285,18 +2664,27 @@ export class DocsApp extends LitElement {
               <h3>${l("Esporta")}</h3>
               <div class="io-actions">
                 <bolle-button @click=${this.exportJson}
-                  ><span slot="icon" aria-hidden="true">${ti("arrow-down")}</span>${l("Scarica JSON")}</bolle-button
+                  ><span slot="icon" aria-hidden="true"
+                    >${ti("arrow-down")}</span
+                  >${l("Scarica JSON")}</bolle-button
                 >
                 <bolle-button variant="tonal" @click=${this.exportCss}
-                  ><span slot="icon" aria-hidden="true">${ti("arrow-down")}</span>${l("Scarica CSS")}</bolle-button
+                  ><span slot="icon" aria-hidden="true"
+                    >${ti("arrow-down")}</span
+                  >${l("Scarica CSS")}</bolle-button
                 >
-                <bolle-button variant="text" @click=${() => this.copy(exportThemeCss(this.palettes))}
-                  ><span slot="icon" aria-hidden="true">${ti("copy")}</span>${l("Copia CSS")}</bolle-button
+                <bolle-button
+                  variant="text"
+                  @click=${() => this.copy(exportThemeCss(this.palettes))}
+                  ><span slot="icon" aria-hidden="true">${ti("copy")}</span
+                  >${l("Copia CSS")}</bolle-button
                 >
               </div>
               <details class="io-preview">
                 <summary>${l("Anteprima del CSS")}</summary>
-                <pre class="code-block"><code>${exportThemeCss(this.palettes)}</code></pre>
+                <pre
+                  class="code-block"
+                ><code>${exportThemeCss(this.palettes)}</code></pre>
               </details>
             </div>
 
@@ -2315,7 +2703,8 @@ export class DocsApp extends LitElement {
                 <bolle-button
                   variant="outlined"
                   @click=${() => this.querySelector<HTMLInputElement>("#io-file")?.click()}
-                  ><span slot="icon" aria-hidden="true">${ti("arrow-up")}</span>${l("Scegli file")}</bolle-button
+                  ><span slot="icon" aria-hidden="true">${ti("arrow-up")}</span
+                  >${l("Scegli file")}</bolle-button
                 >
                 <input
                   id="io-file"
@@ -2334,7 +2723,9 @@ export class DocsApp extends LitElement {
                 ?error=${this.importError !== ""}
                 supporting-text=${this.importError}
                 @value-input=${(event: Event) => {
-                  this.importText = (event as CustomEvent<{ value: string }>).detail.value;
+                  this.importText = (
+                    event as CustomEvent<{ value: string }>
+                  ).detail.value;
                   this.importError = "";
                 }}
               ></bolle-text-field>
@@ -2361,10 +2752,11 @@ export class DocsApp extends LitElement {
           ]}
           .value=${this.asideTab}
           @change=${(event: Event) => {
-            this.asideTab = (event as CustomEvent<{ value: string }>).detail.value as
-              | "colors"
-              | "shape";
-            this.scrollToSection(this.asideTab === "colors" ? "tk-primary" : "tk-shape");
+            this.asideTab = (event as CustomEvent<{ value: string }>).detail
+              .value as "colors" | "shape";
+            this.scrollToSection(
+              this.asideTab === "colors" ? "tk-primary" : "tk-shape",
+            );
           }}
         >
           <div slot="colors">${this.renderColorGenerator()}</div>
@@ -2376,14 +2768,28 @@ export class DocsApp extends LitElement {
 
   private renderFooter(): TemplateResult {
     return html`<footer class="site-footer">
-      <span class="bb-logo">${bolleMark(20)}<span>
-        ${withParts(l("{name} · ispirata a Material 3, non affiliata a Google."), {
-          name: html`<strong class="site-footer-name">bolle</strong>`,
-        })}</span></span>
-      <a class="md-text-link" href="https://materialui.co/colors" target="_blank" rel="noopener noreferrer"
+      <span class="bb-logo"
+        >${bolleMark(20)}<span>
+          ${withParts(
+            l("{name} · ispirata a Material 3, non affiliata a Google."),
+            {
+              name: html`<strong class="site-footer-name">bolle</strong>`,
+            },
+          )}</span
+        ></span
+      >
+      <a
+        class="md-text-link"
+        href="https://materialui.co/colors"
+        target="_blank"
+        rel="noopener noreferrer"
         >${l("Palette Material")}</a
       >
-      <a class="md-text-link" href="https://tabler.io/icons" target="_blank" rel="noopener noreferrer"
+      <a
+        class="md-text-link"
+        href="https://tabler.io/icons"
+        target="_blank"
+        rel="noopener noreferrer"
         >${l("Icone Tabler")}</a
       >
     </footer>`;
@@ -2411,9 +2817,12 @@ export class DocsApp extends LitElement {
       shortcut="/"
       .value=${this.navFilter}
       @value-input=${this.onNavFilter}
-      ><span slot="leading" aria-hidden="true">${ti("search")}</span></bolle-text-field
+      ><span slot="leading" aria-hidden="true"
+        >${ti("search")}</span
+      ></bolle-text-field
     >`;
-    const navList = (navigate: (event: Event) => void) => this.renderSideNav(navigate);
+    const navList = (navigate: (event: Event) => void) =>
+      this.renderSideNav(navigate);
 
     return html`
       <style>
@@ -2428,7 +2837,10 @@ export class DocsApp extends LitElement {
             @click=${this.openDrawer}
             >${ti("menu-2")}</bolle-icon-button
           >
-          <a href=${routeHref()} class="landing-brand" aria-label=${l("bolle, presentazione")}
+          <a
+            href=${routeHref()}
+            class="landing-brand"
+            aria-label=${l("bolle, presentazione")}
             >${bolleLogo(30)}</a
           >
           <nav class="landing-nav site-nav" aria-label=${l("Principale")}>
@@ -2437,21 +2849,29 @@ export class DocsApp extends LitElement {
               aria-current=${!isTokens && !this.isFoundations ? "page" : nothing}
               >${l("Componenti")}</a
             >
-            <a href=${routeHref("foundations")} aria-current=${this.isFoundations ? "page" : nothing}
+            <a
+              href=${routeHref("foundations")}
+              aria-current=${this.isFoundations ? "page" : nothing}
               >Foundations</a
             >
-            <a href=${routeHref("tokens")} aria-current=${isTokens ? "page" : nothing}>${l("Token")}</a>
+            <a
+              href=${routeHref("tokens")}
+              aria-current=${isTokens ? "page" : nothing}
+              >${l("Token")}</a
+            >
           </nav>
           <span class="topbar-actions">
             ${this.renderLocaleSelect()}
-            ${!isTokens && !this.isPage
-              ? html`<bolle-icon-button
-                  variant="standard"
-                  label=${l("Tema e token")}
-                  @click=${this.openConfig}
-                  >${ti("palette")}</bolle-icon-button
-                >`
-              : nothing}
+            ${
+              !isTokens && !this.isPage
+                ? html`<bolle-icon-button
+                    variant="standard"
+                    label=${l("Tema e token")}
+                    @click=${this.openConfig}
+                    >${ti("palette")}</bolle-icon-button
+                  >`
+                : nothing
+            }
             <bolle-icon-button
               variant="standard"
               label=${this.dark ? l("Tema chiaro") : l("Tema scuro")}
@@ -2474,47 +2894,50 @@ export class DocsApp extends LitElement {
 
       <div class="shell">
         <aside class="nav-panel" aria-label=${l("Elenco componenti")}>
-          ${this.pageSections() ? nothing : navFilter} ${navList(this.onNavigate)}
+          ${this.pageSections() ? nothing : navFilter}
+          ${navList(this.onNavigate)}
         </aside>
 
         <main class="content">
-          ${isTokens
-            ? this.renderTokensMain(css)
-            : this.isFoundations
-              ? renderFoundations()
-              : this.isOverview
-              ? this.renderOverview()
-              : this.renderComponentPage(entry, state)}
+          ${
+            isTokens
+              ? this.renderTokensMain(css)
+              : this.isFoundations
+                ? renderFoundations()
+                : this.isOverview
+                  ? this.renderOverview()
+                  : this.renderComponentPage(entry, state)
+          }
         </main>
-
       </div>
 
-      ${!isTokens && !this.isPage
-        ? html`<bolle-side-sheet
-            id="site-config"
-            class="config-sheet"
-            label=${l("Tema e token")}
-            close-label=${l("Chiudi")}
-            detached
-          >
-            <div class="config-sheet-body">
-              <section class="config-section" aria-label=${l("Tema")}>
-                <div class="config-head">
-                  <h2>${l("Tema")}</h2>
-                </div>
-                ${this.renderThemeSelect()}
-              </section>
-              <section class="config-section" aria-label=${l("Template")}>
-                <div class="config-head">
-                  <h2>${l("Template")}</h2>
-                </div>
-                ${this.renderDensitySelect()}
-              </section>
-              ${this.renderEntryTokens()}
-            </div>
-          </bolle-side-sheet>`
-        : nothing}
-
+      ${
+        !isTokens && !this.isPage
+          ? html`<bolle-side-sheet
+              id="site-config"
+              class="config-sheet"
+              label=${l("Tema e token")}
+              close-label=${l("Chiudi")}
+              detached
+            >
+              <div class="config-sheet-body">
+                <section class="config-section" aria-label=${l("Tema")}>
+                  <div class="config-head">
+                    <h2>${l("Tema")}</h2>
+                  </div>
+                  ${this.renderThemeSelect()}
+                </section>
+                <section class="config-section" aria-label=${l("Template")}>
+                  <div class="config-head">
+                    <h2>${l("Template")}</h2>
+                  </div>
+                  ${this.renderDensitySelect()}
+                </section>
+                ${this.renderEntryTokens()}
+              </div>
+            </bolle-side-sheet>`
+          : nothing
+      }
       ${this.renderFooter()}
 
       <bolle-snackbar id="site-snackbar" .duration=${3000}></bolle-snackbar>

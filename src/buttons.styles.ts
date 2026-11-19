@@ -69,6 +69,9 @@ export const buttonStyles = css`
   :host([size="xs"]) .button::after {
     content: "";
     position: absolute;
+    inset: -8px;
+  }
+  :host([icon-only]:not([size="xs"])) .button::after {
     inset: -4px;
   }
   :host([variant="text"]),
@@ -76,7 +79,10 @@ export const buttonStyles = css`
   :host([variant="outlined"]),
   :host([variant="elevated"]) {
     /* No coloured fill to reflect on: the glint takes the label colour. */
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
+    --bb-glint-color: rgb(
+      from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b /
+        0.5
+    );
   }
   :host([variant="tonal"]) .button,
   :host([variant="filled-tonal"]) .button {
@@ -171,6 +177,14 @@ export const buttonStyles = css`
   .button {
     white-space: nowrap;
   }
+  [part="icon"],
+  [part="trailing-icon"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--md-comp-button-icon-size, 24px);
+    line-height: 1;
+  }
   :host([icon-only]) .button {
     padding: 0;
     min-inline-size: var(--md-comp-button-small-height);
@@ -212,8 +226,15 @@ export const buttonStyles = css`
       linear-gradient(var(--bolle-state-hover), var(--bolle-state-hover)),
       var(--bb-hover-glint), var(--bb-highlight), var(--bb-film-wash);
     background-size:
-      100% 100%, var(--bb-glint-box) var(--bb-glint-box), 100% 100%, 100% 100%;
-    background-position: 0 0, var(--bb-glint-position), 0 0, 0 0;
+      100% 100%,
+      var(--bb-glint-box) var(--bb-glint-box),
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 0,
+      var(--bb-glint-position),
+      0 0,
+      0 0;
     background-repeat: no-repeat;
     box-shadow: var(--bb-float-4, var(--md-sys-elevation-level4));
   }
@@ -236,7 +257,7 @@ export const buttonStyles = css`
     min-inline-size: var(--md-comp-fab-medium-height);
   }
   ::slotted([slot="icon"]) {
-    font-size: 24px;
+    font-size: var(--md-comp-button-icon-size, 24px);
     line-height: 1;
   }
   :host([extended][size="small"]) .button {
@@ -336,20 +357,12 @@ export const groupStyles = css`
     --bolle-button-shape: var(--md-sys-shape-corner-full);
   }
   :host([variant="connected"]) ::slotted(:not(:first-child)) {
-    --bolle-button-corner-start-start: var(
-      --md-comp-button-group-inner-corner
-    );
-    --bolle-button-corner-end-start: var(
-      --md-comp-button-group-inner-corner
-    );
+    --bolle-button-corner-start-start: var(--md-comp-button-group-inner-corner);
+    --bolle-button-corner-end-start: var(--md-comp-button-group-inner-corner);
   }
   :host([variant="connected"]) ::slotted(:not(:last-child)) {
-    --bolle-button-corner-start-end: var(
-      --md-comp-button-group-inner-corner
-    );
-    --bolle-button-corner-end-end: var(
-      --md-comp-button-group-inner-corner
-    );
+    --bolle-button-corner-start-end: var(--md-comp-button-group-inner-corner);
+    --bolle-button-corner-end-end: var(--md-comp-button-group-inner-corner);
   }
   /* Angolo interno che si allarga al passaggio: la giunzione si apre senza
      spostare i vicini. */

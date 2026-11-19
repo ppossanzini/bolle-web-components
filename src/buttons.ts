@@ -28,6 +28,12 @@ export class BolleButton extends BolleElement {
     name: {},
     value: {},
     _formDisabled: { state: true },
+    formAction: { attribute: "formaction" },
+    formMethod: { attribute: "formmethod" },
+    formEnctype: { attribute: "formenctype" },
+    formNoValidate: { attribute: "formnovalidate", type: Boolean },
+    download: {},
+    hreflang: {},
     width: { reflect: true },
     color: { reflect: true },
   };
@@ -47,6 +53,12 @@ export class BolleButton extends BolleElement {
   haspopup = "";
   name = "";
   value = "";
+  formAction = "";
+  formMethod = "";
+  formEnctype = "";
+  formNoValidate = false;
+  download = "";
+  hreflang = "";
   width: "default" | "narrow" | "wide" = "default";
   color: FabColor = "primary-container";
   private _formDisabled = false;
@@ -73,6 +85,10 @@ export class BolleButton extends BolleElement {
       submitter.type = "submit";
       submitter.name = this.name;
       submitter.value = this.value;
+      if (this.formAction) submitter.formAction = this.formAction;
+      if (this.formMethod) submitter.formMethod = this.formMethod;
+      if (this.formEnctype) submitter.formEnctype = this.formEnctype;
+      submitter.formNoValidate = this.formNoValidate;
       submitter.hidden = true;
       form.append(submitter);
       form.requestSubmit(submitter);
@@ -81,12 +97,20 @@ export class BolleButton extends BolleElement {
     if (this.type === "reset" && form) form.reset();
   }
   protected render() {
-    const content = html`<slot name="icon" aria-hidden="true"></slot
-      ><slot>${this.label}</slot>`;
+    const content = html`<slot name="icon" part="icon" aria-hidden="true"></slot
+      ><span part="label"><slot>${this.label}</slot></span
+      ><slot
+        name="trailing-icon"
+        part="trailing-icon"
+        aria-hidden="true"
+      ></slot>`;
     if (this.href && !this.disabled && !this._formDisabled)
       return html`<a
         class="button"
+        part="button control"
         href=${this.href}
+        download=${this.download || nothing}
+        hreflang=${this.hreflang || nothing}
         target=${this.target || nothing}
         rel=${this.target === "_blank" ? "noopener noreferrer" : nothing}
         aria-label=${this.label || nothing}
@@ -95,7 +119,12 @@ export class BolleButton extends BolleElement {
       >`;
     return html`<button
       class="button"
+      part="button control"
       type="button"
+      formaction=${this.formAction || nothing}
+      formmethod=${this.formMethod || nothing}
+      formenctype=${this.formEnctype || nothing}
+      ?formnovalidate=${this.formNoValidate}
       ?disabled=${this.disabled || this._formDisabled}
       aria-label=${this.label || nothing}
       aria-pressed=${this.toggle ? String(this.selected) : nothing}
@@ -166,6 +195,7 @@ export class BolleButtonGroup extends BolleElement {
   }
   protected render() {
     return html`<div
+      part="group"
       role="group"
       aria-label=${this.label}
       @keydown=${(event: KeyboardEvent) => moveFocus(event, this.buttons())}

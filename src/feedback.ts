@@ -39,6 +39,7 @@ export class BolleProgressIndicator extends BolleElement {
     );
     if (this.variant === "circular")
       return html`<svg
+        part="progress circular"
         class=${this.indeterminate ? "circle indeterminate" : "circle"}
         viewBox="0 0 48 48"
         role="progressbar"
@@ -47,8 +48,9 @@ export class BolleProgressIndicator extends BolleElement {
         aria-valuemax=${max}
         aria-valuenow=${this.indeterminate ? nothing : value}
       >
-        <circle class="track" cx="24" cy="24" r="20"></circle>
+        <circle part="track" class="track" cx="24" cy="24" r="20"></circle>
         <circle
+          part="value"
           class="value"
           cx="24"
           cy="24"
@@ -59,14 +61,16 @@ export class BolleProgressIndicator extends BolleElement {
       </svg>`;
     if (this.indeterminate)
       return html`<div
+        part="progress linear track"
         class="linear indeterminate"
         role="progressbar"
         aria-label=${this.label}
       >
-        <span class="linear-value"></span>
+        <span part="value" class="linear-value"></span>
       </div>`;
     if (this.wavy)
       return html`<svg
+        part="progress wavy"
         class="wavy"
         viewBox="0 0 240 16"
         preserveAspectRatio="none"
@@ -86,14 +90,16 @@ export class BolleProgressIndicator extends BolleElement {
             ></rect>
           </clipPath>
         </defs>
-        <path class="wavy-track" d=${this.wavyPath(240)}></path>
+        <path part="track" class="wavy-track" d=${this.wavyPath(240)}></path>
         <path
+          part="value"
           class=${this.indeterminate ? "wavy-value wavy-indeterminate" : "wavy-value"}
           d=${this.wavyPath(240)}
           clip-path=${`url(#${this.clipId})`}
         ></path>
       </svg>`;
     return html`<div
+      part="progress linear track"
       class="linear"
       role="progressbar"
       aria-label=${this.label}
@@ -102,10 +108,11 @@ export class BolleProgressIndicator extends BolleElement {
       aria-valuenow=${value}
     >
       <span
+        part="value"
         class="linear-value"
         style=${`inline-size:${(value / max) * 100}%`}
       ></span>
-      <span class="linear-stop" aria-hidden="true"></span>
+      <span part="stop" class="linear-stop" aria-hidden="true"></span>
     </div>`;
   }
 }
@@ -117,22 +124,30 @@ export class BolleLoadingIndicator extends BolleElement {
   protected render() {
     if (this.variant === "morph")
       return html`<div
+        part="loading morph"
         class="loading morph"
         role="progressbar"
         aria-label=${this.label}
       >
-        <span class="morph-shape"></span>
+        <span part="indicator" class="morph-shape"></span>
       </div>`;
     return html`<div
+      part="loading"
       class="loading"
       role="progressbar"
       aria-label=${this.label}
     >
-      <span class="bubbles"><span></span><span></span><span></span></span>
+      <span part="indicator" class="bubbles"
+        ><span part="bubble bubble-primary"></span
+        ><span part="bubble bubble-secondary"></span
+        ><span part="bubble bubble-tertiary"></span
+      ></span>
       <svg class="goo" aria-hidden="true" width="0" height="0">
         <filter id="bb-goo">
           <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
-          <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
+          <feColorMatrix
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"
+          />
         </filter>
       </svg>
     </div>`;
@@ -155,8 +170,13 @@ export class BolleCarousel extends BolleElement {
   nextLabel = "";
   index = 0;
   private _count = 0;
+  private get items() {
+    return Array.from(this.children).filter(
+      (child) => !child.hasAttribute("slot"),
+    ) as HTMLElement[];
+  }
   goTo(index: number) {
-    const items = Array.from(this.children) as HTMLElement[];
+    const items = this.items;
     if (!items.length) return;
     this.index = Math.max(
       0,
@@ -185,7 +205,7 @@ export class BolleCarousel extends BolleElement {
     this.emit("change", { index: this.index });
   }
   private slotsChanged() {
-    this._count = this.children.length;
+    this._count = this.items.length;
   }
   private scrolled() {
     const viewport = this.renderRoot.querySelector<HTMLElement>(".viewport")!;
@@ -195,7 +215,7 @@ export class BolleCarousel extends BolleElement {
         : getComputedStyle(this).direction === "rtl"
           ? viewport.getBoundingClientRect().right
           : viewport.getBoundingClientRect().left;
-    const distances = Array.from(this.children).map((child) =>
+    const distances = this.items.map((child) =>
       Math.abs(
         this.variant === "full-screen"
           ? child.getBoundingClientRect().top - edge
@@ -212,11 +232,13 @@ export class BolleCarousel extends BolleElement {
   }
   protected render() {
     return html`<section
+      part="carousel"
       class="carousel"
       aria-label=${this.label}
       aria-roledescription="carousel"
     >
       <div
+        part="viewport"
         class="viewport"
         tabindex="0"
         @scrollend=${this.scrolled}
@@ -251,24 +273,30 @@ export class BolleCarousel extends BolleElement {
           );
         }}
       >
-        <slot @slotchange=${this.slotsChanged}></slot>
+        <slot part="items" @slotchange=${this.slotsChanged}></slot>
       </div>
-      <div class="controls">
-        <span aria-live="polite"
-          >${this._count ? `${this.index + 1} / ${this._count}` : ""}</span
-        ><button
-          aria-label=${this.previousLabel}
-          ?disabled=${this.index <= 0}
-          @click=${() => this.goTo(this.index - 1)}
-        >
-          ‹</button
-        ><button
-          aria-label=${this.nextLabel}
-          ?disabled=${this.index >= this._count - 1}
-          @click=${() => this.goTo(this.index + 1)}
-        >
-          ›
-        </button>
+      <div part="controls" class="controls">
+        <slot name="controls">
+          <span part="status counter" aria-live="polite"
+            ><slot name="status"
+              >${this._count ? `${this.index + 1} / ${this._count}` : ""}</slot
+            ></span
+          ><button
+            part="previous"
+            aria-label=${this.previousLabel}
+            ?disabled=${this.index <= 0}
+            @click=${() => this.goTo(this.index - 1)}
+          >
+            <slot name="previous">‹</slot></button
+          ><button
+            part="next"
+            aria-label=${this.nextLabel}
+            ?disabled=${this.index >= this._count - 1}
+            @click=${() => this.goTo(this.index + 1)}
+          >
+            <slot name="next">›</slot>
+          </button>
+        </slot>
       </div>
     </section>`;
   }

@@ -8,7 +8,7 @@ export const pickerStyles = css`
     border-start-start-radius: var(--md-sys-shape-corner-extra-small);
     border-start-end-radius: var(--md-sys-shape-corner-extra-small);
     border-block-end: 1px solid var(--md-sys-color-on-surface-variant);
-    padding-inline-end: 4px;
+    padding-inline-end: var(--md-comp-picker-trigger-inset, 4px);
   }
   .picker-field:focus-within {
     outline: 2px solid var(--md-sys-color-primary);
@@ -71,8 +71,8 @@ export const pickerStyles = css`
     cursor: pointer;
   }
   .picker-trigger svg {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: var(--md-comp-picker-trigger-icon-size, 24px);
+    block-size: var(--md-comp-picker-trigger-icon-size, 24px);
   }
   .picker-trigger:focus-visible {
     outline: 3px solid var(--md-sys-color-secondary);
@@ -89,8 +89,8 @@ export const pickerStyles = css`
     padding: var(--md-comp-dialog-padding);
     background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
-    max-inline-size: calc(100vw - 16px);
-    max-block-size: calc(100dvh - 16px);
+    max-inline-size: calc(100vw - var(--md-comp-picker-viewport-margin, 16px));
+    max-block-size: calc(100dvh - var(--md-comp-picker-viewport-margin, 16px));
     overflow: auto;
     box-shadow: var(--md-sys-elevation-level2);
     /* Nested surfaces: container radius minus the container padding, never below 2px. */
@@ -143,7 +143,7 @@ export const pickerStyles = css`
   }
   .calendar-header select,
   .calendar-header input {
-    max-inline-size: 8em;
+    max-inline-size: var(--md-comp-calendar-field-max-width, 8em);
     background: var(--md-sys-color-surface-container-high);
     color: inherit;
     border: 1px solid var(--md-sys-color-outline);
@@ -169,15 +169,15 @@ export const pickerStyles = css`
   }
   td button {
     position: relative;
-    inline-size: 40px;
-    block-size: 40px;
+    inline-size: var(--md-comp-calendar-day-size, 40px);
+    block-size: var(--md-comp-calendar-day-size, 40px);
     margin-inline: auto;
     border-radius: var(--md-sys-shape-corner-full);
   }
   td button::after {
     content: "";
     position: absolute;
-    inset: -4px;
+    inset: calc(-1 * var(--md-comp-calendar-day-hit-area-inset, 4px));
   }
   td[aria-selected="true"] {
     background: var(--md-sys-color-secondary-container);
@@ -235,8 +235,8 @@ export const pickerStyles = css`
   .dial button {
     position: absolute;
     transform: translate(-50%, -50%);
-    inline-size: 32px;
-    block-size: 32px;
+    inline-size: var(--md-comp-time-dial-option-size, 32px);
+    block-size: var(--md-comp-time-dial-option-size, 32px);
     border: 0;
     border-radius: var(--md-sys-shape-corner-full);
     background: transparent;

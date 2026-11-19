@@ -1,4 +1,4 @@
-import { controlLabels } from "./localization.js";
+import { controlLabels, type ControlLabels } from "./localization.js";
 import { html, nothing, type PropertyValues } from "lit";
 import {
   BolleElement,
@@ -82,10 +82,12 @@ export class BolleDialog extends BolleElement {
     });
   }
   protected renderContent() {
-    return html`<header>${this.label}</header>
-      <div><slot></slot></div>
-      <footer>
-        ${this.closeLabel ? html`<bolle-button variant="text" @click=${() => this.close()}>${this.closeLabel}</bolle-button>` : nothing}<slot
+    return html`<header part="heading">
+        <slot name="heading">${this.label}</slot>
+      </header>
+      <div part="content"><slot></slot></div>
+      <footer part="actions">
+        ${this.closeLabel ? html`<bolle-button part="close" variant="text" @click=${() => this.close()}>${this.closeLabel}</bolle-button>` : nothing}<slot
           name="actions"
         ></slot>
       </footer>`;
@@ -97,7 +99,9 @@ export class BolleDialog extends BolleElement {
     this.close();
   };
   protected render() {
+    const placement = this.getAttribute("placement");
     return html`<dialog
+      part=${placement ? `surface sheet ${placement}-sheet` : "surface dialog"}
       aria-label=${this.label}
       @close=${this.closed}
       @keydown=${this.onKeydown}
@@ -122,11 +126,12 @@ export class BolleBottomSheet extends BolleDialog {
     this.setAttribute("placement", "bottom");
   }
   protected renderContent() {
-    return html`${this.dragHandle ? html`<div class="drag-handle" aria-hidden="true"></div>` : nothing}${super.renderContent()}`;
+    return html`${this.dragHandle ? html`<div part="drag-handle" class="drag-handle" aria-hidden="true"></div>` : nothing}${super.renderContent()}`;
   }
   protected render() {
     return this.variant === "standard"
       ? html`<section
+          part="surface sheet bottom-sheet"
           class="standard"
           aria-label=${this.label}
           ?hidden=${!this.open}
@@ -151,26 +156,30 @@ export class BolleSideSheet extends BolleDialog {
     this.setAttribute("placement", "side");
   }
   protected renderContent() {
-    return html`<header class="sheet-header">
-        <span>${this.label}</span>
-        ${this.closeLabel
-          ? html`<bolle-icon-button
-              variant="standard"
-              size="small"
-              label=${this.closeLabel}
-              @click=${() => this.close()}
-              ><span aria-hidden="true" style="font-size:24px;line-height:1;display:inline-flex"
-                >${closeIcon()}</span
-              ></bolle-icon-button
-            >`
-          : nothing}
+    return html`<header part="heading" class="sheet-header">
+        <span part="label"><slot name="heading">${this.label}</slot></span>
+        ${
+          this.closeLabel
+            ? html`<bolle-icon-button
+                part="close dismiss"
+                variant="standard"
+                size="small"
+                label=${this.closeLabel}
+                @click=${() => this.close()}
+                ><span class="sheet-close-icon" aria-hidden="true"
+                  >${closeIcon()}</span
+                ></bolle-icon-button
+              >`
+            : nothing
+        }
       </header>
-      <div class="sheet-content"><slot></slot></div>
-      <slot name="actions"></slot>`;
+      <div part="content" class="sheet-content"><slot></slot></div>
+      <slot part="actions" name="actions"></slot>`;
   }
   protected render() {
     return this.variant === "standard"
       ? html`<aside
+          part="surface sheet side-sheet"
           class="standard"
           aria-label=${this.label}
           ?hidden=${!this.open}
@@ -196,8 +205,10 @@ export class BolleNavigationDrawer extends BolleSideSheet {
     this.setAttribute("placement", "start");
   }
   protected renderContent() {
-    return html`<header class="drawer-header">${this.label}</header>
-      <nav class="drawer-nav" aria-label=${this.label}>
+    return html`<header part="heading" class="drawer-header">
+        <slot name="heading">${this.label}</slot>
+      </header>
+      <nav part="navigation" class="drawer-nav" aria-label=${this.label}>
         ${this.items.map((item) => {
           const active = this.value === item.id;
           const select = () => {
@@ -205,15 +216,25 @@ export class BolleNavigationDrawer extends BolleSideSheet {
             if (this.variant !== "standard") this.close();
             this.emit("navigate", { id: item.id });
           };
-          const content = html`${item.icon
-              ? html`<span class="drawer-icon icon" aria-hidden="true"
-                  >${item.icon}</span
-                >`
-              : nothing}<span class="drawer-label">${item.label}</span>${item.badge
-              ? html`<span class="drawer-badge">${item.badge}</span>`
-              : nothing}`;
+          const content = html`${
+              item.icon
+                ? html`<span
+                    part="icon"
+                    class="drawer-icon icon"
+                    aria-hidden="true"
+                    >${item.icon}</span
+                  >`
+                : nothing
+            }<span part="label" class="drawer-label">${item.label}</span>${
+              item.badge
+                ? html`<span part="badge" class="drawer-badge"
+                    >${item.badge}</span
+                  >`
+                : nothing
+            }`;
           return item.href && !item.disabled
             ? html`<a
+                part="item"
                 class="drawer-item"
                 href=${item.href}
                 aria-current=${active ? "page" : nothing}
@@ -221,6 +242,7 @@ export class BolleNavigationDrawer extends BolleSideSheet {
                 >${content}</a
               >`
             : html`<button
+                part="item"
                 class="drawer-item"
                 type="button"
                 ?disabled=${item.disabled}
@@ -232,8 +254,8 @@ export class BolleNavigationDrawer extends BolleSideSheet {
         })}
       </nav>
       <slot></slot>
-      <footer>
-        ${this.closeLabel ? html`<bolle-button variant="text" @click=${() => this.close()}>${this.closeLabel}</bolle-button>` : nothing}
+      <footer part="actions">
+        ${this.closeLabel ? html`<bolle-button part="close" variant="text" @click=${() => this.close()}>${this.closeLabel}</bolle-button>` : nothing}
       </footer>`;
   }
 }
@@ -246,6 +268,8 @@ export class BolleSnackbar extends BolleElement {
     closeLabel: { attribute: "close-label" },
     duration: { type: Number },
     tail: { reflect: true },
+    _hasActionSlot: { state: true },
+    _hasDismissSlot: { state: true },
   };
   static styles = [commonStyles, overlayStyles];
   open = false;
@@ -254,6 +278,8 @@ export class BolleSnackbar extends BolleElement {
   closeLabel = "";
   duration = 5000;
   tail: SurfaceTail = "auto";
+  private _hasActionSlot = false;
+  private _hasDismissSlot = false;
   private timer?: ReturnType<typeof setTimeout>;
   private exitTimer?: ReturnType<typeof setTimeout>;
   private queue: string[] = [];
@@ -297,29 +323,57 @@ export class BolleSnackbar extends BolleElement {
     super.disconnectedCallback();
   }
   protected render() {
-    return html`<div role="status" aria-live="polite" aria-atomic="true">
+    return html`<div
+      part="host"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       ${
         this.open
           ? html`<div
               class="snackbar"
+              part="surface snackbar"
               popover="manual"
               @pointerenter=${() => clearTimeout(this.timer)}
               @pointerleave=${this.restart}
               @focusin=${() => clearTimeout(this.timer)}
               @focusout=${this.restart}
             >
-              <span>${this.message}</span>${
-                this.actionLabel
-                  ? html`<button
-                      @click=${() => {
-                        this.emit("action", {});
-                        this.close("action");
-                      }}
-                    >
-                      ${this.actionLabel}
-                    </button>`
-                  : nothing
-              }${this.closeLabel ? html`<button @click=${() => this.close()}>${this.closeLabel}</button>` : nothing}
+              <span part="message"
+                ><slot name="message">${this.message}</slot></span
+              ><button
+                part="action"
+                ?hidden=${!this.actionLabel && !this._hasActionSlot}
+                @click=${() => {
+                  this.emit("action", {});
+                  this.close("action");
+                }}
+              >
+                <slot
+                  name="action"
+                  @slotchange=${(event: Event) => {
+                    this._hasActionSlot =
+                      (event.currentTarget as HTMLSlotElement).assignedNodes()
+                        .length > 0;
+                  }}
+                  >${this.actionLabel}</slot
+                ></button
+              ><button
+                part="dismiss"
+                ?hidden=${!this.closeLabel && !this._hasDismissSlot}
+                @click=${() => this.close()}
+              >
+                <slot
+                  name="dismiss"
+                  @slotchange=${(event: Event) => {
+                    this._hasDismissSlot =
+                      (event.currentTarget as HTMLSlotElement).assignedNodes()
+                        .length > 0;
+                  }}
+                  >${this.closeLabel}</slot
+                >
+              </button>
             </div>`
           : nothing
       }
@@ -334,6 +388,7 @@ export class BolleTooltip extends BolleElement {
     supportingText: { attribute: "supporting-text" },
     persistent: { type: Boolean, reflect: true },
     tail: { reflect: true },
+    labels: { attribute: false },
   };
   static styles = [commonStyles, overlayStyles];
   label = "";
@@ -341,6 +396,10 @@ export class BolleTooltip extends BolleElement {
   supportingText = "";
   persistent = false;
   tail: SurfaceTail = "auto";
+  labels: Partial<ControlLabels> = {};
+  private get text(): ControlLabels {
+    return controlLabels(this.lang, this.labels);
+  }
   private trigger?: HTMLElement;
   private previousDescription: string | null = null;
   private controller?: AbortController;
@@ -462,8 +521,11 @@ export class BolleTooltip extends BolleElement {
     }, 200);
   }
   protected render() {
-    return html`<slot @slotchange=${this.setup}></slot>
+    return html`<slot name="trigger" part="trigger" @slotchange=${this.setup}
+        ><slot @slotchange=${this.setup}></slot
+      ></slot>
       <div
+        part="surface tooltip"
         class="tooltip"
         popover="manual"
         role=${this.variant === "rich" ? "dialog" : "tooltip"}
@@ -476,19 +538,23 @@ export class BolleTooltip extends BolleElement {
           if (event.key === "Escape") this.hide();
         }}
       >
-        ${this.label}${
+        <span part="label"><slot name="label">${this.label}</slot></span
+        >${
           this.variant === "rich"
-            ? html`<p>${this.supportingText}</p>
-                <slot name="content"></slot>
-                <footer>
+            ? html`<p part="supporting">
+                  <slot name="supporting">${this.supportingText}</slot>
+                </p>
+                <slot part="content" name="content"></slot>
+                <footer part="actions">
                   <slot name="actions"></slot>
                   <button
                     type="button"
+                    part="dismiss"
                     class="tooltip-dismiss"
-                    aria-label=${controlLabels(this.lang).dismiss}
+                    aria-label=${this.text.dismiss}
                     @click=${() => this.hide()}
                   >
-                    ${closeIcon()}
+                    <slot name="dismiss">${closeIcon()}</slot>
                   </button>
                 </footer>`
             : nothing
@@ -549,8 +615,9 @@ export class BolleFabMenu extends BolleElement {
     buttons[event.key === "ArrowDown" ? 0 : buttons.length - 1]?.focus();
   }
   protected render() {
-    return html`<div class="fab-menu">
+    return html`<div part="fab-menu" class="fab-menu">
       <div
+        part="surface actions"
         class="fab-actions"
         id="actions"
         popover="auto"
@@ -595,6 +662,7 @@ export class BolleFabMenu extends BolleElement {
         ${this.items.map(
           (item) =>
             html`<button
+              part="item"
               class="fab-item"
               role="menuitem"
               tabindex="-1"
@@ -604,11 +672,15 @@ export class BolleFabMenu extends BolleElement {
                 this.emit("action", { id: item.id });
               }}
             >
-              ${item.icon ? html`<span class="icon" aria-hidden="true">${item.icon}</span>` : nothing}${item.label}
+              ${item.icon ? html`<span part="icon" class="icon" aria-hidden="true">${item.icon}</span>` : nothing}<span
+                part="label"
+                >${item.label}</span
+              >
             </button>`,
         )}
       </div>
       <button
+        part="trigger"
         class="fab-trigger"
         id="trigger"
         aria-label=${this.label}
@@ -620,7 +692,9 @@ export class BolleFabMenu extends BolleElement {
           this.open = !this.open;
         }}
       >
-        ${this.open ? "×" : html`<slot name="icon">+</slot>`}
+        <span part="trigger-icon"
+          >${this.open ? "×" : html`<slot name="icon">+</slot>`}</span
+        >
       </button>
     </div>`;
   }
@@ -650,21 +724,24 @@ export class BolleSplitButton extends BolleElement {
   }
   protected render() {
     return html`<bolle-button
+        part="primary"
         variant=${this.variant}
         size=${this.size}
         ?disabled=${this.disabled}
         @click=${() => this.emit("action", {})}
-        >${this.icon
-          ? html`<slot name="icon" slot="icon" aria-hidden="true"></slot>`
-          : nothing}${this.label}</bolle-button
+        >${
+          this.icon
+            ? html`<slot name="icon" slot="icon" aria-hidden="true"></slot>`
+            : nothing
+        }${this.label}</bolle-button
       ><bolle-icon-button
+        part="menu-trigger"
         variant=${this.variant}
         size=${this.size}
         label=${this.menuLabel}
         ?disabled=${this.disabled}
         @click=${(event: Event) => {
-          const menu =
-            this.renderRoot.querySelector<BolleMenu>("bolle-menu")!;
+          const menu = this.renderRoot.querySelector<BolleMenu>("bolle-menu")!;
           const host = event.currentTarget as HTMLElement;
           menu.show(
             host.shadowRoot?.querySelector<HTMLElement>("button") ?? host,
@@ -672,6 +749,7 @@ export class BolleSplitButton extends BolleElement {
         }}
         >${chevronDownIcon()}</bolle-icon-button
       ><bolle-menu
+        part="menu"
         .items=${this.items}
         menu-label=${this.menuLabel}
       ></bolle-menu>`;

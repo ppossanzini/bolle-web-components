@@ -1,0 +1,810 @@
+{
+  "BolleAppShell": {
+    "slots": [
+      "bar",
+      "bottom-bar",
+      "default",
+      "navigation",
+      "status",
+      "supporting"
+    ],
+    "parts": []
+  },
+  "BolleAvatarGroup": {
+    "slots": [
+      "default"
+    ],
+    "parts": []
+  },
+  "BolleAvatar": {
+    "slots": [
+      "badge",
+      "icon"
+    ],
+    "parts": []
+  },
+  "BolleBottomAppBar": {
+    "slots": [
+      "default",
+      "fab",
+      "leading",
+      "trailing"
+    ],
+    "parts": []
+  },
+  "BolleBreadcrumb": {
+    "slots": [],
+    "parts": []
+  },
+  "BolleButton": {
+    "slots": [
+      "default",
+      "icon",
+      "trailing-icon"
+    ],
+    "parts": [
+      "button",
+      "control",
+      "icon",
+      "label",
+      "trailing-icon"
+    ]
+  },
+  "BolleIconButton": {
+    "slots": [
+      "default",
+      "icon",
+      "trailing-icon"
+    ],
+    "parts": [
+      "button",
+      "control",
+      "icon",
+      "label",
+      "trailing-icon"
+    ]
+  },
+  "BolleFloatingActionButton": {
+    "slots": [
+      "default",
+      "icon",
+      "trailing-icon"
+    ],
+    "parts": [
+      "button",
+      "control",
+      "icon",
+      "label",
+      "trailing-icon"
+    ]
+  },
+  "BolleExtendedFab": {
+    "slots": [
+      "default",
+      "icon",
+      "trailing-icon"
+    ],
+    "parts": [
+      "button",
+      "control",
+      "icon",
+      "label",
+      "trailing-icon"
+    ]
+  },
+  "BolleButtonGroup": {
+    "slots": [
+      "default"
+    ],
+    "parts": [
+      "group"
+    ]
+  },
+  "BolleWidget": {
+    "slots": [
+      "actions",
+      "default"
+    ],
+    "parts": []
+  },
+  "BolleDashboard": {
+    "slots": [
+      "default"
+    ],
+    "parts": []
+  },
+  "BolleDataTable": {
+    "slots": [
+      "empty"
+    ],
+    "parts": []
+  },
+  "BolleEmptyState": {
+    "slots": [
+      "actions",
+      "icon"
+    ],
+    "parts": []
+  },
+  "BolleProgressIndicator": {
+    "slots": [],
+    "parts": [
+      "circular",
+      "linear",
+      "progress",
+      "stop",
+      "track",
+      "value",
+      "wavy"
+    ]
+  },
+  "BolleLoadingIndicator": {
+    "slots": [],
+    "parts": [
+      "bubble",
+      "bubble-primary",
+      "bubble-secondary",
+      "bubble-tertiary",
+      "indicator",
+      "loading",
+      "morph"
+    ]
+  },
+  "BolleCarousel": {
+    "slots": [
+      "controls",
+      "default",
+      "next",
+      "previous",
+      "status"
+    ],
+    "parts": [
+      "carousel",
+      "controls",
+      "counter",
+      "items",
+      "next",
+      "previous",
+      "status",
+      "viewport"
+    ]
+  },
+  "BolleCheckbox": {
+    "slots": [
+      "default"
+    ],
+    "parts": [
+      "container",
+      "control",
+      "label",
+      "label-text",
+      "supporting-text"
+    ]
+  },
+  "BolleSwitch": {
+    "slots": [
+      "default"
+    ],
+    "parts": [
+      "container",
+      "control",
+      "handle",
+      "icon",
+      "icon-off",
+      "icon-on",
+      "label",
+      "label-text",
+      "supporting-text",
+      "track"
+    ]
+  },
+  "BolleRadioButton": {
+    "slots": [
+      "default"
+    ],
+    "parts": [
+      "container",
+      "control",
+      "label",
+      "label-text",
+      "supporting-text"
+    ]
+  },
+  "BolleTextField": {
+    "slots": [
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "trailing"
+    ],
+    "parts": [
+      "body",
+      "counter",
+      "field",
+      "input",
+      "label",
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "trailing"
+    ]
+  },
+  "BolleSearch": {
+    "slots": [
+      "leading",
+      "prefix",
+      "results",
+      "suffix",
+      "supporting",
+      "trailing"
+    ],
+    "parts": [
+      "body",
+      "counter",
+      "field",
+      "input",
+      "label",
+      "leading",
+      "prefix",
+      "search",
+      "search-form",
+      "search-results",
+      "suffix",
+      "suggestion",
+      "suggestions",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "trailing"
+    ]
+  },
+  "BolleSegmentedButtons": {
+    "slots": [],
+    "parts": [
+      "group",
+      "indicator",
+      "label",
+      "segment",
+      "segment-control",
+      "segment-icon",
+      "segment-label",
+      "segments"
+    ]
+  },
+  "BolleAutocomplete": {
+    "slots": [
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "trailing"
+    ],
+    "parts": [
+      "body",
+      "counter",
+      "field",
+      "input",
+      "label",
+      "leading",
+      "list",
+      "option",
+      "prefix",
+      "suffix",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "trailing"
+    ]
+  },
+  "BolleGantt": {
+    "slots": [],
+    "parts": []
+  },
+  "BolleKanban": {
+    "slots": [],
+    "parts": []
+  },
+  "BolleMenu": {
+    "slots": [],
+    "parts": [
+      "badge",
+      "compact-grabber",
+      "divider",
+      "empty",
+      "filter",
+      "filter-container",
+      "group",
+      "group-label",
+      "icon",
+      "item",
+      "label",
+      "label-text",
+      "submenu-indicator",
+      "support",
+      "surface",
+      "trailing"
+    ]
+  },
+  "BolleNavigationBar": {
+    "slots": [],
+    "parts": [
+      "destination",
+      "destination-item",
+      "destinations",
+      "icon",
+      "indicator",
+      "label",
+      "navigation",
+      "navigation-bar",
+      "navigation-destination",
+      "navigation-destination-item",
+      "navigation-icon",
+      "navigation-indicator",
+      "navigation-label",
+      "navigation-rail",
+      "rail"
+    ]
+  },
+  "BolleNavigationRail": {
+    "slots": [],
+    "parts": [
+      "destination",
+      "destination-item",
+      "destinations",
+      "icon",
+      "indicator",
+      "label",
+      "navigation",
+      "navigation-bar",
+      "navigation-destination",
+      "navigation-destination-item",
+      "navigation-icon",
+      "navigation-indicator",
+      "navigation-label",
+      "navigation-rail",
+      "rail"
+    ]
+  },
+  "BolleTabs": {
+    "slots": [
+      "content-{id}",
+      "default"
+    ],
+    "parts": [
+      "scroll-button",
+      "scroll-button-next",
+      "scroll-button-previous",
+      "scroll-icon",
+      "tab",
+      "tab-badge",
+      "tab-content",
+      "tab-icon",
+      "tab-label",
+      "tab-scroller",
+      "tablist",
+      "tabpanel"
+    ]
+  },
+  "BolleDialog": {
+    "slots": [
+      "actions",
+      "default",
+      "heading"
+    ],
+    "parts": [
+      "actions",
+      "close",
+      "content",
+      "heading"
+    ]
+  },
+  "BolleBottomSheet": {
+    "slots": [
+      "actions",
+      "default",
+      "heading"
+    ],
+    "parts": [
+      "actions",
+      "bottom-sheet",
+      "close",
+      "content",
+      "drag-handle",
+      "heading",
+      "sheet",
+      "surface"
+    ]
+  },
+  "BolleSideSheet": {
+    "slots": [
+      "actions",
+      "default",
+      "heading"
+    ],
+    "parts": [
+      "actions",
+      "close",
+      "content",
+      "dismiss",
+      "heading",
+      "label",
+      "sheet",
+      "side-sheet",
+      "surface"
+    ]
+  },
+  "BolleNavigationDrawer": {
+    "slots": [
+      "actions",
+      "default",
+      "heading"
+    ],
+    "parts": [
+      "actions",
+      "badge",
+      "close",
+      "content",
+      "dismiss",
+      "heading",
+      "icon",
+      "item",
+      "label",
+      "navigation",
+      "sheet",
+      "side-sheet",
+      "surface"
+    ]
+  },
+  "BolleSnackbar": {
+    "slots": [
+      "action",
+      "dismiss",
+      "message"
+    ],
+    "parts": [
+      "action",
+      "dismiss",
+      "host",
+      "message",
+      "snackbar",
+      "surface"
+    ]
+  },
+  "BolleTooltip": {
+    "slots": [
+      "actions",
+      "content",
+      "default",
+      "dismiss",
+      "label",
+      "supporting",
+      "trigger"
+    ],
+    "parts": [
+      "actions",
+      "content",
+      "dismiss",
+      "label",
+      "supporting",
+      "surface",
+      "tooltip",
+      "trigger"
+    ]
+  },
+  "BolleFabMenu": {
+    "slots": [
+      "icon"
+    ],
+    "parts": [
+      "actions",
+      "fab-menu",
+      "icon",
+      "item",
+      "label",
+      "surface",
+      "trigger",
+      "trigger-icon"
+    ]
+  },
+  "BolleSplitButton": {
+    "slots": [
+      "icon"
+    ],
+    "parts": [
+      "menu",
+      "menu-trigger",
+      "primary"
+    ]
+  },
+  "BollePagination": {
+    "slots": [],
+    "parts": []
+  },
+  "BollePicker": {
+    "slots": [
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "trailing"
+    ],
+    "parts": [
+      "body",
+      "counter",
+      "field",
+      "field-surface",
+      "input",
+      "label",
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "trailing",
+      "trigger"
+    ]
+  },
+  "BolleDatePicker": {
+    "slots": [
+      "end-label",
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "title",
+      "trailing"
+    ],
+    "parts": [
+      "actions",
+      "body",
+      "calendar",
+      "calendar-grid",
+      "calendar-header",
+      "calendar-month",
+      "calendar-next",
+      "calendar-previous",
+      "calendar-year",
+      "cancel",
+      "confirm",
+      "counter",
+      "day",
+      "day-control",
+      "dialog",
+      "end-field-surface",
+      "field",
+      "field-surface",
+      "input",
+      "label",
+      "leading",
+      "month-control",
+      "month-title",
+      "prefix",
+      "suffix",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "title",
+      "trailing",
+      "trigger",
+      "weekday",
+      "year-control"
+    ]
+  },
+  "BolleTimePicker": {
+    "slots": [
+      "leading",
+      "prefix",
+      "suffix",
+      "supporting",
+      "title",
+      "trailing"
+    ],
+    "parts": [
+      "actions",
+      "body",
+      "cancel",
+      "confirm",
+      "counter",
+      "dial",
+      "dial-option",
+      "dialog",
+      "field",
+      "field-surface",
+      "hour",
+      "hour-input",
+      "input",
+      "label",
+      "leading",
+      "minute",
+      "minute-input",
+      "mode",
+      "period",
+      "period-control",
+      "period-option",
+      "prefix",
+      "suffix",
+      "supporting",
+      "supporting-text",
+      "surface",
+      "time-selectors",
+      "title",
+      "trailing",
+      "trigger"
+    ]
+  },
+  "BolleSelect": {
+    "slots": [
+      "supporting"
+    ],
+    "parts": [
+      "body",
+      "chevron",
+      "control",
+      "field",
+      "label",
+      "menu",
+      "placeholder",
+      "supporting",
+      "supporting-text",
+      "value"
+    ]
+  },
+  "BolleElement": {
+    "slots": [],
+    "parts": []
+  },
+  "BolleFormElement": {
+    "slots": [],
+    "parts": []
+  },
+  "BolleSidebar": {
+    "slots": [
+      "header"
+    ],
+    "parts": []
+  },
+  "BolleSlider": {
+    "slots": [
+      "icon",
+      "label",
+      "value"
+    ],
+    "parts": [
+      "bridge",
+      "bubble",
+      "bubble-value",
+      "icon",
+      "input",
+      "label",
+      "liquid",
+      "membrane",
+      "range",
+      "range-merged",
+      "slider",
+      "thumb",
+      "thumb-lower",
+      "thumb-upper",
+      "track",
+      "value"
+    ]
+  },
+  "BolleSteps": {
+    "slots": [
+      "label"
+    ],
+    "parts": [
+      "label",
+      "step",
+      "step-dot",
+      "steps",
+      "value"
+    ]
+  },
+  "BolleAppBar": {
+    "slots": [
+      "actions",
+      "default",
+      "leading",
+      "title",
+      "trailing"
+    ],
+    "parts": [
+      "actions",
+      "app-bar",
+      "app-bar-actions",
+      "app-bar-leading",
+      "app-bar-subtitle",
+      "app-bar-title",
+      "app-bar-title-group",
+      "leading",
+      "subtitle",
+      "title",
+      "title-group",
+      "trailing"
+    ]
+  },
+  "BolleToolbar": {
+    "slots": [
+      "default"
+    ],
+    "parts": [
+      "toolbar",
+      "toolbar-content"
+    ]
+  },
+  "BolleCard": {
+    "slots": [
+      "content",
+      "default",
+      "media"
+    ],
+    "parts": [
+      "card",
+      "card-content",
+      "card-link",
+      "card-media",
+      "content"
+    ]
+  },
+  "BolleBadge": {
+    "slots": [
+      "label"
+    ],
+    "parts": [
+      "badge",
+      "badge-label",
+      "label"
+    ]
+  },
+  "BolleDivider": {
+    "slots": [],
+    "parts": [
+      "divider"
+    ]
+  },
+  "BolleList": {
+    "slots": [
+      "default",
+      "leading-{id}",
+      "trailing-{id}"
+    ],
+    "parts": [
+      "list",
+      "list-badge",
+      "list-content",
+      "list-disclosure",
+      "list-disclosure-icon",
+      "list-icon",
+      "list-item",
+      "list-item-row",
+      "list-label",
+      "list-leading",
+      "list-row",
+      "list-sublist",
+      "list-supporting-text",
+      "list-text",
+      "list-trailing"
+    ]
+  },
+  "BolleChip": {
+    "slots": [
+      "avatar",
+      "default",
+      "icon"
+    ],
+    "parts": [
+      "chip",
+      "chip-avatar",
+      "chip-content",
+      "chip-control",
+      "chip-icon",
+      "chip-label",
+      "chip-remove"
+    ]
+  }
+}

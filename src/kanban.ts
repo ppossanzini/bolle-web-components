@@ -178,10 +178,7 @@ export class BolleKanban extends BolleElement {
     | { kind: "column"; column: KanbanColumn };
 
   private get text(): KanbanLabels {
-    return kanbanLabels(
-      document.documentElement.lang,
-      this.labels as Partial<KanbanLabels>,
-    );
+    return kanbanLabels(document.documentElement.lang, this.labels);
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
@@ -258,7 +255,8 @@ export class BolleKanban extends BolleElement {
     this.emit<KanbanMoveDetail>("card-move", detail);
     const column = this.columnOf(detail.column)!;
     const overrun =
-      column.wip && this.cardsIn(column.id, detail.lane).length + 1 > column.wip;
+      column.wip &&
+      this.cardsIn(column.id, detail.lane).length + 1 > column.wip;
     this.announce(
       overrun
         ? fill(this.text.wipOver, {
@@ -350,7 +348,8 @@ export class BolleKanban extends BolleElement {
     const strip = this.renderRoot.querySelector<HTMLElement>(".columns");
     let frame = 0;
     const scrollSideways = (delta: number) => {
-      if (strip && strip.scrollWidth > strip.clientWidth) strip.scrollLeft += delta;
+      if (strip && strip.scrollWidth > strip.clientWidth)
+        strip.scrollLeft += delta;
       else if (board) board.scrollLeft += delta;
     };
     const verticalScroller = (x: number, y: number) => {
@@ -378,13 +377,16 @@ export class BolleKanban extends BolleElement {
     };
 
     const move = (moveEvent: PointerEvent) => {
-      const under = this.hitStack(moveEvent.clientX, moveEvent.clientY)
-        .find(
-          (item) => item instanceof HTMLElement && item.dataset.column,
-        ) as HTMLElement | undefined;
+      const under = this.hitStack(moveEvent.clientX, moveEvent.clientY).find(
+        (item) => item instanceof HTMLElement && item.dataset.column,
+      ) as HTMLElement | undefined;
       if (!under) {
         if (this.drag)
-          this.drag = { ...this.drag, x: moveEvent.clientX, y: moveEvent.clientY };
+          this.drag = {
+            ...this.drag,
+            x: moveEvent.clientX,
+            y: moveEvent.clientY,
+          };
         return;
       }
       const cards = [...under.querySelectorAll<HTMLElement>(".card")];
@@ -547,44 +549,54 @@ export class BolleKanban extends BolleElement {
     const dragging = this.drag?.card.id === card.id;
     return html`<li>
       <bolle-card
-        class="card ${dragging ? "dragging" : ""} ${this.selected === card.id
-          ? "selected"
-          : ""}"
+        class="card ${dragging ? "dragging" : ""} ${
+          this.selected === card.id ? "selected" : ""
+        }"
         variant="outlined"
         tail="none"
         data-card=${card.id}
         @click=${() => this.emit<KanbanCardDetail>("card-open", { card })}
       >
         <div class="card-head">
-          ${this.movable
-            ? html`<button
-                class="grip"
-                aria-label=${fill(this.text.moveCard, { title: card.title })}
-                @pointerdown=${(event: PointerEvent) => this.startDrag(event, card)}
-                @keydown=${(event: KeyboardEvent) => this.keyMove(event, card)}
-                @click=${(event: Event) => event.stopPropagation()}
-              >
-                ${columnGripIcon()}
-              </button>`
-            : nothing}
+          ${
+            this.movable
+              ? html`<button
+                  class="grip"
+                  aria-label=${fill(this.text.moveCard, { title: card.title })}
+                  @pointerdown=${(event: PointerEvent) => this.startDrag(event, card)}
+                  @keydown=${(event: KeyboardEvent) => this.keyMove(event, card)}
+                  @click=${(event: Event) => event.stopPropagation()}
+                >
+                  ${columnGripIcon()}
+                </button>`
+              : nothing
+          }
           <span class="spacer"></span>
-          ${this.cardActions.length
-            ? html`<bolle-icon-button
-                variant="standard"
-                size="xs"
-                label=${fill(this.text.cardMenu, { title: card.title })}
-                haspopup="menu"
-                @click=${(event: Event) => this.cardMenu(event, card)}
-                >${rowMenuIcon()}</bolle-icon-button
-              >`
-            : nothing}
+          ${
+            this.cardActions.length
+              ? html`<bolle-icon-button
+                  variant="standard"
+                  size="xs"
+                  label=${fill(this.text.cardMenu, { title: card.title })}
+                  haspopup="menu"
+                  @click=${(event: Event) => this.cardMenu(event, card)}
+                  >${rowMenuIcon()}</bolle-icon-button
+                >`
+              : nothing
+          }
         </div>
-        ${this.card
-          ? html`<div class="card-body">${this.card(card, this)}</div>`
-          : html`<p class="card-title" dir="auto">${card.title}</p>
-              ${card.subtitle
-                ? html`<p class="card-subtitle" dir="auto">${card.subtitle}</p>`
-                : nothing}`}
+        ${
+          this.card
+            ? html`<div class="card-body">${this.card(card, this)}</div>`
+            : html`<p class="card-title" dir="auto">${card.title}</p>
+                ${
+                  card.subtitle
+                    ? html`<p class="card-subtitle" dir="auto">
+                        ${card.subtitle}
+                      </p>`
+                    : nothing
+                }`
+        }
       </bolle-card>
     </li>`;
   }
@@ -619,9 +631,13 @@ export class BolleKanban extends BolleElement {
         tail="none"
       >
         <p class="card-title" dir="auto">${drag.card.title}</p>
-        ${drag.card.subtitle
-          ? html`<p class="card-subtitle" dir="auto">${drag.card.subtitle}</p>`
-          : nothing}
+        ${
+          drag.card.subtitle
+            ? html`<p class="card-subtitle" dir="auto">
+                ${drag.card.subtitle}
+              </p>`
+            : nothing
+        }
       </bolle-card>
       <p class="ghost-note">${note}</p>
     </div>`;
@@ -659,81 +675,100 @@ export class BolleKanban extends BolleElement {
         <h2>${column.label}</h2>
         <span
           class="count ${overWip ? "over" : ""}"
-          title=${column.wip
-            ? fill(this.text.wipLimit, { count: column.wip })
-            : nothing}
+          title=${
+            column.wip
+              ? fill(this.text.wipLimit, { count: column.wip })
+              : nothing
+          }
         >
           ${cards.length}${column.wip ? ` / ${column.wip}` : ""}
         </span>
         <span class="spacer"></span>
-        ${this.addable
-          ? html`<bolle-icon-button
-              variant="standard"
-              size="xs"
-              label=${fill(this.text.addCard, { column: column.label })}
-              @click=${() => (this.composing = { column: column.id, lane })}
-              >${plusIcon()}</bolle-icon-button
-            >`
-          : nothing}
-        ${this.collapsible || this.columnActions.length
-          ? html`<bolle-icon-button
-              variant="standard"
-              size="xs"
-              label=${fill(this.text.columnMenu, { label: column.label })}
-              haspopup="menu"
-              @click=${(event: Event) => this.columnMenu(event, column)}
-              >${rowMenuIcon()}</bolle-icon-button
-            >`
-          : nothing}
+        ${
+          this.addable
+            ? html`<bolle-icon-button
+                variant="standard"
+                size="xs"
+                label=${fill(this.text.addCard, { column: column.label })}
+                @click=${() => (this.composing = { column: column.id, lane })}
+                >${plusIcon()}</bolle-icon-button
+              >`
+            : nothing
+        }
+        ${
+          this.collapsible || this.columnActions.length
+            ? html`<bolle-icon-button
+                variant="standard"
+                size="xs"
+                label=${fill(this.text.columnMenu, { label: column.label })}
+                haspopup="menu"
+                @click=${(event: Event) => this.columnMenu(event, column)}
+                >${rowMenuIcon()}</bolle-icon-button
+              >`
+            : nothing
+        }
       </header>
-      ${!cards.length && !over
-        ? html`<p class="empty-column">${this.text.emptyColumn}</p>`
-        : nothing}
+      ${
+        !cards.length && !over
+          ? html`<p class="empty-column">${this.text.emptyColumn}</p>`
+          : nothing
+      }
       <ol class="list">
         ${cards.map(
-          (card, index) => html`${over && this.drag!.index === index
-            ? this.renderPlaceholder()
-            : nothing}${this.renderCard(card)}`,
+          (card, index) =>
+            html`${
+              over && this.drag!.index === index
+                ? this.renderPlaceholder()
+                : nothing
+            }${this.renderCard(card)}`,
         )}
-        ${over && this.drag!.index >= cards.length
-          ? this.renderPlaceholder()
-          : nothing}
+        ${
+          over && this.drag!.index >= cards.length
+            ? this.renderPlaceholder()
+            : nothing
+        }
       </ol>
-      ${this.composing && this.composing.column === column.id && this.composing.lane === lane
-        ? html`<div class="composer">
-            <bolle-text-field
-              label=${fill(this.text.newCard, { column: column.label })}
-              placeholder=${this.text.cardPlaceholder}
-              autofocus
-              @keydown=${(event: KeyboardEvent) => {
-                if (event.key === "Enter")
-                  this.submitComposer(
-                    column,
-                    lane,
-                    (event.target as HTMLInputElement).value,
-                  );
-                if (event.key === "Escape") this.composing = undefined;
-              }}
-              @change=${(event: CustomEvent<{ value: string }>) =>
-                this.submitComposer(column, lane, event.detail.value)}
-            ></bolle-text-field>
-            <div class="composer-actions">
-              <bolle-button
-                variant="text"
-                size="xs"
-                @click=${() => (this.composing = undefined)}
-                >${this.text.cancel}</bolle-button
-              >
-            </div>
-          </div>`
-        : nothing}
+      ${
+        this.composing &&
+        this.composing.column === column.id &&
+        this.composing.lane === lane
+          ? html`<div class="composer">
+              <bolle-text-field
+                label=${fill(this.text.newCard, { column: column.label })}
+                placeholder=${this.text.cardPlaceholder}
+                autofocus
+                @keydown=${(event: KeyboardEvent) => {
+                  if (event.key === "Enter")
+                    this.submitComposer(
+                      column,
+                      lane,
+                      (event.target as HTMLInputElement).value,
+                    );
+                  if (event.key === "Escape") this.composing = undefined;
+                }}
+                @change=${(event: CustomEvent<{ value: string }>) =>
+                  this.submitComposer(column, lane, event.detail.value)}
+              ></bolle-text-field>
+              <div class="composer-actions">
+                <bolle-button
+                  variant="text"
+                  size="xs"
+                  @click=${() => (this.composing = undefined)}
+                  >${this.text.cancel}</bolle-button
+                >
+              </div>
+            </div>`
+          : nothing
+      }
     </section>`;
   }
 
   private renderState() {
     if (this.loading)
       return html`<div class="state">
-        <bolle-loading-indicator label=${this.text.loading}></bolle-loading-indicator>
+        <bolle-loading-indicator
+          label=${this.text.loading}
+        ></bolle-loading-indicator>
         <p>${this.text.loading}</p>
       </div>`;
     if (this.error)
@@ -745,44 +780,67 @@ export class BolleKanban extends BolleElement {
           .title=${this.text.error}
           .text=${this.error}
         >
-          <bolle-button slot="actions" variant="filled" @click=${() => this.emit("retry", {})}
+          <bolle-button
+            slot="actions"
+            variant="filled"
+            @click=${() => this.emit("retry", {})}
             >${this.text.retry}</bolle-button
           >
         </bolle-empty-state>
       </div>`;
     return html`<div class="state">
-      <bolle-empty-state .icon=${databaseOffIcon()} .title=${this.emptyLabel || this.text.empty}>
+      <bolle-empty-state
+        .icon=${databaseOffIcon()}
+        .title=${this.emptyLabel || this.text.empty}
+      >
       </bolle-empty-state>
     </div>`;
   }
 
   protected render() {
     const state = this.loading || this.error || !this.cards.length;
-    return html`<div class="board" role="group" aria-label=${this.label || nothing}>
-      ${this.contentStyles
-        ? html`<style>${unsafeCSS(this.contentStyles)}</style>`
-        : nothing}
-      ${state
-        ? this.renderState()
-        : this.laneKeys.map((lane) => {
-            const label = this.laneText(lane);
-            return html`<section class="lane" aria-label=${label || nothing}>
-              ${this.lanes && label
-                ? html`<header class="lane-head">
-                    <h2>${label}</h2>
-                    <span class="count"
-                      >${this.cards.filter((card) => this.laneOf(card) === lane).length}</span
-                    >
-                  </header>`
-                : nothing}
-              <div class="columns">
-                ${this.columns.map((column) => this.renderColumn(column, lane))}
-              </div>
-            </section>`;
-          })}
+    return html`<div
+      class="board"
+      role="group"
+      aria-label=${this.label || nothing}
+    >
+      ${
+        this.contentStyles
+          ? html`<style>
+              ${unsafeCSS(this.contentStyles)}
+            </style>`
+          : nothing
+      }
+      ${
+        state
+          ? this.renderState()
+          : this.laneKeys.map((lane) => {
+              const label = this.laneText(lane);
+              return html`<section class="lane" aria-label=${label || nothing}>
+                ${
+                  this.lanes && label
+                    ? html`<header class="lane-head">
+                        <h2>${label}</h2>
+                        <span class="count"
+                          >${this.cards.filter((card) => this.laneOf(card) === lane).length}</span
+                        >
+                      </header>`
+                    : nothing
+                }
+                <div class="columns">
+                  ${this.columns.map((column) => this.renderColumn(column, lane))}
+                </div>
+              </section>`;
+            })
+      }
       ${this.renderGhost()}
-      <span class="sr-only" role="status" aria-live="polite">${this._announcement}</span>
-      <bolle-menu menu-label=${this.text.boardMenu} @menu-select=${this.onMenuSelect}></bolle-menu>
+      <span class="sr-only" role="status" aria-live="polite"
+        >${this._announcement}</span
+      >
+      <bolle-menu
+        menu-label=${this.text.boardMenu}
+        @menu-select=${this.onMenuSelect}
+      ></bolle-menu>
     </div>`;
   }
 }

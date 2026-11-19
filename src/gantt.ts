@@ -177,8 +177,6 @@ const isoWeek = (value: string) => {
   );
 };
 
-const monthKey = (value: string) => value.slice(0, 7);
-
 /**
  * Planning surface: rows of tasks on a time axis, with dependency arrows, pointer and
  * keyboard changes. It reads `tasks` and never shortens, extends or links a task by
@@ -267,10 +265,7 @@ export class BolleGantt extends BolleElement {
   }
 
   private get text(): GanttLabels {
-    return ganttLabels(
-      document.documentElement.lang,
-      this.labels as Partial<GanttLabels>,
-    );
+    return ganttLabels(document.documentElement.lang, this.labels);
   }
 
   connectedCallback() {

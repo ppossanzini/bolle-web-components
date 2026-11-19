@@ -158,7 +158,14 @@ export type {
   GanttViewDetail,
   GanttColumnsDetail,
 } from "./gantt.js";
-export type { GanttLabels } from "./localization.js";
+export type {
+  AvatarGroupLabels,
+  ControlLabels,
+  GanttLabels,
+  ListLabels,
+  MenuLabels,
+  SidebarLabels,
+} from "./localization.js";
 export type { KanbanLabels, PaginationLabels } from "./localization.js";
 export type { AvatarShape, AvatarSize, AvatarStatus } from "./avatar.js";
 export { avatarInitials } from "./avatar.js";

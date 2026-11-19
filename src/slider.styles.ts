@@ -14,7 +14,7 @@ export const sliderStyles = css`
     display: flex;
     justify-content: space-between;
     gap: var(--md-comp-action-gap);
-    margin: 0 0 8px;
+    margin: 0 0 var(--md-comp-slider-label-gap, 8px);
     font: var(--md-sys-typescale-label-large-font);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
     color: var(--md-sys-color-on-surface-variant);
@@ -45,12 +45,12 @@ export const sliderStyles = css`
   }
   .slider input::-webkit-slider-thumb {
     appearance: none;
-    inline-size: 24px;
-    block-size: 44px;
+    inline-size: var(--md-comp-slider-input-thumb-width, 24px);
+    block-size: var(--md-comp-slider-input-thumb-height, 44px);
   }
   .slider input::-moz-range-thumb {
-    inline-size: 24px;
-    block-size: 44px;
+    inline-size: var(--md-comp-slider-input-thumb-width, 24px);
+    block-size: var(--md-comp-slider-input-thumb-height, 44px);
     border: 0;
   }
   :host([disabled]) .slider,
@@ -72,21 +72,23 @@ export const sliderStyles = css`
   }
   .range:not([data-pointer]):has([data-end="lo"]:focus-visible) .thumb-lo,
   .range:not([data-pointer]):has([data-end="hi"]:focus-visible) .thumb-hi {
-    box-shadow: 0 0 0 4px
-      color-mix(in srgb, var(--bb-film-2) 55%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--bb-film-2) 55%, transparent);
   }
 
   /* A · value bubble */
   .slider {
     --v: 50;
-    --x: calc(12px + (100% - 24px) * var(--v) / 100);
-    block-size: 72px;
+    --x: calc(
+      var(--md-comp-slider-thumb-size, 24px) / 2 +
+        (100% - var(--md-comp-slider-thumb-size, 24px)) * var(--v) / 100
+    );
+    block-size: var(--md-comp-slider-bubble-height, 72px);
   }
   .track {
     position: absolute;
     inset-inline: 0;
-    inset-block-end: 18px;
-    block-size: 8px;
+    inset-block-end: var(--md-comp-slider-track-offset, 18px);
+    block-size: var(--md-comp-slider-track-height, 8px);
     border-radius: var(--md-sys-shape-corner-full);
     background: linear-gradient(
       to right,
@@ -96,14 +98,15 @@ export const sliderStyles = css`
   }
   .thumb {
     position: absolute;
-    inset-block-end: 10px;
+    inset-block-end: var(--md-comp-slider-thumb-offset, 10px);
     inset-inline-start: var(--x);
-    inline-size: 24px;
-    block-size: 24px;
-    margin-inline-start: -12px;
+    inline-size: var(--md-comp-slider-thumb-size, 24px);
+    block-size: var(--md-comp-slider-thumb-size, 24px);
+    margin-inline-start: calc(var(--md-comp-slider-thumb-size, 24px) / -2);
     box-sizing: border-box;
     border-radius: 50%;
-    border: 3px solid var(--md-sys-color-surface-container-lowest);
+    border: var(--md-comp-slider-thumb-outline-width, 3px) solid
+      var(--md-sys-color-surface-container-lowest);
     background: var(--md-sys-color-primary);
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
     pointer-events: none;
@@ -112,14 +115,15 @@ export const sliderStyles = css`
   .bubble {
     position: absolute;
     inset-inline-start: var(--x);
-    inset-block-end: 30px;
-    inline-size: 44px;
-    block-size: 44px;
-    margin-inline-start: -22px;
+    inset-block-end: var(--md-comp-slider-bubble-offset, 30px);
+    inline-size: var(--md-comp-slider-bubble-size, 44px);
+    block-size: var(--md-comp-slider-bubble-size, 44px);
+    margin-inline-start: calc(var(--md-comp-slider-bubble-size, 44px) / -2);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50% 50% 50% var(--bb-tail, 6px);
+    border-radius: 50% 50% 50%
+      var(--md-comp-slider-bubble-tail, var(--bb-tail, 6px));
     background: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
@@ -139,24 +143,24 @@ export const sliderStyles = css`
   }
   .slider:active .bubble {
     transform: rotate(-45deg) scale(1.08);
-    inset-block-end: 40px;
+    inset-block-end: var(--md-comp-slider-bubble-active-offset, 40px);
   }
 
   /* A · compact: 32px row, value in the label, bubble only while in use */
   :host([compact]) .label {
-    margin-block-end: 2px;
+    margin-block-end: var(--md-comp-slider-compact-label-gap, 2px);
   }
   :host([compact]) .slider {
-    block-size: 32px;
+    block-size: var(--md-comp-slider-compact-height, 32px);
   }
   :host([compact]) .track {
-    inset-block-end: 12px;
+    inset-block-end: var(--md-comp-slider-compact-track-offset, 12px);
   }
   :host([compact]) .thumb {
-    inset-block-end: 4px;
+    inset-block-end: var(--md-comp-slider-compact-thumb-offset, 4px);
   }
   :host([compact]) .bubble {
-    inset-block-end: 20px;
+    inset-block-end: var(--md-comp-slider-compact-bubble-offset, 20px);
     opacity: 0;
     transition:
       opacity var(--bb-slider-fade),
@@ -166,13 +170,16 @@ export const sliderStyles = css`
   :host([compact]) .slider:active .bubble,
   :host([compact]) .slider:has(input:focus-visible) .bubble {
     opacity: 1;
-    inset-block-end: 30px;
+    inset-block-end: var(--md-comp-slider-bubble-offset, 30px);
   }
 
   /* B · liquid level */
   .liquid {
-    --fill: max(64px, calc(var(--v) * 1%));
-    block-size: 64px;
+    --fill: max(
+      var(--md-comp-slider-liquid-min-fill, 64px),
+      calc(var(--v) * 1%)
+    );
+    block-size: var(--md-comp-slider-liquid-height, 64px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-surface-container-high);
     overflow: hidden;
@@ -190,10 +197,10 @@ export const sliderStyles = css`
   .liquid::after {
     content: "";
     position: absolute;
-    inset-block-start: 11px;
+    inset-block-start: var(--md-comp-slider-liquid-glint-offset, 11px);
     inset-inline-start: calc(var(--fill) - 30px);
-    inline-size: 16px;
-    block-size: 9px;
+    inline-size: var(--md-comp-slider-liquid-glint-width, 16px);
+    block-size: var(--md-comp-slider-liquid-glint-height, 9px);
     border-radius: 50%;
     background: var(--md-sys-color-surface-container-lowest);
     opacity: 0.55;
@@ -203,21 +210,21 @@ export const sliderStyles = css`
   .liquid .icon-slot {
     position: absolute;
     z-index: 1;
-    inset-inline-start: 20px;
+    inset-inline-start: var(--md-comp-slider-liquid-icon-offset, 20px);
     inset-block-start: 50%;
     translate: 0 -50%;
     display: flex;
-    font-size: 22px;
+    font-size: var(--md-comp-slider-liquid-icon-size, 22px);
     color: var(--md-sys-color-on-primary);
     pointer-events: none;
   }
   .liquid input::-webkit-slider-thumb {
     inline-size: 1px;
-    block-size: 64px;
+    block-size: var(--md-comp-slider-liquid-height, 64px);
   }
   .liquid input::-moz-range-thumb {
     inline-size: 1px;
-    block-size: 64px;
+    block-size: var(--md-comp-slider-liquid-height, 64px);
   }
   .liquid:active {
     transform: scale(1.02, 0.9);
@@ -227,11 +234,11 @@ export const sliderStyles = css`
   .steps {
     display: inline-flex;
     align-items: flex-end;
-    gap: 6px;
+    gap: var(--md-comp-slider-steps-gap, 6px);
   }
   .step {
-    inline-size: 52px;
-    block-size: 52px;
+    inline-size: var(--md-comp-slider-step-size, 52px);
+    block-size: var(--md-comp-slider-step-size, 52px);
     padding: 0;
     border: 0;
     background: transparent;
@@ -250,7 +257,8 @@ export const sliderStyles = css`
     block-size: var(--size);
     box-sizing: border-box;
     border-radius: 50%;
-    border: 2px solid var(--md-sys-color-outline);
+    border: var(--md-comp-slider-step-outline-width, 2px) solid
+      var(--md-sys-color-outline);
     background: transparent;
     transition:
       transform var(--bb-slider-squish),
@@ -274,7 +282,7 @@ export const sliderStyles = css`
 
   /* D · membrane */
   .membrane {
-    block-size: 110px;
+    block-size: var(--md-comp-slider-membrane-height, 110px);
   }
   .membrane svg {
     position: absolute;
@@ -285,8 +293,8 @@ export const sliderStyles = css`
     pointer-events: none;
   }
   .membrane input {
-    inset-block-start: 40px;
-    block-size: 60px;
+    inset-block-start: var(--md-comp-slider-membrane-input-offset, 40px);
+    block-size: var(--md-comp-slider-membrane-input-height, 60px);
   }
   .membrane-on {
     stop-color: var(--md-sys-color-primary);
@@ -297,7 +305,7 @@ export const sliderStyles = css`
   .membrane-thumb {
     fill: var(--md-sys-color-primary);
     stroke: var(--md-sys-color-surface-container-lowest);
-    stroke-width: 3;
+    stroke-width: var(--md-comp-slider-membrane-thumb-outline-width, 3);
   }
   .membrane-value {
     fill: var(--md-sys-color-on-surface);
@@ -309,16 +317,22 @@ export const sliderStyles = css`
   .range {
     --lo: 20;
     --hi: 70;
-    --xl: calc(14px + (100% - 28px) * var(--lo) / 100);
-    --xh: calc(14px + (100% - 28px) * var(--hi) / 100);
-    block-size: 44px;
+    --xl: calc(
+      var(--md-comp-slider-range-thumb-size, 28px) / 2 +
+        (100% - var(--md-comp-slider-range-thumb-size, 28px)) * var(--lo) / 100
+    );
+    --xh: calc(
+      var(--md-comp-slider-range-thumb-size, 28px) / 2 +
+        (100% - var(--md-comp-slider-range-thumb-size, 28px)) * var(--hi) / 100
+    );
+    block-size: var(--md-comp-slider-range-height, 44px);
   }
   .range::before {
     content: "";
     position: absolute;
     inset-inline: 0;
-    inset-block-start: 18px;
-    block-size: 8px;
+    inset-block-start: var(--md-comp-slider-range-track-offset, 18px);
+    block-size: var(--md-comp-slider-range-track-height, 8px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-surface-container-high);
   }
@@ -326,8 +340,8 @@ export const sliderStyles = css`
     position: absolute;
     inset-inline-start: var(--xl);
     inline-size: calc(var(--xh) - var(--xl));
-    inset-block-start: 17px;
-    block-size: 10px;
+    inset-block-start: var(--md-comp-slider-range-bridge-offset, 17px);
+    block-size: var(--md-comp-slider-range-bridge-height, 10px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-primary);
     pointer-events: none;
@@ -336,15 +350,17 @@ export const sliderStyles = css`
       inset-block-start var(--bb-slider-squish);
   }
   .range.merged .bridge {
-    block-size: 24px;
-    inset-block-start: 10px;
+    block-size: var(--md-comp-slider-range-merged-height, 24px);
+    inset-block-start: var(--md-comp-slider-range-merged-offset, 10px);
   }
   .drop {
     position: absolute;
-    inset-block-start: 8px;
-    inline-size: 28px;
-    block-size: 28px;
-    margin-inline-start: -14px;
+    inset-block-start: var(--md-comp-slider-range-thumb-offset, 8px);
+    inline-size: var(--md-comp-slider-range-thumb-size, 28px);
+    block-size: var(--md-comp-slider-range-thumb-size, 28px);
+    margin-inline-start: calc(
+      var(--md-comp-slider-range-thumb-size, 28px) / -2
+    );
     border-radius: 50%;
     background: var(--md-sys-color-primary);
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
@@ -363,14 +379,14 @@ export const sliderStyles = css`
   .range input::-webkit-slider-thumb {
     pointer-events: auto;
     appearance: none;
-    inline-size: 28px;
-    block-size: 44px;
+    inline-size: var(--md-comp-slider-range-thumb-size, 28px);
+    block-size: var(--md-comp-slider-range-height, 44px);
     cursor: pointer;
   }
   .range input::-moz-range-thumb {
     pointer-events: auto;
-    inline-size: 28px;
-    block-size: 44px;
+    inline-size: var(--md-comp-slider-range-thumb-size, 28px);
+    block-size: var(--md-comp-slider-range-height, 44px);
     border: 0;
     cursor: pointer;
   }
@@ -390,7 +406,7 @@ export const sliderStyles = css`
     }
     .slider:active .bubble {
       transform: rotate(-45deg) scale(0.82);
-      inset-block-end: 30px;
+      inset-block-end: var(--md-comp-slider-bubble-offset, 30px);
     }
   }
 `;

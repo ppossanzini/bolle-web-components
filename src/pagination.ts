@@ -76,10 +76,7 @@ export class BollePagination extends BolleElement {
   }
 
   private get text(): PaginationLabels {
-    return paginationLabels(
-      document.documentElement.lang,
-      this.labels as Partial<PaginationLabels>,
-    );
+    return paginationLabels(document.documentElement.lang, this.labels);
   }
 
   private get pages() {
@@ -110,7 +107,10 @@ export class BollePagination extends BolleElement {
 
   private changeSize(size: number) {
     if (size === this.pageSize) return;
-    this.emit<PaginationChangeDetail>("page-change", { page: 0, pageSize: size });
+    this.emit<PaginationChangeDetail>("page-change", {
+      page: 0,
+      pageSize: size,
+    });
   }
 
   /**
@@ -129,7 +129,11 @@ export class BollePagination extends BolleElement {
     };
     push(0);
     if (current - span > 1) push("gap");
-    for (let index = Math.max(1, current - span); index <= Math.min(pages - 2, current + span); index++)
+    for (
+      let index = Math.max(1, current - span);
+      index <= Math.min(pages - 2, current + span);
+      index++
+    )
       push(index);
     if (current + span < pages - 2) push("gap");
     if (pages > 1) push(pages - 1);
@@ -146,33 +150,40 @@ export class BollePagination extends BolleElement {
       class="pagination"
       aria-label=${this.label || this.text.label}
     >
-      ${this.range === "show"
-        ? html`<span class="range"
-            >${fill(this.text.range, {
-              from: this.from(),
-              to: this.to(),
-              total: this.total,
-            })}</span
-          >`
-        : nothing}
-      ${this.pageSizes.length
-        ? html`<span class="size">
-            <bolle-select
-              class="size-select"
-              label=${this.text.perPage}
-              .value=${String(this.pageSize)}
-              @change=${(event: CustomEvent<{ value: string }>) =>
-                this.changeSize(Number(event.detail.value))}
-            >
-              ${this.pageSizes.map(
-                (size) =>
-                  html`<option value=${String(size)} ?selected=${size === this.pageSize}>
-                    ${size}
-                  </option>`,
-              )}
-            </bolle-select>
-          </span>`
-        : nothing}
+      ${
+        this.range === "show"
+          ? html`<span class="range"
+              >${fill(this.text.range, {
+                from: this.from(),
+                to: this.to(),
+                total: this.total,
+              })}</span
+            >`
+          : nothing
+      }
+      ${
+        this.pageSizes.length
+          ? html`<span class="size">
+              <bolle-select
+                class="size-select"
+                label=${this.text.perPage}
+                .value=${String(this.pageSize)}
+                @change=${(event: CustomEvent<{ value: string }>) =>
+                  this.changeSize(Number(event.detail.value))}
+              >
+                ${this.pageSizes.map(
+                  (size) =>
+                    html`<option
+                      value=${String(size)}
+                      ?selected=${size === this.pageSize}
+                    >
+                      ${size}
+                    </option>`,
+                )}
+              </bolle-select>
+            </span>`
+          : nothing
+      }
       <div class="pages">
         <bolle-icon-button
           class="first"

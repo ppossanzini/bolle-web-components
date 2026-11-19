@@ -15,9 +15,14 @@
     "high-contrast-dark"
   ],
   "fullConformanceVerified": false,
-  "componentEntries": 47,
+  "componentEntries": 51,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "All Material 3 components outside Schiuma expose a public anatomy contract through CSS parts and named slots. Component-token fallbacks cover the configurable geometry introduced for actions, inputs, navigation, feedback and overlays. Native form, link, picker and slider options are forwarded where the platform supports them, with accessible slot labels and required picker validation. The documentation derives properties, slots and parts from the registered implementation and publishes copyable examples."
+    },
     {
       "date": "2026-11-17",
       "classification": "additive",

@@ -1,5 +1,6 @@
 import { html, nothing } from "lit";
 import { keyed } from "lit/directives/keyed.js";
+import { repeat } from "lit/directives/repeat.js";
 import {
   BolleElement,
   BolleFormElement,
@@ -7,7 +8,7 @@ import {
   type BolleItem,
 } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
-import { listLabels } from "./localization.js";
+import { listLabels, type ListLabels } from "./localization.js";
 import { surfaceStyles } from "./surfaces.styles.js";
 
 export class BolleAppBar extends BolleElement {
@@ -29,17 +30,29 @@ export class BolleAppBar extends BolleElement {
   alignment = "leading";
   collapsed = false;
   protected render() {
-    return html`<header class="bar">
-      <slot name="leading"></slot>
+    return html`<header class="bar" part="app-bar">
+      <slot name="leading" part="app-bar-leading leading"></slot>
       ${
         this.variant === "search"
-          ? html`<div class="title-group"><slot></slot></div>`
-          : html`<div class="title-group">
-              <h1 class="title"><slot>${this.label}</slot></h1>
-              ${this.subtitle ? html`<p class="subtitle">${this.subtitle}</p>` : nothing}
+          ? html`<div
+              class="title-group"
+              part="app-bar-title-group title-group"
+            >
+              <slot name="title" part="app-bar-title title"><slot></slot></slot>
+            </div>`
+          : html`<div
+              class="title-group"
+              part="app-bar-title-group title-group"
+            >
+              <h1 class="title" part="app-bar-title title">
+                <slot name="title"><slot>${this.label}</slot></slot>
+              </h1>
+              ${this.subtitle ? html`<p class="subtitle" part="app-bar-subtitle subtitle">${this.subtitle}</p>` : nothing}
             </div>`
       }
-      <slot name="trailing"></slot>
+      <slot name="actions" part="app-bar-actions actions trailing"
+        ><slot name="trailing"></slot
+      ></slot>
     </header>`;
   }
 }
@@ -70,12 +83,14 @@ export class BolleToolbar extends BolleElement {
   protected render() {
     return html`<div
       class="toolbar"
+      part="toolbar"
       role="toolbar"
       aria-label=${this.label}
       aria-orientation=${this.orientation}
       @keydown=${(event: KeyboardEvent) => moveFocus(event, this.controls(), this.orientation === "vertical")}
     >
       <slot
+        part="toolbar-content"
         @slotchange=${() => {
           Promise.all(
             Array.from(this.children).map(
@@ -93,11 +108,7 @@ export class BolleToolbar extends BolleElement {
 }
 /** `none` drops the narrow corner: the card keeps the same radius on all four corners. */
 export type CardTail =
-  | "bottom-start"
-  | "bottom-end"
-  | "top-start"
-  | "top-end"
-  | "none";
+  "bottom-start" | "bottom-end" | "top-start" | "top-end" | "none";
 export class BolleCard extends BolleElement {
   static properties = {
     variant: { reflect: true },
@@ -114,9 +125,22 @@ export class BolleCard extends BolleElement {
   href = "";
   label = "";
   protected render() {
-    return html`<article class="card ${this.href ? "is-link" : ""}" aria-label=${this.label || nothing}>
-      <slot name="media"></slot>
-      ${this.href ? html`<a href=${this.href}><slot></slot></a>` : html`<div class="card-content"><slot></slot></div>`}
+    return html`<article
+      class="card ${this.href ? "is-link" : ""}"
+      part="card"
+      aria-label=${this.label || nothing}
+    >
+      <slot name="media" part="card-media"></slot>
+      ${
+        this.href
+          ? html`<a part="card-link" href=${this.href}
+              ><slot name="content" part="card-content content"
+                ><slot></slot></slot
+            ></a>`
+          : html`<div class="card-content" part="card-content content">
+              <slot name="content"><slot></slot></slot>
+            </div>`
+      }
     </article>`;
   }
 }
@@ -137,10 +161,13 @@ export class BolleBadge extends BolleElement {
       this.value,
       html`<span
         class="badge"
+        part="badge"
         role=${this.label ? "status" : nothing}
         aria-label=${this.label || nothing}
         aria-hidden=${this.label ? nothing : "true"}
-        >${this.small ? nothing : Number(this.value) > this.max ? `${this.max}+` : this.value}</span
+        ><slot name="label" part="badge-label label"
+          >${this.small ? nothing : Number(this.value) > this.max ? `${this.max}+` : this.value}</slot
+        ></span
       >`,
     );
   }
@@ -164,10 +191,12 @@ export class BolleDivider extends BolleElement {
     if (!this.vertical && this.mode === "full")
       return html`<hr
         class="divider"
+        part="divider"
         role=${this.decorative ? "none" : nothing}
       />`;
     return html`<div
       class="divider"
+      part="divider"
       data-mode=${this.mode}
       role=${this.decorative ? "none" : "separator"}
       aria-orientation=${this.decorative ? nothing : this.vertical ? "vertical" : "horizontal"}
@@ -183,6 +212,7 @@ export class BolleList extends BolleElement {
     selection: { reflect: true },
     value: { attribute: false },
     expanded: { attribute: false },
+    labels: { attribute: false },
   };
   static styles = [commonStyles, surfaceStyles];
   items: BolleItem[] = [];
@@ -192,6 +222,10 @@ export class BolleList extends BolleElement {
   selection: "none" | "single" | "multiple" = "none";
   value: string | string[] = "";
   expanded: string[] = [];
+  labels: Partial<ListLabels> = {};
+  private get text(): ListLabels {
+    return listLabels(document.documentElement.lang, this.labels);
+  }
   private selectedIds() {
     if (Array.isArray(this.value)) return [...this.value];
     return this.value ? [this.value] : [];
@@ -230,13 +264,14 @@ export class BolleList extends BolleElement {
     });
   }
   private content(item: BolleItem) {
-    return html`${item.icon ? html`<span class="icon" aria-hidden="true">${item.icon}</span>` : nothing}<span
-        class="list-text"
-        ><span>${item.label}</span
-        >${item.supportingText ? html`<span class="support">${item.supportingText}</span>` : nothing}</span
-      >${item.badge
-        ? html`<span class="list-badge">${item.badge}</span>`
-        : nothing}`;
+    return html`<slot name=${`leading-${item.id}`} part="list-leading"
+        >${item.icon ? html`<span class="icon" part="list-icon" aria-hidden="true">${item.icon}</span>` : nothing}</slot
+      ><span part="list-text" class="list-text"
+        ><span part="list-label">${item.label}</span
+        >${item.supportingText ? html`<span class="support" part="list-supporting-text">${item.supportingText}</span>` : nothing}</span
+      ><slot name=${`trailing-${item.id}`} part="list-trailing"
+        >${item.badge ? html`<span class="list-badge" part="list-badge">${item.badge}</span>` : nothing}</slot
+      >`;
   }
   private listRole() {
     return this.selection === "single" ? "listbox" : nothing;
@@ -249,15 +284,17 @@ export class BolleList extends BolleElement {
     const open = this.expanded.includes(item.id);
     return html`<button
       class="list-disclosure"
+      part="list-disclosure"
       type="button"
       aria-expanded=${String(open)}
-      aria-label=${`${open ? listLabels(document.documentElement.lang).collapse : listLabels(document.documentElement.lang).expand} ${item.label}`}
+      aria-label=${`${open ? this.text.collapse : this.text.expand} ${item.label}`}
       @click=${(event: Event) => {
         event.stopPropagation();
         this.toggle(item);
       }}
     >
       <svg
+        part="list-disclosure-icon"
         viewBox="0 0 24 24"
         aria-hidden="true"
         fill="none"
@@ -272,12 +309,15 @@ export class BolleList extends BolleElement {
   }
   private nested(item: BolleItem) {
     if (!item.items || !this.expanded.includes(item.id)) return nothing;
-    return html`<ul class="list-sublist">
-      ${item.items.map(
+    return html`<ul class="list-sublist" part="list-sublist">
+      ${repeat(
+        item.items,
+        (child) => child.id,
         (child) =>
-          html`<li>
+          html`<li part="list-item-row" data-id=${child.id}>
             <button
               class="list-item"
+              part="list-item"
               type="button"
               role=${this.selection === "single" ? "option" : nothing}
               aria-selected=${this.selection === "single" ? (this.state(child) ?? "false") : nothing}
@@ -294,62 +334,69 @@ export class BolleList extends BolleElement {
   protected render() {
     const selectable = this.selection !== "none";
     return html`<ul
+      part="list"
       role=${this.listRole()}
       aria-label=${this.label || nothing}
       aria-multiselectable=${this.selection === "multiple" ? "true" : nothing}
     >
-      ${this.items.map((item) => {
-        const selected =
-          this.selection === "single" ? this.state(item) : nothing;
-        const current =
-          this.selection === "single" ? nothing : this.state(item);
-        const role = this.selection === "single" ? "option" : nothing;
-        const expanded = item.items
-          ? String(this.expanded.includes(item.id))
-          : nothing;
-        return html`<li>
-          <div class="list-row">
-            ${
-              item.href && !item.disabled
-                ? html`<a
-                    class="list-item"
-                    href=${item.href}
-                    role=${role}
-                    aria-selected=${selected}
-                    aria-current=${current}
-                    aria-expanded=${expanded}
-                    >${this.content(item)}</a
-                  >`
-                : !this.interactive && !selectable
-                  ? html`<div
+      ${repeat(
+        this.items,
+        (item) => item.id,
+        (item) => {
+          const selected =
+            this.selection === "single" ? this.state(item) : nothing;
+          const current =
+            this.selection === "single" ? nothing : this.state(item);
+          const role = this.selection === "single" ? "option" : nothing;
+          const expanded = item.items
+            ? String(this.expanded.includes(item.id))
+            : nothing;
+          return html`<li part="list-item-row" data-id=${item.id}>
+            <div class="list-row" part="list-row">
+              ${
+                item.href && !item.disabled
+                  ? html`<a
                       class="list-item"
-                      role=${role}
-                      aria-selected=${selected}
-                      aria-current=${current}
-                      aria-disabled=${item.disabled ? "true" : nothing}
-                      aria-expanded=${expanded}
-                    >
-                      ${this.content(item)}
-                    </div>`
-                  : html`<button
-                      class="list-item"
-                      type="button"
+                      part="list-item"
+                      href=${item.href}
                       role=${role}
                       aria-selected=${selected}
                       aria-current=${current}
                       aria-expanded=${expanded}
-                      ?disabled=${item.disabled}
-                      @click=${() => this.toggle(item)}
-                    >
-                      ${this.content(item)}
-                    </button>`
-            }
-            ${this.disclosure(item)}
-          </div>
-          ${this.nested(item)}
-        </li>`;
-      })}<slot
-      ></slot>
+                      >${this.content(item)}</a
+                    >`
+                  : !this.interactive && !selectable
+                    ? html`<div
+                        class="list-item"
+                        part="list-item"
+                        role=${role}
+                        aria-selected=${selected}
+                        aria-current=${current}
+                        aria-disabled=${item.disabled ? "true" : nothing}
+                        aria-expanded=${expanded}
+                      >
+                        ${this.content(item)}
+                      </div>`
+                    : html`<button
+                        class="list-item"
+                        part="list-item"
+                        type="button"
+                        role=${role}
+                        aria-selected=${selected}
+                        aria-current=${current}
+                        aria-expanded=${expanded}
+                        ?disabled=${item.disabled}
+                        @click=${() => this.toggle(item)}
+                      >
+                        ${this.content(item)}
+                      </button>`
+              }
+              ${this.disclosure(item)}
+            </div>
+            ${this.nested(item)}
+          </li>`;
+        },
+      )}<slot part="list-content"></slot>
     </ul>`;
   }
 }
@@ -399,10 +446,10 @@ export class BolleChip extends BolleFormElement {
     this.emit("action", {});
   }
   protected render() {
-    return html`<span class="chip"
+    return html`<span class="chip" part="chip"
       >${
         this.variant === "filter"
-          ? html`<label
+          ? html`<label part="chip-control"
               ><input
                 type="checkbox"
                 .checked=${this.selected}
@@ -412,19 +459,28 @@ export class BolleChip extends BolleFormElement {
                   this.selected = (event.target as HTMLInputElement).checked;
                   this.syncForm();
                   this.emit("change", { selected: this.selected });
-                }} /><slot name="avatar"></slot
-              ><slot name="icon"></slot>${this.label}<slot></slot
+                }} /><slot name="avatar" part="chip-avatar"></slot
+              ><slot name="icon" part="chip-icon"></slot
+              ><span part="chip-label">${this.label}</span
+              ><slot part="chip-content"></slot
             ></label>`
           : this.href && !this.isDisabled
-            ? html`<a href=${this.href}
-                ><slot name="avatar"></slot
-                ><slot name="icon"></slot>${this.label}</a
+            ? html`<a part="chip-control" href=${this.href}
+                ><slot name="avatar" part="chip-avatar"></slot
+                ><slot name="icon" part="chip-icon"></slot
+                ><span part="chip-label">${this.label}</span></a
               >`
-            : html`<button ?disabled=${this.isDisabled} @click=${this.activate}>
-                <slot name="avatar"></slot
-                ><slot name="icon"></slot>${this.label}<slot></slot>
+            : html`<button
+                part="chip-control"
+                ?disabled=${this.isDisabled}
+                @click=${this.activate}
+              >
+                <slot name="avatar" part="chip-avatar"></slot
+                ><slot name="icon" part="chip-icon"></slot
+                ><span part="chip-label">${this.label}</span
+                ><slot part="chip-content"></slot>
               </button>`
-      }${this.removable ? html`<button class="remove" ?disabled=${this.isDisabled} aria-label=${this.removeLabel} @click=${() => this.emit("remove", {})}>×</button>` : nothing}</span
+      }${this.removable ? html`<button class="remove" part="chip-remove" ?disabled=${this.isDisabled} aria-label=${this.removeLabel} @click=${() => this.emit("remove", {})}>×</button>` : nothing}</span
     >`;
   }
 }

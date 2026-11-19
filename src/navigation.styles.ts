@@ -1,7 +1,10 @@
 import { css } from "lit";
 export const navigationStyles = css`
   :host {
-    --bb-glint-color: rgb(from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b / 0.5);
+    --bb-glint-color: rgb(
+      from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b /
+        0.5
+    );
   }
   :host {
     display: block;
@@ -52,9 +55,9 @@ export const navigationStyles = css`
     display: grid;
     place-items: center;
     inline-size: var(--md-comp-navigation-indicator-width);
-    block-size: 32px;
+    block-size: var(--md-comp-navigation-indicator-height, 32px);
     border-radius: var(--md-sys-shape-corner-full);
-    font-size: 24px;
+    font-size: var(--md-comp-navigation-icon-size, 24px);
     line-height: 1;
   }
   [aria-current="page"] .indicator,
@@ -69,8 +72,7 @@ export const navigationStyles = css`
     flex-direction: column;
     inline-size: var(--md-comp-navigation-rail-width);
     block-size: auto;
-    padding: var(--md-comp-navigation-rail-top-space)
-      var(--md-comp-action-gap)
+    padding: var(--md-comp-navigation-rail-top-space) var(--md-comp-action-gap)
       var(--md-comp-navigation-rail-item-vertical-space);
     background: transparent;
   }
@@ -115,21 +117,25 @@ export const navigationStyles = css`
     font: var(--md-sys-typescale-title-small-font);
     letter-spacing: var(--md-sys-typescale-title-small-tracking);
     min-block-size: var(--md-comp-action-target);
-    border-block-end: 3px solid transparent;
+    border-block-end: var(--md-comp-tabs-active-indicator-thickness, 3px) solid
+      transparent;
     white-space: nowrap;
   }
   [role="tab"]:has(.tab-icon) {
-    min-block-size: 64px;
+    min-block-size: var(--md-comp-tabs-with-icon-height, 64px);
   }
   [role="tab"][aria-selected="true"] {
     border-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-primary);
   }
   :host([variant="secondary"]) [role="tab"] {
-    border-block-end-width: 2px;
+    border-block-end-width: var(
+      --md-comp-tabs-secondary-active-indicator-thickness,
+      2px
+    );
   }
   .tab-icon {
-    font-size: 24px;
+    font-size: var(--md-comp-tabs-icon-size, 24px);
     line-height: 1;
   }
   .tab-badge {
@@ -165,7 +171,7 @@ export const navigationStyles = css`
     min-inline-size: 0;
     scroll-behavior: smooth;
     scrollbar-width: none;
-    padding-inline-start: 52px;
+    padding-inline-start: var(--md-comp-tabs-scroll-leading-space, 52px);
   }
   .tab-scroller [role="tablist"]::-webkit-scrollbar {
     display: none;
@@ -184,8 +190,8 @@ export const navigationStyles = css`
     cursor: pointer;
   }
   .tab-scroll-button svg {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: var(--md-comp-tabs-scroll-icon-size, 24px);
+    block-size: var(--md-comp-tabs-scroll-icon-size, 24px);
   }
   .tab-scroll-button:disabled {
     opacity: var(--md-sys-state-disabled-content-opacity);

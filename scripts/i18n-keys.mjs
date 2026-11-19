@@ -23,8 +23,14 @@ for (const file of readdirSync(siteDir)) {
 
 const dictionary = (locale) => {
   const source = readFileSync(join(siteDir, "locales", `${locale}.ts`), "utf8");
-  const pair = new RegExp(String.raw`^\s*${literal}\s*:`, "gm");
-  return new Set([...source.matchAll(pair)].map((match) => unescape(match[1])));
+  const pair = /^\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')\s*:/gm;
+  return new Set(
+    [...source.matchAll(pair)].map((match) =>
+      match[1] !== undefined
+        ? unescape(match[1])
+        : match[2].replace(/\\'/g, "'").replace(/\\\\/g, "\\"),
+    ),
+  );
 };
 
 const report = {};
@@ -44,5 +50,6 @@ if (process.argv.includes("--json")) {
     console.log(
       `${locale}: ${report[locale].missing.length} missing, ${report[locale].stale.length} stale`,
     );
-  if (locales.some((locale) => report[locale].missing.length > 0)) process.exitCode = 1;
+  if (locales.some((locale) => report[locale].missing.length > 0))
+    process.exitCode = 1;
 }

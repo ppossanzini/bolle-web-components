@@ -1,10 +1,4 @@
-import {
-  html,
-  nothing,
-  unsafeCSS,
-  type PropertyValues,
-  type TemplateResult,
-} from "lit";
+import { html, nothing, unsafeCSS, type PropertyValues } from "lit";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { dataTableStyles } from "./data-table.styles.js";
@@ -80,6 +74,16 @@ export interface DataTableRowActionDetail {
   row: DataTableRow;
 }
 
+type VirtualItem =
+  | { key: string; kind: "row"; row: DataTableRow }
+  | { key: string; kind: "detail"; row: DataTableRow }
+  | {
+      key: string;
+      kind: "group";
+      name: string;
+      rows: DataTableRow[];
+    };
+
 const DEFAULT_WIDTH = 168;
 const MIN_COLUMN = 88;
 const MAX_COLUMN = 560;
@@ -125,10 +129,12 @@ export class BolleDataTable extends BolleElement {
     error: { reflect: true },
     emptyLabel: { attribute: "empty-label" },
     contentStyles: { attribute: false },
+    labels: { attribute: false },
     updating: { type: Boolean, reflect: true },
     _collapsed: { state: true },
     _windowStart: { state: true },
     _windowEnd: { state: true },
+    _virtualVersion: { state: true },
     _scrolledX: { state: true },
     _dragging: { state: true },
     _announcement: { state: true },
@@ -167,28 +173,47 @@ export class BolleDataTable extends BolleElement {
    */
   contentStyles = "";
   emptyLabel = "";
+  /** Replaces the built-in texts. */
+  labels: Partial<DataTableLabels> = {};
   /** Keeps the rows visible, dimmed, while the application fetches new ones. */
   updating = false;
 
   private _collapsed = new Set<string>();
   private _windowStart = 0;
   private _windowEnd = 40;
+  private _virtualVersion = 0;
   private _scrolledX = false;
   private _dragging = "";
   private _announcement = "";
-  private drag?: { key: string; startX: number; dx: number; target: number; cancelled: boolean };
-  private menuContext?: { kind: "column"; key: string } | { kind: "row"; row: DataTableRow };
+  private drag?: {
+    key: string;
+    startX: number;
+    dx: number;
+    target: number;
+    cancelled: boolean;
+  };
+  private menuContext?:
+    { kind: "column"; key: string } | { kind: "row"; row: DataTableRow };
   private resizeObserver?: ResizeObserver;
   private scrollerObserver?: ResizeObserver;
   private observedScroller?: HTMLElement;
-  private resizeCleanup?: () => void;
+  private virtualHeights = new Map<string, number>();
 
   private get text(): DataTableLabels {
-    return dataTableLabels("");
+    return dataTableLabels(document.documentElement.lang, this.labels);
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
-    if (changed.has("rows") && this.groupBy) this.measureWindow();
+    if (
+      changed.has("rows") ||
+      changed.has("groupBy") ||
+      changed.has("expanded") ||
+      changed.has("density") ||
+      changed.has("detail")
+    ) {
+      this.resetWindow();
+      this.virtualHeights.clear();
+    }
   }
 
   connectedCallback() {
@@ -200,7 +225,6 @@ export class BolleDataTable extends BolleElement {
   disconnectedCallback() {
     this.resizeObserver?.disconnect();
     this.scrollerObserver?.disconnect();
-    this.resizeCleanup?.();
     super.disconnectedCallback();
   }
 
@@ -214,7 +238,11 @@ export class BolleDataTable extends BolleElement {
       this.observedScroller = scroller;
     }
     this.measureVisible();
-    this.measureWindow();
+    requestAnimationFrame(() => {
+      if (!this.isConnected) return;
+      this.measureVirtualRows();
+      this.measureWindow();
+    });
   }
 
   private get scroller() {
@@ -262,7 +290,8 @@ export class BolleDataTable extends BolleElement {
   }
 
   private get lastPinned() {
-    return [...this.visibleColumns].reverse().find((column) => column.pinned)?.key;
+    return [...this.visibleColumns].reverse().find((column) => column.pinned)
+      ?.key;
   }
 
   /* Data: groups and the virtual window -------------------------------- */
@@ -288,13 +317,91 @@ export class BolleDataTable extends BolleElement {
     return ROW_HEIGHT[this.density] ?? ROW_HEIGHT.comfortable;
   }
 
+  private get virtualWindowed() {
+    return this.virtual;
+  }
+
+  private resetWindow() {
+    this._windowStart = 0;
+    this._windowEnd = 40;
+  }
+
+  private get virtualItems(): VirtualItem[] {
+    const items: VirtualItem[] = [];
+    const pushRow = (row: DataTableRow) => {
+      const id = this.rowId(row);
+      items.push({ key: `row:${id}`, kind: "row", row });
+      if (this.expanded.includes(id) && this.detail)
+        items.push({ key: `detail:${id}`, kind: "detail", row });
+    };
+    if (!this.groupBy) {
+      for (const row of this.rows) pushRow(row);
+      return items;
+    }
+    for (const [name, rows] of this.groups) {
+      items.push({ key: `group:${name}`, kind: "group", name, rows });
+      if (this._collapsed.has(name)) continue;
+      for (const row of rows) pushRow(row);
+    }
+    return items;
+  }
+
+  private estimatedHeight(item: VirtualItem) {
+    if (item.kind === "row") return this.rowHeight;
+    return item.kind === "group" ? (this.density === "compact" ? 40 : 48) : 120;
+  }
+
+  private itemHeight(item: VirtualItem) {
+    return this.virtualHeights.get(item.key) ?? this.estimatedHeight(item);
+  }
+
+  private itemOffset(items: VirtualItem[], end: number) {
+    let offset = 0;
+    for (let index = 0; index < end; index += 1)
+      offset += this.itemHeight(items[index]);
+    return offset;
+  }
+
+  private measureVirtualRows() {
+    if (!this.virtualWindowed) return;
+    let changed = false;
+    for (const element of this.renderRoot.querySelectorAll<HTMLElement>(
+      "tr[data-virtual-key]",
+    )) {
+      const key = element.dataset.virtualKey;
+      const height = element.getBoundingClientRect().height;
+      if (
+        key &&
+        height > 0 &&
+        Math.abs((this.virtualHeights.get(key) ?? 0) - height) > 0.5
+      ) {
+        this.virtualHeights.set(key, height);
+        changed = true;
+      }
+    }
+    if (changed) this._virtualVersion += 1;
+  }
+
   private measureWindow = () => {
     const scroller = this.scroller;
-    if (!scroller || !this.virtual) return;
-    const top = scroller.scrollTop;
-    const bottom = top + scroller.clientHeight;
-    const start = Math.max(0, Math.floor(top / this.rowHeight) - OVERSCAN);
-    const end = Math.ceil(bottom / this.rowHeight) + OVERSCAN;
+    if (!scroller || !this.virtualWindowed) return;
+    const items = this.virtualItems;
+    const overscan = this.rowHeight * OVERSCAN;
+    const top = Math.max(0, scroller.scrollTop - overscan);
+    const bottom = scroller.scrollTop + scroller.clientHeight + overscan;
+    let offset = 0;
+    let start = items.length;
+    let end = items.length;
+    for (let index = 0; index < items.length; index += 1) {
+      const next = offset + this.itemHeight(items[index]);
+      if (start === items.length && next > top) start = index;
+      if (next >= bottom) {
+        end = index + 1;
+        break;
+      }
+      offset = next;
+    }
+    start = Math.min(start, Math.max(0, items.length - 1));
     if (start !== this._windowStart) this._windowStart = start;
     if (end !== this._windowEnd) this._windowEnd = end;
   };
@@ -303,7 +410,7 @@ export class BolleDataTable extends BolleElement {
     const scroller = event.currentTarget as HTMLElement;
     const scrolled = Math.abs(scroller.scrollLeft) > 0;
     if (scrolled !== this._scrolledX) this._scrolledX = scrolled;
-    if (this.virtual) requestAnimationFrame(this.measureWindow);
+    if (this.virtualWindowed) requestAnimationFrame(this.measureWindow);
   };
 
   /* Sorting, selection, paging ---------------------------------------- */
@@ -392,26 +499,16 @@ export class BolleDataTable extends BolleElement {
     );
   }
 
-  private goTo(page: number) {
-    const pages = this.pageCount;
-    const next = Math.max(0, Math.min(pages - 1, page));
-    this.emit<DataTablePageDetail>("page-change", {
-      page: next,
-      pageSize: this.pageSize,
-    });
-  }
-
-  private get pageCount() {
-    if (!this.pageSize) return 1;
-    return Math.max(1, Math.ceil((this.total || this.rows.length) / this.pageSize));
+  private get columnCount() {
+    return (
+      this.visibleColumns.length +
+      (this.selectable ? 1 : 0) +
+      (this.expandable ? 1 : 0) +
+      (this.rowActions.length ? 1 : 0)
+    );
   }
 
   /* Columns ----------------------------------------------------------- */
-
-  private commitColumns(columns: DataTableColumn[], message: string) {
-    this.emit<DataTableColumnChangeDetail>("column-change", { columns });
-    this.announce(message);
-  }
 
   private patchColumn(key: string, patch: Partial<DataTableColumn>) {
     const columns = this.columns.map((column) =>
@@ -440,6 +537,26 @@ export class BolleDataTable extends BolleElement {
       fill(this.text.moved, {
         column: this.labelOf(key),
         index: target + 1,
+        count: order.length,
+      }),
+    );
+  }
+
+  private moveColumnToEdge(key: string, edge: "start" | "end") {
+    const order = this.visibleColumns;
+    const column = order.find((item) => item.key === key);
+    if (!column) return;
+    const zone = order.filter(
+      (item) => Boolean(item.pinned) === Boolean(column.pinned),
+    );
+    const target = edge === "start" ? zone[0] : zone.at(-1);
+    if (!target || target.key === key) return;
+    this.placeColumn(key, target.key);
+    const position = order.findIndex((item) => item.key === target.key) + 1;
+    this.announce(
+      fill(this.text.moved, {
+        column: column.label,
+        index: position,
         count: order.length,
       }),
     );
@@ -507,7 +624,8 @@ export class BolleDataTable extends BolleElement {
       handle.removeEventListener("pointermove", move);
       handle.removeEventListener("pointerup", stop);
       handle.removeEventListener("pointercancel", stop);
-      if (current !== startWidth) this.patchColumn(column.key, { width: current });
+      if (current !== startWidth)
+        this.patchColumn(column.key, { width: current });
     };
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", stop);
@@ -529,7 +647,7 @@ export class BolleDataTable extends BolleElement {
             : event.key === "End"
               ? MAX_COLUMN
               : event.key === "Enter"
-                ? (column.width ?? DEFAULT_WIDTH)
+                ? DEFAULT_WIDTH
                 : undefined;
     if (next === undefined) return;
     event.preventDefault();
@@ -562,7 +680,8 @@ export class BolleDataTable extends BolleElement {
         "th[data-key]",
       )) {
         const current = order.find((item) => item.key === cell.dataset.key);
-        if (!current || Boolean(current.pinned) !== Boolean(column.pinned)) continue;
+        if (!current || Boolean(current.pinned) !== Boolean(column.pinned))
+          continue;
         const box = cell.getBoundingClientRect();
         if (moveEvent.clientX > box.left && moveEvent.clientX < box.right)
           target = order.findIndex((item) => item.key === cell.dataset.key);
@@ -573,14 +692,13 @@ export class BolleDataTable extends BolleElement {
       if (keyEvent.key !== "Escape" || !this.drag) return;
       this.drag = { ...this.drag, cancelled: true };
       stop();
-      this.announce(this.text.sortNone);
+      this.announce(fill(this.text.moveCancelled, { column: column.label }));
     };
     const stop = () => {
       handle.removeEventListener("pointermove", move);
       handle.removeEventListener("pointerup", stop);
       handle.removeEventListener("pointercancel", stop);
       window.removeEventListener("keydown", keys, true);
-      this.resizeCleanup = undefined;
       const drag = this.drag;
       this.drag = undefined;
       this._dragging = "";
@@ -650,7 +768,9 @@ export class BolleDataTable extends BolleElement {
               label:
                 this.groupBy === column.key
                   ? this.text.ungroup
-                  : fill(this.text.groupBy, { column: column.label.toLowerCase() }),
+                  : fill(this.text.groupBy, {
+                      column: column.label.toLowerCase(),
+                    }),
             },
           ]
         : []),
@@ -661,7 +781,9 @@ export class BolleDataTable extends BolleElement {
       {
         id: "start",
         label: this.text.moveStart,
-        disabled: index === 0 || Boolean(order[index - 1]?.pinned) !== Boolean(column.pinned),
+        disabled:
+          index === 0 ||
+          Boolean(order[index - 1]?.pinned) !== Boolean(column.pinned),
       },
       {
         id: "end",
@@ -711,18 +833,15 @@ export class BolleDataTable extends BolleElement {
     if (!column) return;
     if (id === "asc" || id === "desc")
       this.emit<DataTableSortDetail>("sort", {
-        sort: this.newSort(column.key, false).map((item) => ({
-          key: item.key,
-          dir: id as "asc" | "desc",
-        })),
+        sort: [{ key: column.key, dir: id }],
       });
     else if (id === "unsort")
       this.emit<DataTableSortDetail>("sort", {
         sort: this.sort.filter((item) => item.key !== column.key),
       });
     else if (id === "pin") this.togglePinned(column.key);
-    else if (id === "start") this.moveColumn(column.key, -1);
-    else if (id === "end") this.moveColumn(column.key, 1);
+    else if (id === "start") this.moveColumnToEdge(column.key, "start");
+    else if (id === "end") this.moveColumnToEdge(column.key, "end");
     else if (id === "hide") this.toggleHidden(column.key);
     else if (id === "group" || id === "ungroup")
       this.emit("group", { groupBy: id === "group" ? column.key : "" });
@@ -750,14 +869,20 @@ export class BolleDataTable extends BolleElement {
       <tr>
         ${
           this.selectable
-            ? html`<th class="select cell-pinned" scope="col" style="inset-inline-start:0">
+            ? html`<th
+                class="select cell-pinned"
+                scope="col"
+                style="inset-inline-start:0"
+              >
                 <bolle-checkbox
                   .checked=${selection.all}
                   .indeterminate=${selection.chosen > 0 && !selection.all}
                   ?disabled=${!selection.keys.length}
                   @change=${(event: CustomEvent<{ checked: boolean }>) =>
                     this.togglePage(event.detail.checked)}
-                  ><span class="sr-only">${this.text.selectPage}</span></bolle-checkbox
+                  ><span class="sr-only"
+                    >${this.text.selectPage}</span
+                  ></bolle-checkbox
                 >
               </th>`
             : nothing
@@ -782,11 +907,13 @@ export class BolleDataTable extends BolleElement {
             data-key=${column.key}
             class="data ${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""} ${dragging ? "dragging" : ""}"
             style=${column.pinned ? `inset-inline-start:${this.pinnedOffset(column.key)}px` : ""}
-            aria-sort=${current
-              ? current.dir === "asc"
-                ? "ascending"
-                : "descending"
-              : nothing}
+            aria-sort=${
+              current
+                ? current.dir === "asc"
+                  ? "ascending"
+                  : "descending"
+                : nothing
+            }
           >
             <div class="head">
               <span
@@ -797,14 +924,20 @@ export class BolleDataTable extends BolleElement {
               >
               ${
                 column.sortable === false
-                  ? html`<span class="sort static"><span class="ellipsis">${column.label}</span></span>`
+                  ? html`<span class="sort static"
+                      ><span class="ellipsis">${column.label}</span></span
+                    >`
                   : html`<button
                       class="sort"
+                      aria-describedby="table-sort-hint"
                       @click=${(event: MouseEvent) => this.toggleSort(column, event)}
                       @keydown=${(event: KeyboardEvent) => {
                         if (!event.altKey) return;
                         const rtl = getComputedStyle(this).direction === "rtl";
-                        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+                        if (
+                          event.key !== "ArrowLeft" &&
+                          event.key !== "ArrowRight"
+                        )
                           return;
                         event.preventDefault();
                         this.moveColumn(
@@ -822,14 +955,18 @@ export class BolleDataTable extends BolleElement {
                     >
                       <span class="ellipsis">${column.label}</span>
                       <span class="sort-mark ${current ? "on" : ""}">
-                        ${current
-                          ? current.dir === "asc"
-                            ? sortArrowUpIcon()
-                            : sortArrowDownIcon()
-                          : sortNoneIcon()}
-                        ${current && this.sort.length > 1
-                          ? html`<span class="rank">${rank + 1}</span>`
-                          : nothing}
+                        ${
+                          current
+                            ? current.dir === "asc"
+                              ? sortArrowUpIcon()
+                              : sortArrowDownIcon()
+                            : sortNoneIcon()
+                        }
+                        ${
+                          current && this.sort.length > 1
+                            ? html`<span class="rank">${rank + 1}</span>`
+                            : nothing
+                        }
                       </span>
                     </button>`
               }
@@ -856,102 +993,120 @@ export class BolleDataTable extends BolleElement {
               @pointerdown=${(event: PointerEvent) => this.startResize(event, column)}
               @keydown=${(event: KeyboardEvent) => this.resizeWithKeys(event, column)}
               @dblclick=${() =>
-                this.patchColumn(column.key, { width: column.width ?? DEFAULT_WIDTH })}
+                this.patchColumn(column.key, { width: DEFAULT_WIDTH })}
             ></span>
           </th>`;
         })}
         ${
           this.rowActions.length
-            ? html`<th class="actions cell-end" scope="col"><span class="sr-only">${this.text.rowActions.replace("{row}", "")}</span></th>`
+            ? html`<th class="actions cell-end" scope="col">
+                <span class="sr-only"
+                  >${this.text.rowActions.replace("{row}", "")}</span
+                >
+              </th>`
             : nothing
         }
       </tr>
     </thead>`;
   }
 
-  private renderRow(row: DataTableRow, index: number) {
+  private renderRow(
+    row: DataTableRow,
+    virtual?: { key: string; rowIndex: number },
+  ) {
     const id = this.rowId(row);
     const selected = this.selected.includes(id);
     const open = this.expanded.includes(id);
     const lastPinned = this.lastPinned;
     return html`<tr
-      class="row ${selected ? "selected" : ""}"
-      aria-selected=${this.selectable ? String(selected) : nothing}
-      @click=${(event: MouseEvent) => this.onRowClick(event, row)}
-    >
-      ${
-        this.selectable
-          ? html`<td class="select cell-pinned" style="inset-inline-start:0">
-              <bolle-checkbox
-                .checked=${selected}
-                @change=${(event: CustomEvent<{ checked: boolean }>) =>
-                  this.toggleRow(row, event.detail.checked)}
-                ><span class="sr-only">${fill(this.text.selectRow, { key: id })}</span></bolle-checkbox
+        class="row ${selected ? "selected" : ""}"
+        aria-selected=${this.selectable ? String(selected) : nothing}
+        aria-rowindex=${virtual?.rowIndex ?? nothing}
+        data-virtual-key=${virtual?.key ?? nothing}
+        @click=${(event: MouseEvent) => this.onRowClick(event, row)}
+      >
+        ${
+          this.selectable
+            ? html`<td class="select cell-pinned" style="inset-inline-start:0">
+                <bolle-checkbox
+                  .checked=${selected}
+                  @change=${(event: CustomEvent<{ checked: boolean }>) =>
+                    this.toggleRow(row, event.detail.checked)}
+                  ><span class="sr-only"
+                    >${fill(this.text.selectRow, { key: id })}</span
+                  ></bolle-checkbox
+                >
+              </td>`
+            : nothing
+        }
+        ${
+          this.expandable
+            ? html`<td
+                class="expand cell-pinned ${lastPinned ? "" : "pinned-edge"}"
+                style=${this.selectable ? `inset-inline-start:${SELECT_WIDTH}px` : "inset-inline-start:0"}
               >
-            </td>`
-          : nothing
-      }
-      ${
-        this.expandable
-          ? html`<td
-              class="expand cell-pinned ${lastPinned ? "" : "pinned-edge"}"
-              style=${this.selectable ? `inset-inline-start:${SELECT_WIDTH}px` : "inset-inline-start:0"}
+                <bolle-icon-button
+                  variant="standard"
+                  size="xs"
+                  label=${fill(open ? this.text.collapseRow : this.text.expandRow, { row: id })}
+                  aria-expanded=${String(open)}
+                  @click=${(event: Event) => {
+                    event.stopPropagation();
+                    this.toggleExpanded(row);
+                  }}
+                  ><span class="chev ${open ? "open" : ""}"
+                    >${expandIcon()}</span
+                  ></bolle-icon-button
+                >
+              </td>`
+            : nothing
+        }
+        ${this.visibleColumns.map(
+          (column) =>
+            html`<td
+              class="${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""}"
+              style=${
+                column.pinned
+                  ? `inset-inline-start:${this.pinnedOffset(column.key)}px`
+                  : ""
+              }
             >
-              <bolle-icon-button
-                variant="standard"
-                size="xs"
-                label=${fill(open ? this.text.collapseRow : this.text.expandRow, { row: id })}
-                aria-expanded=${String(open)}
-                @click=${(event: Event) => {
-                  event.stopPropagation();
-                  this.toggleExpanded(row);
-                }}
-                ><span class="chev ${open ? "open" : ""}">${expandIcon()}</span></bolle-icon-button
-              >
-            </td>`
-          : nothing
-      }
-      ${this.visibleColumns.map(
-        (column) => html`<td
-          class="${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""}"
-          style=${column.pinned
-            ? `inset-inline-start:${this.pinnedOffset(column.key)}px`
-            : ""}
-        >
-          ${this.cell(column, row)}
-        </td>`,
-      )}
+              ${this.cell(column, row)}
+            </td>`,
+        )}
+        ${
+          this.rowActions.length
+            ? html`<td class="actions cell-end">
+                <bolle-icon-button
+                  variant="standard"
+                  size="xs"
+                  label=${fill(this.text.rowActions, { row: id })}
+                  haspopup="menu"
+                  @click=${(event: Event) => this.rowMenu(event, row)}
+                  >${rowMenuIcon()}</bolle-icon-button
+                >
+              </td>`
+            : nothing
+        }
+      </tr>
       ${
-        this.rowActions.length
-          ? html`<td class="actions cell-end">
-              <bolle-icon-button
-                variant="standard"
-                size="xs"
-                label=${fill(this.text.rowActions, { row: id })}
-                haspopup="menu"
-                @click=${(event: Event) => this.rowMenu(event, row)}
-                >${rowMenuIcon()}</bolle-icon-button
-              >
-            </td>`
+        open && this.detail && !virtual
+          ? html`<tr class="detail">
+              <td colspan=${this.columnCount}>
+                <div class="detail-inner">${this.detail(row)}</div>
+              </td>
+            </tr>`
           : nothing
-      }
-    </tr>
-    ${
-      open && this.detail
-        ? html`<tr class="detail">
-            <td colspan=${this.visibleColumns.length + (this.selectable ? 1 : 0) + (this.expandable ? 1 : 0) + (this.rowActions.length ? 1 : 0)}>
-              <div class="detail-inner">${this.detail(row)}</div>
-            </td>
-          </tr>`
-        : nothing
-    }`;
+      }`;
   }
 
   private onRowClick(event: MouseEvent, row: DataTableRow) {
     const path = event.composedPath() as HTMLElement[];
     if (
       path.some((node) =>
-        ["BOLLE-CHECKBOX", "BOLLE-ICON-BUTTON", "BUTTON", "A"].includes(node.tagName),
+        ["BOLLE-CHECKBOX", "BOLLE-ICON-BUTTON", "BUTTON", "A"].includes(
+          node.tagName,
+        ),
       )
     )
       return;
@@ -959,13 +1114,18 @@ export class BolleDataTable extends BolleElement {
     this.emit<DataTableRowDetail>("row-activate", { row });
   }
 
-  private renderGroup(name: string, rows: DataTableRow[]) {
+  private renderGroup(
+    name: string,
+    rows: DataTableRow[],
+    virtual?: { key: string; rowIndex: number },
+  ) {
     const collapsed = this._collapsed.has(name);
-    return html`<tr class="group">
-      <th
-        colspan=${this.visibleColumns.length + (this.selectable ? 1 : 0) + (this.expandable ? 1 : 0) + (this.rowActions.length ? 1 : 0)}
-        scope="rowgroup"
-      >
+    return html`<tr
+      class="group"
+      aria-rowindex=${virtual?.rowIndex ?? nothing}
+      data-virtual-key=${virtual?.key ?? nothing}
+    >
+      <th colspan=${this.columnCount} scope="rowgroup">
         <div class="group-inner">
           <button
             class="group-toggle"
@@ -975,6 +1135,8 @@ export class BolleDataTable extends BolleElement {
               if (next.has(name)) next.delete(name);
               else next.add(name);
               this._collapsed = next;
+              this.virtualHeights.clear();
+              this.resetWindow();
               requestAnimationFrame(this.measureWindow);
             }}
           >
@@ -989,18 +1151,76 @@ export class BolleDataTable extends BolleElement {
   }
 
   private renderBody() {
-    if (!this.groupBy) return this.rows.map((row, index) => this.renderRow(row, index));
+    if (!this.groupBy) return this.rows.map((row) => this.renderRow(row));
     const out: unknown[] = [];
-    let index = 0;
     for (const [name, rows] of this.groups) {
       out.push(this.renderGroup(name, rows));
       if (!this._collapsed.has(name))
-        for (const row of rows) {
-          out.push(this.renderRow(row, index));
-          index += 1;
-        }
+        for (const row of rows) out.push(this.renderRow(row));
     }
     return out;
+  }
+
+  private renderVirtualDetail(
+    row: DataTableRow,
+    key: string,
+    rowIndex: number,
+  ) {
+    if (!this.detail) return nothing;
+    return html`<tr
+      class="detail"
+      aria-rowindex=${rowIndex}
+      data-virtual-key=${key}
+    >
+      <td colspan=${this.columnCount}>
+        <div class="detail-inner">${this.detail(row)}</div>
+      </td>
+    </tr>`;
+  }
+
+  private renderVirtualBody() {
+    const items = this.virtualItems;
+    const start = Math.min(this._windowStart, items.length);
+    const end = Math.min(this._windowEnd, items.length);
+    const before = this.itemOffset(items, start);
+    const after =
+      this.itemOffset(items, items.length) - this.itemOffset(items, end);
+    return html`
+      ${
+        before > 0
+          ? html`<tr class="spacer" aria-hidden="true">
+              <td
+                style=${`block-size:${before}px`}
+                colspan=${this.columnCount}
+              ></td>
+            </tr>`
+          : nothing
+      }
+      ${items.slice(start, end).map((item, offset) => {
+        const rowIndex = start + offset + 2;
+        if (item.kind === "group")
+          return this.renderGroup(item.name, item.rows, {
+            key: item.key,
+            rowIndex,
+          });
+        if (item.kind === "detail")
+          return this.renderVirtualDetail(item.row, item.key, rowIndex);
+        return this.renderRow(item.row, {
+          key: item.key,
+          rowIndex,
+        });
+      })}
+      ${
+        after > 0
+          ? html`<tr class="spacer" aria-hidden="true">
+              <td
+                style=${`block-size:${after}px`}
+                colspan=${this.columnCount}
+              ></td>
+            </tr>`
+          : nothing
+      }
+    `;
   }
 
   private renderState() {
@@ -1042,17 +1262,16 @@ export class BolleDataTable extends BolleElement {
         .pageSize=${this.pageSize}
         .total=${total}
         form="compact"
-        @page-change=${(event: CustomEvent<{ page: number; pageSize: number }>) =>
-          this.emit<DataTablePageDetail>("page-change", event.detail)}
+        @page-change=${(
+          event: CustomEvent<{ page: number; pageSize: number }>,
+        ) => this.emit<DataTablePageDetail>("page-change", event.detail)}
       ></bolle-pagination>
     </footer>`;
   }
 
   protected render() {
     const empty = !this.rows.length;
-    const rowCount = this.groupBy
-      ? this.groups.length + this.rows.length
-      : this.rows.length;
+    const loading = this.loading && empty;
     const body = this.renderBody();
     return html`<div
       class="table ${this.variant === "free" ? "is-free" : ""} density-${this.density}"
@@ -1073,7 +1292,11 @@ export class BolleDataTable extends BolleElement {
         class="scroller ${this._scrolledX ? "scrolled-x" : ""} ${this.updating ? "dimmed" : ""}"
         @scroll=${this.onScroll}
       >
-        <table>
+        <table
+          aria-rowcount=${
+            this.virtualWindowed ? this.virtualItems.length + 1 : nothing
+          }
+        >
           <caption class="sr-only">
             ${this.label || this.text.rows}
           </caption>
@@ -1081,52 +1304,52 @@ export class BolleDataTable extends BolleElement {
             ${this.selectable ? html`<col style=${`inline-size:${SELECT_WIDTH}px`} />` : nothing}
             ${this.expandable ? html`<col style=${`inline-size:${EXPAND_WIDTH}px`} />` : nothing}
             ${this.visibleColumns.map(
-              (column) => html`<col style=${`inline-size:${this.width(column)}px`} />`,
+              (column) =>
+                html`<col style=${`inline-size:${this.width(column)}px`} />`,
             )}
-            ${this.rowActions.length
-              ? html`<col style=${`inline-size:${ACTIONS_WIDTH}px`} />`
-              : nothing}
+            ${
+              this.rowActions.length
+                ? html`<col style=${`inline-size:${ACTIONS_WIDTH}px`} />`
+                : nothing
+            }
           </colgroup>
           ${this.renderHeader()}
           ${
             empty
               ? nothing
               : html`<tbody>
-                  ${this.virtual && !this.groupBy
-                    ? html`
-                        ${this._windowStart > 0
-                          ? html`<tr class="spacer" aria-hidden="true"><td style=${`block-size:${this._windowStart * this.rowHeight}px`} colspan=${this.visibleColumns.length + 3}></td></tr>`
-                          : nothing}
-                        ${this.rows
-                          .slice(this._windowStart, this._windowEnd)
-                          .map((row, index) =>
-                            this.renderRow(row, this._windowStart + index),
-                          )}
-                        ${this._windowEnd < this.rows.length
-                          ? html`<tr class="spacer" aria-hidden="true"><td style=${`block-size:${(this.rows.length - this._windowEnd) * this.rowHeight}px`} colspan=${this.visibleColumns.length + 3}></td></tr>`
-                          : nothing}
-                      `
-                    : body}
+                  ${this.virtualWindowed ? this.renderVirtualBody() : body}
                 </tbody>`
           }
         </table>
-        ${empty ? this.renderState() : nothing}
-        ${this.contentStyles
-          ? html`<style>
-              ${unsafeCSS(this.contentStyles)}
-            </style>`
-          : nothing}
-        ${this.loading && empty
-          ? html`<div class="state loading">
-              <bolle-loading-indicator label=${this.text.loading}></bolle-loading-indicator>
-              <p class="state-text">${this.text.loading}…</p>
-            </div>`
-          : nothing}
+        ${empty && !loading ? this.renderState() : nothing}
+        ${
+          this.contentStyles
+            ? html`<style>
+                ${unsafeCSS(this.contentStyles)}
+              </style>`
+            : nothing
+        }
+        ${
+          loading
+            ? html`<div class="state loading">
+                <bolle-loading-indicator
+                  label=${this.text.loading}
+                ></bolle-loading-indicator>
+                <p class="state-text">${this.text.loading}…</p>
+              </div>`
+            : nothing
+        }
       </div>
       ${this.renderFooter()}
-      <span class="sr-only" role="status" aria-live="polite">${this._announcement}</span>
+      <span class="sr-only" role="status" aria-live="polite"
+        >${this._announcement}</span
+      >
       <span class="sr-only" id="table-sort-hint">${this.text.sortHint}</span>
-      <bolle-menu menu-label=${this.text.rows} @menu-select=${this.onMenuSelect}></bolle-menu>
+      <bolle-menu
+        menu-label=${this.text.rows}
+        @menu-select=${this.onMenuSelect}
+      ></bolle-menu>
     </div>`;
   }
 }

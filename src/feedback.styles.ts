@@ -38,7 +38,7 @@ export const feedbackStyles = css`
   .track,
   .value {
     fill: none;
-    stroke-width: 4;
+    stroke-width: var(--md-comp-progress-stroke-width, 4px);
   }
   .track {
     stroke: var(--md-sys-color-secondary-container);
@@ -59,8 +59,8 @@ export const feedbackStyles = css`
     position: absolute;
     inset-block-start: 50%;
     inset-inline-end: 0;
-    inline-size: 4px;
-    block-size: 4px;
+    inline-size: var(--md-comp-progress-stop-size, 4px);
+    block-size: var(--md-comp-progress-stop-size, 4px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-primary);
     transform: translateY(-50%);
@@ -68,7 +68,10 @@ export const feedbackStyles = css`
   .wavy {
     display: block;
     inline-size: 100%;
-    block-size: calc(var(--md-comp-progress-thickness) + 6px);
+    block-size: calc(
+      var(--md-comp-progress-thickness) +
+        var(--md-comp-progress-wavy-overhang, 6px)
+    );
     overflow: visible;
   }
   .wavy path {
@@ -87,7 +90,9 @@ export const feedbackStyles = css`
   }
   @keyframes wavy-slide {
     from {
-      transform: translateX(-32px);
+      transform: translateX(
+        calc(-1 * var(--md-comp-progress-wavy-travel, 32px))
+      );
     }
     to {
       transform: translateX(0);
@@ -101,7 +106,7 @@ export const feedbackStyles = css`
   .linear-value {
     position: absolute;
     inset-block: 0;
-    inline-size: 40%;
+    inline-size: var(--md-comp-progress-indeterminate-width, 40%);
     border-radius: inherit;
     background: var(--md-sys-color-primary);
   }
@@ -116,7 +121,9 @@ export const feedbackStyles = css`
   }
   @keyframes linear-slide {
     0% {
-      inset-inline-start: -40%;
+      inset-inline-start: calc(
+        -1 * var(--md-comp-progress-indeterminate-width, 40%)
+      );
     }
     100% {
       inset-inline-start: 100%;
@@ -157,21 +164,23 @@ export const feedbackStyles = css`
     position: absolute;
     inset-block-end: 0;
     inset-inline-start: 50%;
-    inline-size: 42%;
+    inline-size: var(--md-comp-loading-bubble-size, 42%);
     aspect-ratio: 1;
-    margin-inline-start: -21%;
+    margin-inline-start: calc(-1 * var(--md-comp-loading-bubble-offset, 21%));
     border-radius: 50%;
     background: var(--md-sys-color-primary);
     animation: bolle-rise 1.6s var(--md-sys-motion-easing-emphasized) infinite;
   }
   .bubbles span:nth-child(2) {
-    inline-size: 30%;
-    margin-inline-start: -30%;
+    inline-size: var(--md-comp-loading-bubble-secondary-size, 30%);
+    margin-inline-start: calc(
+      -1 * var(--md-comp-loading-bubble-secondary-offset, 30%)
+    );
     animation-delay: -0.53s;
   }
   .bubbles span:nth-child(3) {
-    inline-size: 24%;
-    margin-inline-start: 4%;
+    inline-size: var(--md-comp-loading-bubble-tertiary-size, 24%);
+    margin-inline-start: var(--md-comp-loading-bubble-tertiary-offset, 4%);
     animation-delay: -1.06s;
   }
   @keyframes bolle-rise {
@@ -297,7 +306,7 @@ export const feedbackStyles = css`
      cqi resolves against the container in the flat tree, which is why the
      width belongs to the slotted rule rather than a variable on .viewport. */
   ::slotted(*) {
-    flex: 0 0 78%;
+    flex: 0 0 var(--md-comp-carousel-item-basis, 78%);
     scroll-snap-align: start;
     border-radius: var(--md-sys-shape-corner-extra-large);
     overflow: clip;
@@ -314,7 +323,7 @@ export const feedbackStyles = css`
   }
   :host([variant="multi-browse"]) ::slotted(*) {
     flex-basis: max(
-      96px,
+      var(--md-comp-carousel-multi-item-min, 96px),
       calc(
         (
             100cqi - 2 * var(--md-comp-carousel-leading-space) - 2 *
@@ -325,14 +334,21 @@ export const feedbackStyles = css`
     );
   }
   :host([variant="uncontained"]) ::slotted(*) {
-    flex-basis: clamp(160px, 24cqi, 220px);
+    flex-basis: clamp(
+      var(--md-comp-carousel-uncontained-item-min, 160px),
+      var(--md-comp-carousel-uncontained-item-fluid, 24cqi),
+      var(--md-comp-carousel-uncontained-item-max, 220px)
+    );
   }
   :host([variant="center-aligned-hero"]) .viewport {
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: 14%;
+    scroll-padding-inline: var(
+      --md-comp-carousel-center-aligned-scroll-padding,
+      14%
+    );
   }
   :host([variant="center-aligned-hero"]) ::slotted(*) {
-    flex-basis: 60cqi;
+    flex-basis: var(--md-comp-carousel-center-aligned-item-basis, 60cqi);
     scroll-snap-align: center;
   }
   :host([variant="full-screen"]) .viewport {

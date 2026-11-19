@@ -31,11 +31,30 @@ class BollePicker extends BolleTextField {
   protected get displayValue(): string {
     return this.value;
   }
+  protected syncForm() {
+    super.syncForm();
+    if (this.isDisabled) return;
+    if (this.required && !this.value) {
+      const input = this.renderRoot.querySelector<HTMLInputElement>("input");
+      this.internals.setValidity(
+        { valueMissing: true },
+        this.text.required,
+        input ?? undefined,
+      );
+    }
+  }
   protected renderInput() {
     return html`<input
+      part="input"
       type="text"
+      name=${this.name || nothing}
       readonly
+      placeholder=${this.placeholder}
       .value=${this.displayValue}
+      ?disabled=${this.isDisabled}
+      ?required=${this.required}
+      aria-describedby="support"
+      aria-invalid=${this.error ? "true" : nothing}
       aria-haspopup="dialog"
       aria-expanded=${String(this._open)}
       @click=${() => this.openPicker()}
@@ -73,10 +92,11 @@ class BollePicker extends BolleTextField {
     super.disconnectedCallback();
   }
   protected field() {
-    return html`<div class="picker-field">
+    return html`<div class="picker-field" part="field-surface">
       ${super.render()}<button
         type="button"
         class="picker-trigger"
+        part="trigger"
         ?disabled=${this.isDisabled || this.readonly}
         aria-label=${this.text.open}
         aria-haspopup="dialog"
@@ -273,17 +293,19 @@ export class BolleDatePicker extends BollePicker {
       { length: 7 },
       (_, index) => new Date(2026, 10, 1 + ((weekStart + index) % 7)),
     );
-    return html`<div class="calendar">
+    return html`<div class="calendar" part="calendar">
 
-          <div class="picker-title">${this.label}</div>
-          <div class="calendar-header">
+          <div class="picker-title" part="title"><slot name="title">${this.label}</slot></div>
+          <div class="calendar-header" part="calendar-header">
             <button
+              part="calendar-previous"
               aria-label=${this.text.previous}
               @click=${() => this.changeMonth(-1)}
             >
               ‹</button
-            ><label
+            ><label part="calendar-month"
               >${this.text.month}<select
+                part="month-control"
                 aria-label=${this.text.month}
                 .value=${String(month.getMonth())}
                 @change=${(event: Event) => {
@@ -307,8 +329,9 @@ export class BolleDatePicker extends BollePicker {
                     </option>`,
                 )}
               </select></label
-            ><label
+            ><label part="calendar-year"
               >${this.text.year}<input
+                part="year-control"
                 type="number"
                 aria-label=${this.text.year}
                 min="100"
@@ -324,19 +347,20 @@ export class BolleDatePicker extends BollePicker {
                   }
                 }} /></label
             ><button
+              part="calendar-next"
               aria-label=${this.text.next}
               @click=${() => this.changeMonth(1)}
             >
               ›
             </button>
           </div>
-          <div id="month-title" aria-live="polite">
+          <div id="month-title" part="month-title" aria-live="polite">
             ${new Intl.DateTimeFormat(this.locale, { month: "long", year: "numeric" }).format(month)}
           </div>
-          <table role="grid" aria-labelledby="month-title">
+          <table part="calendar-grid" role="grid" aria-labelledby="month-title">
             <thead>
               <tr>
-                ${weekdays.map((day) => html`<th scope="col" abbr=${new Intl.DateTimeFormat(this.locale, { weekday: "long" }).format(day)}>${new Intl.DateTimeFormat(this.locale, { weekday: "narrow" }).format(day)}</th>`)}
+                ${weekdays.map((day) => html`<th part="weekday" scope="col" abbr=${new Intl.DateTimeFormat(this.locale, { weekday: "long" }).format(day)}>${new Intl.DateTimeFormat(this.locale, { weekday: "narrow" }).format(day)}</th>`)}
               </tr>
             </thead>
             <tbody>
@@ -353,11 +377,13 @@ export class BolleDatePicker extends BollePicker {
                           value > this._draft &&
                           value < this._endDraft);
                       return html`<td
+                        part="day"
                         role="gridcell"
                         aria-selected=${String(selected)}
                       >
                         <button
                           type="button"
+                          part="day-control"
                           data-date=${value}
                           ?data-endpoint=${value === this._draft || value === this._endDraft}
                           aria-label=${full.format(date)}
@@ -375,9 +401,10 @@ export class BolleDatePicker extends BollePicker {
               )}
             </tbody>
           </table>
-          <footer>
-            <button @click=${this.closePicker}>${this.text.cancel}</button
+          <footer part="actions">
+            <button part="cancel" @click=${this.closePicker}>${this.text.cancel}</button
             ><button
+              part="confirm"
               ?disabled=${!this.allowed(this._draft) || (this.selectionMode === "range" && !this.allowed(this._endDraft))}
               @click=${this.confirm}
             >
@@ -391,12 +418,18 @@ export class BolleDatePicker extends BollePicker {
     if (this.variant === "docked") return html`${this.calendarView()}`;
     return html`${this.field()}${
         this.selectionMode === "range"
-          ? html`<div class="picker-field picker-field--end">
+          ? html`<div
+              class="picker-field picker-field--end"
+              part="field-surface end-field-surface"
+            >
               <div class="field">
-                <label
-                  ><span>${this.text.end}</span
+                <label part="surface"
+                  ><span part="label"
+                    ><slot name="end-label">${this.text.end}</slot></span
                   ><input
+                    part="input"
                     type="text"
+                    name=${this.name || nothing}
                     readonly
                     .value=${
                       this.endValue
@@ -414,6 +447,7 @@ export class BolleDatePicker extends BollePicker {
           : nothing
       }
       <dialog
+        part="dialog surface"
         aria-label=${this.label}
         @keydown=${this.keydownDialog}
         @close=${() => {
@@ -569,16 +603,20 @@ export class BolleTimePicker extends BollePicker {
     );
     return html`${this.field()}
       <dialog
+        part="dialog surface"
         aria-label=${this.label}
         @keydown=${this.keydownDialog}
         @close=${() => (this._open = false)}
       >
-        <div class="picker-title">${this.label}</div>
-        <div class="time-selectors">
+        <div class="picker-title" part="title">
+          <slot name="title">${this.label}</slot>
+        </div>
+        <div class="time-selectors" part="time-selectors">
           ${
             this._mode === "input"
               ? html`<label class="support"
                     >${this.text.hour}<input
+                      part="hour-input"
                       type="number"
                       required
                       aria-label=${this.text.hour}
@@ -598,6 +636,7 @@ export class BolleTimePicker extends BollePicker {
                   ><span>:</span
                   ><label class="support"
                     >${this.text.minute}<input
+                      part="minute-input"
                       type="number"
                       required
                       aria-label=${this.text.minute}
@@ -612,6 +651,7 @@ export class BolleTimePicker extends BollePicker {
                       }}
                   /></label>`
               : html`<button
+                    part="hour"
                     aria-label=${this.text.hour}
                     aria-pressed=${String(this._part === "hour")}
                     @click=${() => (this._part = "hour")}
@@ -619,6 +659,7 @@ export class BolleTimePicker extends BollePicker {
                     ${String(displayedHour).padStart(2, "0")}</button
                   ><span>:</span
                   ><button
+                    part="minute"
                     aria-label=${this.text.minute}
                     aria-pressed=${String(this._part === "minute")}
                     @click=${() => (this._part = "minute")}
@@ -631,20 +672,23 @@ export class BolleTimePicker extends BollePicker {
           this.hourCycle === 12
             ? html`<div
                 class="period"
+                part="period"
                 role="radiogroup"
                 aria-label=${this.text.period}
               >
-                <label
+                <label part="period-option"
                   ><input
+                    part="period-control"
                     type="radio"
-                    name="period"
+                    name=${this.name ? `${this.name}-period` : "period"}
                     .checked=${this._hour < 12}
                     @change=${() => (this._hour %= 12)}
                   />AM</label
-                ><label
+                ><label part="period-option"
                   ><input
+                    part="period-control"
                     type="radio"
-                    name="period"
+                    name=${this.name ? `${this.name}-period` : "period"}
                     .checked=${this._hour >= 12}
                     @change=${() => (this._hour = (this._hour % 12) + 12)}
                   />PM</label
@@ -656,6 +700,7 @@ export class BolleTimePicker extends BollePicker {
           this._mode === "dial"
             ? html`<div
                 class="dial"
+                part="dial"
                 role="listbox"
                 aria-label=${this._part === "hour" ? this.text.hour : this.text.minute}
                 @pointerdown=${this.startDialDrag}
@@ -704,6 +749,7 @@ export class BolleTimePicker extends BollePicker {
                         : this._hour === value
                       : this._minute === value;
                   return html`<button
+                    part="dial-option"
                     role="option"
                     aria-selected=${String(selected)}
                     aria-label=${`${value} ${this._part === "hour" ? this.text.hours : this.text.minutes}`}
@@ -716,8 +762,9 @@ export class BolleTimePicker extends BollePicker {
               </div>`
             : nothing
         }
-        <footer>
+        <footer part="actions">
           <button
+            part="mode"
             aria-label=${this._mode === "input" ? this.text.dial : this.text.input}
             @click=${() => (this._mode = this._mode === "input" ? "dial" : "input")}
           >
@@ -753,8 +800,13 @@ export class BolleTimePicker extends BollePicker {
                     />
                   </svg>`
             }</button
-          ><button @click=${this.closePicker}>${this.text.cancel}</button
-          ><button ?disabled=${!this.validDraft()} @click=${this.confirm}>
+          ><button part="cancel" @click=${this.closePicker}>
+            ${this.text.cancel}</button
+          ><button
+            part="confirm"
+            ?disabled=${!this.validDraft()}
+            @click=${this.confirm}
+          >
             ${this.text.confirm}
           </button>
         </footer>

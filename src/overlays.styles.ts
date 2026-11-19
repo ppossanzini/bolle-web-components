@@ -9,13 +9,16 @@ export const overlayStyles = css`
     border: 0;
     border-radius: var(--md-sys-shape-corner-extra-large);
     padding: var(--md-comp-dialog-padding);
-    max-inline-size: min(var(--md-comp-dialog-max-width), calc(100vw - 32px));
-    max-block-size: calc(100dvh - 32px);
+    max-inline-size: min(
+      var(--md-comp-dialog-max-width),
+      calc(100vw - var(--md-comp-overlay-viewport-inset, 32px))
+    );
+    max-block-size: calc(100dvh - var(--md-comp-overlay-viewport-inset, 32px));
     overflow: auto;
     box-shadow: var(--md-sys-elevation-level2);
     /* Nested surfaces: container radius minus the container padding, never below 2px. */
     --bb-inset-radius: max(
-      2px,
+      var(--md-comp-overlay-inset-radius-min, 2px),
       calc(
         var(--md-sys-shape-corner-extra-large) - var(--md-comp-dialog-padding)
       )
@@ -75,7 +78,7 @@ export const overlayStyles = css`
   }
   @keyframes sheet-in-bottom {
     from {
-      transform: translateY(24px);
+      transform: translateY(var(--md-comp-overlay-entry-offset, 24px));
       opacity: 0;
     }
     to {
@@ -85,7 +88,7 @@ export const overlayStyles = css`
   }
   @keyframes sheet-in-side {
     from {
-      transform: translateX(8%);
+      transform: translateX(var(--md-comp-side-sheet-entry-offset, 8%));
       opacity: 0;
     }
     to {
@@ -95,7 +98,7 @@ export const overlayStyles = css`
   }
   @keyframes page-in {
     from {
-      transform: translateY(24px);
+      transform: translateY(var(--md-comp-overlay-entry-offset, 24px));
       opacity: 0;
     }
     to {
@@ -144,7 +147,7 @@ export const overlayStyles = css`
     inline-size: 100vw;
     block-size: 100dvh;
     border-radius: 0;
-    --bb-inset-radius: 2px;
+    --bb-inset-radius: var(--md-comp-overlay-inset-radius-min, 2px);
     margin: 0;
   }
   :host([placement="bottom"]) dialog {
@@ -158,14 +161,17 @@ export const overlayStyles = css`
     margin: 0 0 0 auto;
     block-size: 100dvh;
     max-block-size: 100dvh;
-    inline-size: min(90vw, var(--md-comp-side-sheet-width));
+    inline-size: min(
+      var(--md-comp-side-sheet-viewport-width, 90vw),
+      var(--md-comp-side-sheet-width)
+    );
     border-start-start-radius: var(--md-sys-shape-corner-large);
     border-end-start-radius: var(--md-sys-shape-corner-large);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
     padding: 0;
     /* Content sits in the sheet padding: nothing left of the 16px corner. */
-    --bb-inset-radius: 2px;
+    --bb-inset-radius: var(--md-comp-overlay-inset-radius-min, 2px);
   }
   :host([detached][placement="side"]) dialog,
   :host([detached][placement="start"]) dialog {
@@ -175,7 +181,7 @@ export const overlayStyles = css`
       100dvh - 2 * var(--md-comp-side-sheet-detached-margin)
     );
     border-radius: var(--md-sys-shape-corner-large);
-    --bb-inset-radius: 2px;
+    --bb-inset-radius: var(--md-comp-overlay-inset-radius-min, 2px);
   }
   :host([detached][placement="side"]) dialog {
     margin-inline-start: auto;
@@ -198,12 +204,15 @@ export const overlayStyles = css`
     margin: 0 auto 0 0;
     block-size: 100dvh;
     max-block-size: 100dvh;
-    inline-size: min(90vw, var(--md-comp-side-sheet-width));
+    inline-size: min(
+      var(--md-comp-side-sheet-viewport-width, 90vw),
+      var(--md-comp-side-sheet-width)
+    );
     border-start-end-radius: var(--md-sys-shape-corner-large);
     border-end-end-radius: var(--md-sys-shape-corner-large);
     border-start-start-radius: 0;
     border-end-start-radius: 0;
-    --bb-inset-radius: 2px;
+    --bb-inset-radius: var(--md-comp-overlay-inset-radius-min, 2px);
   }
   :host(:dir(rtl)[placement="start"]) dialog {
     margin: 0 0 0 auto;
@@ -215,7 +224,7 @@ export const overlayStyles = css`
   @keyframes snackbar-in {
     from {
       opacity: 0;
-      translate: 0 12px;
+      translate: 0 var(--md-comp-snackbar-entry-offset, 12px);
     }
     to {
       opacity: 1;
@@ -245,7 +254,7 @@ export const overlayStyles = css`
     border-start-start-radius: var(--md-sys-shape-corner-extra-large);
     border-start-end-radius: var(--md-sys-shape-corner-extra-large);
     --bb-inset-radius: max(
-      2px,
+      var(--md-comp-overlay-inset-radius-min, 2px),
       calc(
         var(--md-sys-shape-corner-extra-large) - var(--md-comp-dialog-padding)
       )
@@ -254,12 +263,15 @@ export const overlayStyles = css`
   :host([placement="side"]) .standard,
   :host([placement="start"]) .standard {
     inset-block: 0;
-    inline-size: min(90vw, var(--md-comp-side-sheet-width));
+    inline-size: min(
+      var(--md-comp-side-sheet-viewport-width, 90vw),
+      var(--md-comp-side-sheet-width)
+    );
     max-block-size: 100dvh;
     overflow: auto;
     padding: 0;
     /* Square sheet: nested surfaces keep the 2px minimum. */
-    --bb-inset-radius: 2px;
+    --bb-inset-radius: var(--md-comp-overlay-inset-radius-min, 2px);
   }
   .sheet-header {
     position: sticky;
@@ -268,32 +280,45 @@ export const overlayStyles = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding: 20px 16px 12px 24px;
+    gap: var(--md-comp-sheet-header-gap, 8px);
+    padding: var(--md-comp-sheet-header-padding-block-start, 20px)
+      var(--md-comp-sheet-header-padding-inline-end, 16px)
+      var(--md-comp-sheet-header-padding-block-end, 12px)
+      var(--md-comp-sheet-header-padding-inline-start, 24px);
     background: inherit;
     font: var(--md-sys-typescale-title-large-font);
     color: var(--md-sys-color-on-surface-variant);
   }
   .sheet-content {
-    padding: 8px 24px 24px;
+    padding: var(--md-comp-sheet-content-padding-block-start, 8px)
+      var(--md-comp-sheet-content-padding-inline, 24px)
+      var(--md-comp-sheet-content-padding-block-end, 24px);
+  }
+  .sheet-close-icon {
+    display: inline-flex;
+    font-size: var(--md-comp-sheet-close-icon-size, 24px);
+    line-height: 1;
   }
   .drawer-header {
-    padding: 16px 28px 8px;
+    padding: var(--md-comp-drawer-header-padding-block-start, 16px)
+      var(--md-comp-drawer-header-padding-inline, 28px)
+      var(--md-comp-drawer-header-padding-block-end, 8px);
     font: var(--md-sys-typescale-title-small-font);
     letter-spacing: var(--md-sys-typescale-title-small-tracking);
     color: var(--md-sys-color-on-surface-variant);
   }
   .drawer-nav {
     display: grid;
-    gap: 4px;
-    padding: 0 12px 8px;
+    gap: var(--md-comp-drawer-item-gap, 4px);
+    padding: 0 var(--md-comp-drawer-nav-padding-inline, 12px)
+      var(--md-comp-drawer-nav-padding-block-end, 8px);
   }
   .drawer-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-block-size: 56px;
-    padding-inline: 16px;
+    gap: var(--md-comp-drawer-item-content-gap, 12px);
+    min-block-size: var(--md-comp-drawer-item-height, 56px);
+    padding-inline: var(--md-comp-drawer-item-padding-inline, 16px);
     border: 0;
     border-radius: var(--md-sys-shape-corner-full);
     background: transparent;
@@ -313,7 +338,7 @@ export const overlayStyles = css`
     opacity: var(--md-sys-state-disabled-content-opacity);
   }
   .drawer-icon {
-    font-size: 24px;
+    font-size: var(--md-comp-drawer-icon-size, 24px);
     flex-shrink: 0;
   }
   .drawer-label {
@@ -358,7 +383,10 @@ export const overlayStyles = css`
     inset-block-end: var(--md-comp-dialog-padding);
     z-index: 1000;
     min-inline-size: min(100%, var(--md-comp-snackbar-min-width));
-    max-inline-size: min(var(--md-comp-snackbar-max-width), calc(100vw - 32px));
+    max-inline-size: min(
+      var(--md-comp-snackbar-max-width),
+      calc(100vw - var(--md-comp-overlay-viewport-inset, 32px))
+    );
     min-block-size: var(--md-comp-snackbar-height);
     font: var(--md-sys-typescale-body-medium-font);
     margin-inline: auto;
@@ -375,8 +403,8 @@ export const overlayStyles = css`
     color: var(--md-sys-color-inverse-primary);
     font: var(--md-sys-typescale-label-large-font);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
-    padding: 0 12px;
-    min-block-size: 40px;
+    padding: 0 var(--md-comp-snackbar-action-padding-inline, 12px);
+    min-block-size: var(--md-comp-snackbar-action-height, 40px);
     border: 0;
     border-radius: var(--md-sys-shape-corner-full);
     background: transparent;
@@ -389,7 +417,10 @@ export const overlayStyles = css`
     position: fixed;
     inset: auto;
     margin: 0;
-    max-inline-size: min(var(--md-comp-tooltip-max-width), 90vw);
+    max-inline-size: min(
+      var(--md-comp-tooltip-max-width),
+      var(--md-comp-tooltip-viewport-width, 90vw)
+    );
     border: 0;
     background: var(--md-sys-color-inverse-surface);
     color: var(--md-sys-color-inverse-on-surface);
@@ -403,13 +434,15 @@ export const overlayStyles = css`
     color: var(--md-sys-color-on-surface);
     --bb-corner: var(--bb-radius-m);
     border-radius: var(--bb-shape, var(--md-sys-shape-corner-medium));
-    padding: 12px 16px 8px;
+    padding: var(--md-comp-tooltip-rich-padding-block-start, 12px)
+      var(--md-comp-tooltip-rich-padding-inline, 16px)
+      var(--md-comp-tooltip-rich-padding-block-end, 8px);
     font: var(--md-sys-typescale-body-medium-font);
     box-shadow: var(--bb-float-2, var(--md-sys-elevation-level2));
   }
   :host([variant="rich"]) .tooltip .subhead {
     display: block;
-    margin-block-end: 4px;
+    margin-block-end: var(--md-comp-tooltip-subhead-gap, 4px);
     font: var(--md-sys-typescale-title-small-font);
     letter-spacing: var(--md-sys-typescale-title-small-tracking);
   }
@@ -419,8 +452,8 @@ export const overlayStyles = css`
   :host([variant="rich"]) .tooltip footer {
     display: flex;
     justify-content: end;
-    gap: 8px;
-    margin-block-start: 8px;
+    gap: var(--md-comp-tooltip-actions-gap, 8px);
+    margin-block-start: var(--md-comp-tooltip-actions-gap, 8px);
   }
   :host([variant="rich"]) .tooltip footer button {
     font: var(--md-sys-typescale-label-large-font);
@@ -428,8 +461,8 @@ export const overlayStyles = css`
     color: var(--md-sys-color-primary);
     background: transparent;
     border: 0;
-    min-block-size: 40px;
-    padding: 0 12px;
+    min-block-size: var(--md-comp-tooltip-action-height, 40px);
+    padding: 0 var(--md-comp-tooltip-action-padding-inline, 12px);
     border-radius: var(--md-sys-shape-corner-full);
     cursor: pointer;
   }
@@ -459,7 +492,9 @@ export const overlayStyles = css`
     position: fixed;
     inset: auto;
     margin: 0;
-    max-block-size: calc(100dvh - 112px);
+    max-block-size: calc(
+      100dvh - var(--md-comp-fab-menu-viewport-block-inset, 112px)
+    );
     overflow: auto;
   }
   .fab-actions:not(:popover-open):not([data-tail]) {

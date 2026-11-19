@@ -28,10 +28,11 @@
   },
   "scripts": {
     "dev": "npm run typography && vite --host 127.0.0.1",
-    "dev:site": "npm run typography && vite --config vite.site.config.ts --host 127.0.0.1",
+    "dev:site": "npm run typography && npm run anatomy && vite --config vite.site.config.ts --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "npm run typography && npm run typecheck && vite build && tsc --emitDeclarationOnly && cp src/tokens.css src/design-system.json dist/",
-    "build:site": "npm run typography && vite build --config vite.site.config.ts",
+    "build:site": "npm run typography && npm run anatomy && vite build --config vite.site.config.ts",
+    "anatomy": "node scripts/component-anatomy.mjs",
     "typography": "node scripts/typography.mjs",
     "colors": "rolldown scripts/colors.mjs --platform node --format esm -o node_modules/.cache/colors.mjs && node node_modules/.cache/colors.mjs",
     "format": "prettier --write src demo index.html package.json tsconfig.json vite.config.ts",

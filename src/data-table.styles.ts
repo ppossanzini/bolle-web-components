@@ -20,6 +20,8 @@ export const dataTableStyles = css`
     --table-row: var(--md-sys-color-surface-container-lowest);
     --table-head: var(--md-sys-color-surface-container-low);
     --table-row-height: 52px;
+    --table-header-height: 52px;
+    --table-group-height: 48px;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -27,7 +29,8 @@ export const dataTableStyles = css`
     inline-size: 100%;
     block-size: 100%;
     min-block-size: 0;
-    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius) var(--bb-tail);
+    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius)
+      var(--bb-tail);
     background: var(--table-row);
     box-shadow: var(--bb-float-1);
     border: 1px solid var(--md-sys-color-outline-variant);
@@ -63,7 +66,7 @@ export const dataTableStyles = css`
   /* Loading ----------------------------------------------------------- */
   .busy {
     position: absolute;
-    inset-block-start: 72px;
+    inset-block-start: calc(var(--table-header-height) + 20px);
     inset-inline-start: 50%;
     translate: -50% 0;
     z-index: 6;
@@ -123,7 +126,7 @@ export const dataTableStyles = css`
     position: sticky;
     top: 0;
     z-index: 3;
-    block-size: 52px;
+    block-size: var(--table-header-height);
     padding: 0;
     background: var(--table-head);
     font: var(--md-sys-typescale-label-large-font);
@@ -206,7 +209,11 @@ export const dataTableStyles = css`
     cursor: default;
   }
   .sort:hover {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface) 8%,
+      transparent
+    );
     color: var(--md-sys-color-on-surface);
   }
   .sort:focus-visible,
@@ -344,13 +351,25 @@ export const dataTableStyles = css`
     text-align: center;
   }
   .row:hover td {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, var(--table-row));
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface) 4%,
+      var(--table-row)
+    );
   }
   .row.selected td {
-    background: color-mix(in srgb, var(--md-sys-color-primary) 9%, var(--table-row));
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 9%,
+      var(--table-row)
+    );
   }
   .row.selected:hover td {
-    background: color-mix(in srgb, var(--md-sys-color-primary) 13%, var(--table-row));
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 13%,
+      var(--table-row)
+    );
   }
   .chev {
     display: inline-flex;
@@ -367,9 +386,9 @@ export const dataTableStyles = css`
   /* Group rows --------------------------------------------------------- */
   .group th {
     position: sticky;
-    top: 52px;
+    top: var(--table-header-height);
     z-index: 2;
-    block-size: 48px;
+    block-size: var(--table-group-height);
     padding: 0;
     background: var(--md-sys-color-surface-container);
     font: var(--md-sys-typescale-body-medium-font);
@@ -402,7 +421,11 @@ export const dataTableStyles = css`
     cursor: pointer;
   }
   .group-toggle:hover {
-    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface) 8%,
+      transparent
+    );
   }
   .group-count {
     font: var(--md-sys-typescale-label-medium-font);

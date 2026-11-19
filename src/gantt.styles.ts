@@ -550,6 +550,12 @@ export const ganttStyles = css`
     text-align: center;
     color: var(--md-sys-color-on-surface-variant);
   }
+  .state ::slotted(*) {
+    max-inline-size: 100%;
+  }
+  .state slot {
+    display: contents;
+  }
   .state p {
     margin: 0;
   }

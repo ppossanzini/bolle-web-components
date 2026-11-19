@@ -1,12 +1,16 @@
 import { LitElement, html, nothing, type TemplateResult } from "lit";
 import "../src/index.js";
-import type {
-  DashboardLayoutDetail,
-  SidebarItem,
-} from "../src/index.js";
+import type { DashboardLayoutDetail, SidebarItem } from "../src/index.js";
 import { m } from "./i18n.js";
 import { ti } from "../demo/icons.js";
-import { activities, kpis, lateJobs, load, revenue, siteProgress } from "./shell-data.js";
+import {
+  activities,
+  kpis,
+  lateJobs,
+  load,
+  revenue,
+  siteProgress,
+} from "./shell-data.js";
 
 const euro = new Intl.NumberFormat("it-IT", {
   style: "currency",
@@ -30,6 +34,8 @@ export class BolleShellDemo extends LitElement {
   static properties = {
     form: { reflect: true },
     density: { reflect: true },
+    compactColumns: { attribute: "compact-columns", type: Number },
+    mediumColumns: { attribute: "medium-columns", type: Number },
     supportingOpen: { type: Boolean, attribute: "supporting-open" },
     nav: { state: true },
     layout: { state: true },
@@ -38,6 +44,8 @@ export class BolleShellDemo extends LitElement {
 
   declare form: "auto" | "compact" | "medium" | "expanded";
   declare density: "comfortable" | "compact";
+  declare compactColumns: number;
+  declare mediumColumns: number;
   declare supportingOpen: boolean;
   declare nav: string;
   declare layout: string;
@@ -47,6 +55,8 @@ export class BolleShellDemo extends LitElement {
     super();
     this.form = "auto";
     this.density = "comfortable";
+    this.compactColumns = 4;
+    this.mediumColumns = 8;
     this.supportingOpen = false;
     this.nav = "dashboard";
     this.layout = "";
@@ -76,6 +86,9 @@ export class BolleShellDemo extends LitElement {
   ) {
     return html`<bolle-widget
       id=${`tile-${id}`}
+      movable
+      removable
+      resizable
       .title=${title}
       .subtitle=${subtitle}
       .span=${span}
@@ -161,6 +174,8 @@ export class BolleShellDemo extends LitElement {
         <bolle-dashboard
           label=${m("Riquadri del cruscotto")}
           .density=${this.density}
+          .compactColumns=${this.compactColumns}
+          .mediumColumns=${this.mediumColumns}
           @layout-change=${this.onLayout}
         >
           ${kpis.map((kpi, index) =>
@@ -181,33 +196,34 @@ export class BolleShellDemo extends LitElement {
             8,
             html`<ul class="list">
               ${lateJobs.map(
-                (job, index) => html`<li>
-                  <div class="row">
-                    <span class="code">${job.code}</span>
-                    <span class="late">${job.days} gg</span>
-                  </div>
-                  <div class="row">
-                    <span>${job.title}</span>
-                    <span class="num">${euro.format(job.amount)}</span>
-                  </div>
-                  <div class="bar-row">
-                    <bolle-progress-indicator
-                      value=${job.progress}
-                      label=${m("Avanzamento")}
-                    ></bolle-progress-indicator>
-                    <span class="num">${job.progress}%</span>
-                  </div>
-                  <button
-                    class="open-row"
-                    @click=${() => {
-                      this.detail = index;
-                      this.supportingOpen = true;
-                      this.requestUpdate();
-                    }}
-                  >
-                    ${m("Apri scheda")}
-                  </button>
-                </li>`,
+                (job, index) =>
+                  html`<li>
+                    <div class="row">
+                      <span class="code">${job.code}</span>
+                      <span class="late">${job.days} gg</span>
+                    </div>
+                    <div class="row">
+                      <span>${job.title}</span>
+                      <span class="num">${euro.format(job.amount)}</span>
+                    </div>
+                    <div class="bar-row">
+                      <bolle-progress-indicator
+                        value=${job.progress}
+                        label=${m("Avanzamento")}
+                      ></bolle-progress-indicator>
+                      <span class="num">${job.progress}%</span>
+                    </div>
+                    <button
+                      class="open-row"
+                      @click=${() => {
+                        this.detail = index;
+                        this.supportingOpen = true;
+                        this.requestUpdate();
+                      }}
+                    >
+                      ${m("Apri scheda")}
+                    </button>
+                  </li>`,
               )}
             </ul>`,
             "alert-triangle",
@@ -220,14 +236,18 @@ export class BolleShellDemo extends LitElement {
             4,
             html`<ul class="list">
               ${siteProgress.map(
-                (site) => html`<li>
-                  <div class="row"><span>${site.name}</span><span class="num">${site.progress}%</span></div>
-                  <bolle-progress-indicator
-                    value=${site.progress}
-                    label=${m("Avanzamento")}
-                  ></bolle-progress-indicator>
-                  <span class="muted">${site.city} · ${site.phase}</span>
-                </li>`,
+                (site) =>
+                  html`<li>
+                    <div class="row">
+                      <span>${site.name}</span
+                      ><span class="num">${site.progress}%</span>
+                    </div>
+                    <bolle-progress-indicator
+                      value=${site.progress}
+                      label=${m("Avanzamento")}
+                    ></bolle-progress-indicator>
+                    <span class="muted">${site.city} · ${site.phase}</span>
+                  </li>`,
               )}
             </ul>`,
             "map-pin",
@@ -239,13 +259,16 @@ export class BolleShellDemo extends LitElement {
             m("ultimi dodici mesi, in migliaia di €"),
             8,
             html`<ol class="revenue-bars" aria-label=${m("Fatturato per mese")}>
-              ${revenue.map((item) => html`<li>
-                <span
-                  class="bar"
-                  style=${`block-size:${Math.round((item.value / 1240) * 100)}%`}
-                ></span>
-                <span class="month">${item.month}</span>
-              </li>`)}
+              ${revenue.map(
+                (item) =>
+                  html`<li>
+                    <span
+                      class="bar"
+                      style=${`block-size:${Math.round((item.value / 1240) * 100)}%`}
+                    ></span>
+                    <span class="month">${item.month}</span>
+                  </li>`,
+              )}
             </ol>`,
             "chart-bar",
             4,
@@ -257,11 +280,15 @@ export class BolleShellDemo extends LitElement {
             4,
             html`<ul class="list">
               ${activities.map(
-                (item) => html`<li>
-                  <div class="row"><strong>${item.who}</strong><span class="muted">${item.when}</span></div>
-                  <span>${item.what}</span>
-                  <span class="code">${item.target}</span>
-                </li>`,
+                (item) =>
+                  html`<li>
+                    <div class="row">
+                      <strong>${item.who}</strong
+                      ><span class="muted">${item.when}</span>
+                    </div>
+                    <span>${item.what}</span>
+                    <span class="code">${item.target}</span>
+                  </li>`,
               )}
             </ul>`,
             "clock",
@@ -274,20 +301,28 @@ export class BolleShellDemo extends LitElement {
             12,
             html`<ul class="list">
               ${load.map(
-                (person) => html`<li>
-                  <div class="row"><span>${person.name}</span><span class="num" dir="ltr">${person.hours} / ${person.capacity} h</span></div>
-                  <bolle-progress-indicator
-                    value=${Math.min(100, (person.hours / person.capacity) * 100)}
-                    label=${m("Carico")}
-                  ></bolle-progress-indicator>
-                </li>`,
+                (person) =>
+                  html`<li>
+                    <div class="row">
+                      <span>${person.name}</span
+                      ><span class="num" dir="ltr"
+                        >${person.hours} / ${person.capacity} h</span
+                      >
+                    </div>
+                    <bolle-progress-indicator
+                      value=${Math.min(100, (person.hours / person.capacity) * 100)}
+                      label=${m("Carico")}
+                    ></bolle-progress-indicator>
+                  </li>`,
               )}
             </ul>`,
             "users",
             4,
           )}
         </bolle-dashboard>
-        <p class="muted">${this.layout ? `${m("Layout")}: ${this.layout}` : nothing}</p>
+        <p class="muted">
+          ${this.layout ? `${m("Layout")}: ${this.layout}` : nothing}
+        </p>
       </div>
 
       <p slot="status" class="status-bar">
@@ -306,12 +341,16 @@ export class BolleDashboardDemo extends LitElement {
   static properties = {
     density: { reflect: true },
     columns: { type: Number },
+    compactColumns: { attribute: "compact-columns", type: Number },
+    mediumColumns: { attribute: "medium-columns", type: Number },
     label: {},
     layout: { state: true },
   };
 
   declare density: "comfortable" | "compact";
   declare columns: number;
+  declare compactColumns: number;
+  declare mediumColumns: number;
   declare label: string;
   declare layout: string;
 
@@ -319,6 +358,8 @@ export class BolleDashboardDemo extends LitElement {
     super();
     this.density = "comfortable";
     this.columns = 12;
+    this.compactColumns = 4;
+    this.mediumColumns = 8;
     this.label = m("Riquadri del cruscotto");
     this.layout = "";
   }
@@ -337,73 +378,87 @@ export class BolleDashboardDemo extends LitElement {
 
   protected render() {
     return html`<bolle-dashboard
-      label=${this.label}
-      .density=${this.density}
-      .columns=${this.columns}
-      @layout-change=${this.onLayout}
-    >
-      ${kpis.slice(0, 4).map(
-        (kpi, index) => html`<bolle-widget
-          id=${kpi.id}
-          .title=${kpi.label}
-          .subtitle=${kpi.detail}
-          .span=${3}
-          .icon=${ti(["gauge", "building", "alert-triangle", "check"][index])}
+        label=${this.label}
+        .density=${this.density}
+        .columns=${this.columns}
+        .compactColumns=${this.compactColumns}
+        .mediumColumns=${this.mediumColumns}
+        @layout-change=${this.onLayout}
+      >
+        ${kpis.slice(0, 4).map(
+          (kpi, index) =>
+            html`<bolle-widget
+              id=${kpi.id}
+              movable
+              removable
+              resizable
+              .title=${kpi.label}
+              .subtitle=${kpi.detail}
+              .span=${3}
+              .icon=${ti(["gauge", "building", "alert-triangle", "check"][index])}
+            >
+              <p class="kpi-value" dir="auto">${kpi.value}</p>
+              <p class="kpi-detail" dir="auto">${kpi.trendLabel}</p>
+            </bolle-widget>`,
+        )}
+        <bolle-widget
+          id="late"
+          movable
+          removable
+          resizable
+          .title=${m("Lavori in ritardo")}
+          .subtitle=${m("6 commesse con scadenza superata")}
+          .span=${8}
+          .minSpan=${4}
+          .icon=${ti("alert-triangle")}
         >
-          <p class="kpi-value" dir="auto">${kpi.value}</p>
-          <p class="kpi-detail" dir="auto">${kpi.trendLabel}</p>
-        </bolle-widget>`,
-      )}
-      <bolle-widget
-        id="late"
-        .title=${m("Lavori in ritardo")}
-        .subtitle=${m("6 commesse con scadenza superata")}
-        .span=${8}
-        .minSpan=${4}
-        .icon=${ti("alert-triangle")}
-      >
-        <ul class="list">
-          ${lateJobs.map(
-            (job) => html`<li>
-              <div class="row">
-                <span class="code">${job.code}</span>
-                <span class="late">${job.days} gg</span>
-              </div>
-              <div class="row">
-                <span>${job.title}</span>
-                <span class="num">${euro.format(job.amount)}</span>
-              </div>
-            </li>`,
-          )}
-        </ul>
-      </bolle-widget>
-      <bolle-widget
-        id="sites"
-        .title=${m("Avanzamento cantieri")}
-        .subtitle=${m("5 cantieri aperti")}
-        .span=${4}
-        .minSpan=${3}
-        .icon=${ti("map-pin")}
-      >
-        <ul class="list">
-          ${siteProgress.map(
-            (site) => html`<li>
-              <div class="row">
-                <span>${site.name}</span>
-                <span class="num">${site.progress}%</span>
-              </div>
-              <bolle-progress-indicator
-                value=${site.progress}
-                label=${m("Avanzamento")}
-              ></bolle-progress-indicator>
-            </li>`,
-          )}
-        </ul>
-      </bolle-widget>
-    </bolle-dashboard>
-    <p class="layout-feedback">
-      ${this.layout ? `${m("Layout")}: ${this.layout}` : m("Sposta o allarga un riquadro")}
-    </p>`;
+          <ul class="list">
+            ${lateJobs.map(
+              (job) =>
+                html`<li>
+                  <div class="row">
+                    <span class="code">${job.code}</span>
+                    <span class="late">${job.days} gg</span>
+                  </div>
+                  <div class="row">
+                    <span>${job.title}</span>
+                    <span class="num">${euro.format(job.amount)}</span>
+                  </div>
+                </li>`,
+            )}
+          </ul>
+        </bolle-widget>
+        <bolle-widget
+          id="sites"
+          movable
+          removable
+          resizable
+          .title=${m("Avanzamento cantieri")}
+          .subtitle=${m("5 cantieri aperti")}
+          .span=${4}
+          .minSpan=${3}
+          .icon=${ti("map-pin")}
+        >
+          <ul class="list">
+            ${siteProgress.map(
+              (site) =>
+                html`<li>
+                  <div class="row">
+                    <span>${site.name}</span>
+                    <span class="num">${site.progress}%</span>
+                  </div>
+                  <bolle-progress-indicator
+                    value=${site.progress}
+                    label=${m("Avanzamento")}
+                  ></bolle-progress-indicator>
+                </li>`,
+            )}
+          </ul>
+        </bolle-widget>
+      </bolle-dashboard>
+      <p class="layout-feedback">
+        ${this.layout ? `${m("Layout")}: ${this.layout}` : m("Sposta o allarga un riquadro")}
+      </p>`;
   }
 }
 

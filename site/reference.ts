@@ -134,6 +134,14 @@ export interface PageMarkdown {
   api: ApiRow[];
   surface?: ComponentSurface;
   support?: SupportInfo;
+  recipes?: Array<{
+    title: string;
+    description: string;
+    code: Record<string, string>;
+  }>;
+  /** True when the component exposes refresh() and takes its rows as an array. */
+  dataContract?: boolean;
+  sortsAndPages?: boolean;
 }
 
 /** Self-contained Markdown of a component page, for pasting into notes or an LLM. */
@@ -151,6 +159,44 @@ export function pageMarkdown(page: PageMarkdown): string {
     page.code,
     "```",
   ];
+  if (page.recipes?.length) {
+    lines.push("", l("## Uso nel codice"));
+    for (const recipe of page.recipes) {
+      lines.push("", `### ${l(recipe.title)}`, "", l(recipe.description));
+      for (const [lang, code] of Object.entries(recipe.code))
+        lines.push("", `#### ${lang}`, "", "```" + lang, code, "```");
+    }
+  }
+  if (page.dataContract) {
+    lines.push(
+      "",
+      l("## Aggiornamento dei dati"),
+      "",
+      l(
+        "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti.",
+      ),
+      "",
+      `- \`table.rows = altroArray\`: ${l("ridisegna")}.`,
+      `- \`rows.sort(); table.rows = rows\`: ${l("non ridisegna, il riferimento è lo stesso")}.`,
+      `- \`rows.sort(); table.refresh()\`: ${l("ridisegna con i dati mutati")}.`,
+    );
+    if (page.sortsAndPages) {
+      lines.push(
+        "",
+        "### " + l("Ordinamento e paginazione"),
+        "",
+        l(
+          "La tabella ordina e pagina le righe che riceve: un clic sull'intestazione va prima crescente e poi decrescente, e page-size da solo accende il pager.",
+        ),
+        "",
+        `- \`table.sortHandler = (richiesta) => …\`: ${l("riceve l'ordine, la tabella ridisegna dopo la promessa")}.`,
+        `- \`table.pageHandler = (richiesta) => …\`: ${l("riceve pagina e dimensione, la tabella ridisegna dopo la promessa")}.`,
+        `- \`table.sort = [{ key, dir }]\`: ${l("fissa l'ordine iniziale")}.`,
+        `- \`table.selected = [id]\`: ${l("la tabella applica selezione, apertura riga, raggruppamento e cambi di colonna da sé: gli eventi li riportano soltanto")}.`,
+        `- \`table.columnHandler = (elenco) => …\`: ${l("riceve l'elenco delle colonne dopo ogni modifica, per conservarlo altrove")}.`,
+      );
+    }
+  }
   if (page.api.length > 0) {
     lines.push(
       "",
@@ -166,12 +212,42 @@ export function pageMarkdown(page: PageMarkdown): string {
   }
   if (page.surface?.slots.length || page.surface?.parts.length) {
     lines.push("", l("## Anatomia pubblica"));
-    if (page.surface.slots.length)
+    if (page.tag === "bolle-data-table") {
+      lines.push(
+        "",
+        l(
+          "Il componente chiama le funzioni dell'applicazione: column.render per ogni cella, rowRenderer per l'intera riga, detail per la riga aperta, groupSummary per gruppo. Gli slot coprono solo le aree esterne.",
+        ),
+        "",
+        `${l("Slot")}: ${page.surface.slots.map((slot) => `\`${slot}\``).join(", ")}`,
+        "",
+        l("Esempio di renderer di cella"),
+        "",
+        "```ts",
+        `const columns = [
+  {
+    key: "status",
+    label: "Stato",
+    render: (row) => badgeFor(String(row.status)),
+  },
+];`,
+        "```",
+      );
+      if (page.surface.parts.length)
+        lines.push(
+          "",
+          `${l("CSS part")}: ${page.surface.parts.map((part) => `\`${part}\``).join(", ")}`,
+        );
+    } else if (page.surface.slots.length)
       lines.push(
         "",
         `${l("Slot")}: ${page.surface.slots.map((slot) => `\`${slot}\``).join(", ")}`,
+        "",
+        l(
+          "I segnaposto hanno questo significato: {rowId} è il valore di rowKey, {columnKey} è il campo key della colonna, {groupName} è il valore del gruppo e {id} è l'identificatore dell'elemento.",
+        ),
       );
-    if (page.surface.parts.length)
+    else if (page.tag !== "bolle-data-table" && page.surface.parts.length)
       lines.push(
         "",
         `${l("CSS part")}: ${page.surface.parts.map((part) => `\`${part}\``).join(", ")}`,

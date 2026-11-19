@@ -74,6 +74,33 @@ export interface DataTableRowActionDetail {
   row: DataTableRow;
 }
 
+export type DataTableRowRenderer = (
+  row: DataTableRow,
+  table: BolleDataTable,
+) => unknown;
+export type DataTableHeaderRenderer = (
+  column: DataTableColumn,
+  table: BolleDataTable,
+) => unknown;
+export type DataTableGroupRenderer = (
+  name: string,
+  rows: DataTableRow[],
+  table: BolleDataTable,
+) => unknown;
+export type DataTableStateRenderer = (table: BolleDataTable) => unknown;
+/** Called after the reader asked for a different order; may return a promise. */
+export type DataTableSortCallback = (
+  detail: DataTableSortDetail,
+) => void | Promise<unknown>;
+/** Called after the reader asked for a different page; may return a promise. */
+export type DataTablePageCallback = (
+  detail: DataTablePageDetail,
+) => void | Promise<unknown>;
+/** Called after the columns changed; may return a promise. */
+export type DataTableColumnCallback = (
+  detail: DataTableColumnChangeDetail,
+) => void | Promise<unknown>;
+
 type VirtualItem =
   | { key: string; kind: "row"; row: DataTableRow }
   | { key: string; kind: "detail"; row: DataTableRow }
@@ -84,15 +111,10 @@ type VirtualItem =
       rows: DataTableRow[];
     };
 
-const DEFAULT_WIDTH = 168;
-const MIN_COLUMN = 88;
-const MAX_COLUMN = 560;
 const SELECT_WIDTH = 52;
 const EXPAND_WIDTH = 44;
 const ACTIONS_WIDTH = 56;
-const OVERSCAN = 8;
 const KEY_STEP = 16;
-const ROW_HEIGHT = { comfortable: 52, compact: 40 };
 
 const fill = (template: string, params: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (match, key: string) =>
@@ -100,9 +122,10 @@ const fill = (template: string, params: Record<string, string | number>) =>
   );
 
 /**
- * Table of rows the application owns: the component renders the columns, reports
- * every sorting, paging, selection, expansion and column change in an event, and
- * never reorders or filters the data itself.
+ * Table of rows the application owns: the component renders the columns,
+ * reports every sorting, paging, selection, expansion and column change in an
+ * event and in an optional callback, and never filters the data itself. Sorting
+ * and paging happen on `rows` unless `sortHandler` or `pageHandler` take them over.
  */
 export class BolleDataTable extends BolleElement {
   static properties = {
@@ -131,6 +154,24 @@ export class BolleDataTable extends BolleElement {
     contentStyles: { attribute: false },
     labels: { attribute: false },
     updating: { type: Boolean, reflect: true },
+    rowHeight: { attribute: "row-height", type: Number },
+    compactRowHeight: { attribute: "compact-row-height", type: Number },
+    headerHeight: { attribute: "header-height", type: Number },
+    groupHeight: { attribute: "group-height", type: Number },
+    defaultColumnWidth: { attribute: "default-column-width", type: Number },
+    minColumnWidth: { attribute: "min-column-width", type: Number },
+    maxColumnWidth: { attribute: "max-column-width", type: Number },
+    overscan: { type: Number },
+    rowRenderer: { attribute: false },
+    headerRenderer: { attribute: false },
+    groupRenderer: { attribute: false },
+    loadingRenderer: { attribute: false },
+    errorRenderer: { attribute: false },
+    emptyRenderer: { attribute: false },
+    footerRenderer: { attribute: false },
+    sortHandler: { attribute: false },
+    pageHandler: { attribute: false },
+    columnHandler: { attribute: false },
     _collapsed: { state: true },
     _windowStart: { state: true },
     _windowEnd: { state: true },
@@ -148,6 +189,7 @@ export class BolleDataTable extends BolleElement {
   rowKey = "id";
   selectable = false;
   selected: string[] = [];
+  /** Current order: the table replaces it every time the reader clicks a header. */
   sort: DataTableSort[] = [];
   groupBy = "";
   /** Content of the group header, beyond the count. */
@@ -157,8 +199,11 @@ export class BolleDataTable extends BolleElement {
   /** Content of the row opened by the expander. */
   detail?: (row: DataTableRow) => unknown;
   rowActions: MenuEntry[] = [];
+  /** Requested page, from zero. With `pageHandler` it is the page the application loaded. */
   page = 0;
+  /** Rows per page. From one up the table shows the pager and cuts `rows` itself. */
   pageSize = 0;
+  /** Rows of the whole dataset when the application loads one page at a time. */
   total = 0;
   density: "comfortable" | "compact" = "comfortable";
   variant: "card" | "free" = "card";
@@ -177,6 +222,38 @@ export class BolleDataTable extends BolleElement {
   labels: Partial<DataTableLabels> = {};
   /** Keeps the rows visible, dimmed, while the application fetches new ones. */
   updating = false;
+  rowHeight = 52;
+  compactRowHeight = 40;
+  headerHeight = 52;
+  groupHeight = 48;
+  defaultColumnWidth = 168;
+  minColumnWidth = 88;
+  maxColumnWidth = 560;
+  overscan = 8;
+  rowRenderer?: DataTableRowRenderer;
+  headerRenderer?: DataTableHeaderRenderer;
+  groupRenderer?: DataTableGroupRenderer;
+  loadingRenderer?: DataTableStateRenderer;
+  errorRenderer?: DataTableStateRenderer;
+  emptyRenderer?: DataTableStateRenderer;
+  footerRenderer?: DataTableStateRenderer;
+  /**
+   * Loads the data again after the reader changed the order. When it is absent
+   * the table sorts the rows it holds. It runs before the `sort` event and the
+   * table redraws once it has finished, so an in-place edit of `rows` is shown.
+   */
+  sortHandler?: DataTableSortCallback;
+  /**
+   * Loads the page the reader asked for. When it is absent the table pages the
+   * rows it holds. It runs before the `page-change` event and the table redraws
+   * once it has finished.
+   */
+  pageHandler?: DataTablePageCallback;
+  /**
+   * Stores the layout when the application keeps it somewhere else. The table
+   * applies the new columns first and redraws once the promise has finished.
+   */
+  columnHandler?: DataTableColumnCallback;
 
   private _collapsed = new Set<string>();
   private _windowStart = 0;
@@ -214,6 +291,8 @@ export class BolleDataTable extends BolleElement {
       this.resetWindow();
       this.virtualHeights.clear();
     }
+    if (changed.has("rows") && !this.appPages && this.page > this.lastPage)
+      this.page = this.lastPage;
   }
 
   connectedCallback() {
@@ -276,7 +355,7 @@ export class BolleDataTable extends BolleElement {
   }
 
   private width(column: DataTableColumn) {
-    return column.width ?? DEFAULT_WIDTH;
+    return column.width ?? this.defaultColumnWidth;
   }
 
   private pinnedOffset(key: string) {
@@ -294,7 +373,73 @@ export class BolleDataTable extends BolleElement {
       ?.key;
   }
 
-  /* Data: groups and the virtual window -------------------------------- */
+  /* Data: order, page, groups and the virtual window -------------------- */
+
+  /** The application loads and sorts the rows itself, so the table keeps their order. */
+  private get appSorts() {
+    return typeof this.sortHandler === "function";
+  }
+
+  /** The application loads one page at a time, so the table shows what it receives. */
+  private get appPages() {
+    return typeof this.pageHandler === "function";
+  }
+
+  /** Rows in the order the reader asked for, on all the data the table holds. */
+  private get sortedRows() {
+    if (this.appSorts || !this.sort.length) return this.rows;
+    const orders = this.sort
+      .map((item) => ({
+        column: this.columns.find((column) => column.key === item.key),
+        dir: item.dir,
+      }))
+      .filter((order) => order.column && order.column.sortable !== false);
+    if (!orders.length) return this.rows;
+    const collator = new Intl.Collator(document.documentElement.lang || "it", {
+      numeric: true,
+      sensitivity: "base",
+    });
+    const compare = (a: unknown, b: unknown) => {
+      const emptyA = a === null || a === undefined || a === "";
+      const emptyB = b === null || b === undefined || b === "";
+      if (emptyA || emptyB) return emptyA === emptyB ? 0 : emptyA ? 1 : -1;
+      if (typeof a === "number" && typeof b === "number") return a - b;
+      return collator.compare(String(a), String(b));
+    };
+    return [...this.rows].sort((left, right) => {
+      for (const { column, dir } of orders) {
+        const result = compare(
+          this.valueOf(column!, left),
+          this.valueOf(column!, right),
+        );
+        if (result) return dir === "asc" ? result : -result;
+      }
+      return 0;
+    });
+  }
+
+  private get lastPage() {
+    if (!this.pageSize) return 0;
+    return Math.max(0, Math.ceil(this.rows.length / this.pageSize) - 1);
+  }
+
+  /**
+   * Requested page. The table keeps it inside the pages its own data has; a page
+   * loaded by the application is taken as it comes.
+   */
+  private get currentPage() {
+    const page = Math.max(0, this.page);
+    return this.appPages ? page : Math.min(page, this.lastPage);
+  }
+
+  /** Rows on screen: sorted, then cut to the current page. */
+  private get data() {
+    if (this.appPages) return this.rows;
+    const rows = this.sortedRows;
+    if (!this.pageSize) return rows;
+    const start = this.currentPage * this.pageSize;
+    return rows.slice(start, start + this.pageSize);
+  }
 
   private groupName(row: DataTableRow) {
     const column = this.columns.find((item) => item.key === this.groupBy);
@@ -306,19 +451,30 @@ export class BolleDataTable extends BolleElement {
   private get groups() {
     if (!this.groupBy) return [];
     const map = new Map<string, DataTableRow[]>();
-    for (const row of this.rows) {
+    for (const row of this.data) {
       const name = this.groupName(row);
       map.set(name, [...(map.get(name) ?? []), row]);
     }
     return [...map.entries()];
   }
 
-  private get rowHeight() {
-    return ROW_HEIGHT[this.density] ?? ROW_HEIGHT.comfortable;
+  private get effectiveRowHeight() {
+    return this.density === "compact" ? this.compactRowHeight : this.rowHeight;
   }
 
   private get virtualWindowed() {
     return this.virtual;
+  }
+
+  /**
+   * Redraws the rows after the application changed its array in place. A
+   * reassignment with the same reference does not reach the component, because
+   * the property keeps its identity.
+   */
+  refresh() {
+    this.virtualHeights.clear();
+    this.resetWindow();
+    this.requestUpdate();
   }
 
   private resetWindow() {
@@ -335,7 +491,7 @@ export class BolleDataTable extends BolleElement {
         items.push({ key: `detail:${id}`, kind: "detail", row });
     };
     if (!this.groupBy) {
-      for (const row of this.rows) pushRow(row);
+      for (const row of this.data) pushRow(row);
       return items;
     }
     for (const [name, rows] of this.groups) {
@@ -347,7 +503,7 @@ export class BolleDataTable extends BolleElement {
   }
 
   private estimatedHeight(item: VirtualItem) {
-    if (item.kind === "row") return this.rowHeight;
+    if (item.kind === "row") return this.effectiveRowHeight;
     return item.kind === "group" ? (this.density === "compact" ? 40 : 48) : 120;
   }
 
@@ -386,7 +542,7 @@ export class BolleDataTable extends BolleElement {
     const scroller = this.scroller;
     if (!scroller || !this.virtualWindowed) return;
     const items = this.virtualItems;
-    const overscan = this.rowHeight * OVERSCAN;
+    const overscan = this.effectiveRowHeight * this.overscan;
     const top = Math.max(0, scroller.scrollTop - overscan);
     const bottom = scroller.scrollTop + scroller.clientHeight + overscan;
     let offset = 0;
@@ -418,23 +574,36 @@ export class BolleDataTable extends BolleElement {
   private newSort(key: string, additive: boolean): DataTableSort[] {
     const current = this.sort.find((item) => item.key === key);
     if (!additive)
-      return !current
-        ? [{ key, dir: "asc" }]
-        : current.dir === "asc"
-          ? [{ key, dir: "desc" }]
-          : [];
+      return [
+        {
+          key,
+          dir: current?.dir === "asc" ? "desc" : "asc",
+        },
+      ];
     if (!current) return [...this.sort, { key, dir: "asc" }];
-    if (current.dir === "asc")
-      return this.sort.map((item) =>
-        item.key === key ? { key, dir: "desc" as const } : item,
-      );
-    return this.sort.filter((item) => item.key !== key);
+    return this.sort.map((item) =>
+      item.key === key
+        ? {
+            key,
+            dir: item.dir === "asc" ? ("desc" as const) : ("asc" as const),
+          }
+        : item,
+    );
   }
 
+  /** Header click and column menu: asc then desc, on the same key. */
   private toggleSort(column: DataTableColumn, event: MouseEvent) {
     if (column.sortable === false) return;
-    const sort = this.newSort(column.key, event.shiftKey);
-    this.emit<DataTableSortDetail>("sort", { sort });
+    void this.applySort(this.newSort(column.key, event.shiftKey));
+  }
+
+  /**
+   * Hands the new order to the application when it loads the data, then redraws
+   * so an in-place change to `rows` is shown. Otherwise the table sorts them.
+   */
+  private async applySort(sort: DataTableSort[]) {
+    this.sort = sort;
+    if (!this.appPages && this.page) this.page = 0;
     this.announce(
       sort.length
         ? sort
@@ -445,6 +614,26 @@ export class BolleDataTable extends BolleElement {
             .join(", ")
         : this.text.sortNone,
     );
+    this.emit<DataTableSortDetail>("sort", { sort });
+    if (!this.sortHandler) return;
+    await this.sortHandler({ sort });
+    this.refresh();
+  }
+
+  /**
+   * Shows the page the reader asked for. The application loads it when it
+   * declared `pageHandler`, then the table redraws; otherwise the table cuts
+   * `rows`. The `page-change` event of the pager already leaves the component,
+   * so it is not repeated here.
+   */
+  private async applyPage(detail: DataTablePageDetail) {
+    const pageSize = detail.pageSize || this.pageSize;
+    const page = detail.page;
+    if (pageSize !== this.pageSize) this.pageSize = pageSize;
+    if (page !== this.page) this.page = page;
+    if (!this.pageHandler) return;
+    await this.pageHandler({ page, pageSize });
+    this.refresh();
   }
 
   private labelOf(key: string) {
@@ -460,7 +649,7 @@ export class BolleDataTable extends BolleElement {
   }
 
   private get pageKeys() {
-    return this.rows.map((row) => this.rowId(row));
+    return this.data.map((row) => this.rowId(row));
   }
 
   private get pageState() {
@@ -478,7 +667,9 @@ export class BolleDataTable extends BolleElement {
     this.emitSelect([...next]);
   }
 
+  /** Applies the choice, then reports it: the table does not wait for the application. */
   private emitSelect(selected: string[]) {
+    this.selected = selected;
     this.emit<DataTableSelectDetail>("select", {
       selected,
       rows: this.rows.filter((row) => selected.includes(this.rowId(row))),
@@ -491,6 +682,7 @@ export class BolleDataTable extends BolleElement {
     const next = this.expanded.includes(id)
       ? this.expanded.filter((key) => key !== id)
       : [...this.expanded, id];
+    this.expanded = next;
     this.emit<DataTableExpandDetail>("expand", { expanded: next, row });
     this.announce(
       fill(next.includes(id) ? this.text.expandRow : this.text.collapseRow, {
@@ -511,10 +703,23 @@ export class BolleDataTable extends BolleElement {
   /* Columns ----------------------------------------------------------- */
 
   private patchColumn(key: string, patch: Partial<DataTableColumn>) {
-    const columns = this.columns.map((column) =>
-      column.key === key ? { ...column, ...patch } : column,
+    void this.applyColumns(
+      this.columns.map((column) =>
+        column.key === key ? { ...column, ...patch } : column,
+      ),
     );
+  }
+
+  /**
+   * Applies the new set of columns, then reports it and hands it to
+   * `columnHandler` when the application keeps the layout somewhere else.
+   */
+  private async applyColumns(columns: DataTableColumn[]) {
+    this.columns = columns;
     this.emit<DataTableColumnChangeDetail>("column-change", { columns });
+    if (!this.columnHandler) return;
+    await this.columnHandler({ columns });
+    this.refresh();
   }
 
   /** Moves a column by one step inside its zone; pinned and free do not mix. */
@@ -569,7 +774,7 @@ export class BolleDataTable extends BolleElement {
     const to = columns.findIndex((column) => column.key === targetKey);
     const [moved] = columns.splice(from, 1);
     columns.splice(to, 0, moved);
-    this.emit<DataTableColumnChangeDetail>("column-change", { columns });
+    void this.applyColumns(columns);
   }
 
   private togglePinned(key: string) {
@@ -608,9 +813,9 @@ export class BolleDataTable extends BolleElement {
     const move = (moveEvent: PointerEvent) => {
       current = Math.round(
         Math.min(
-          MAX_COLUMN,
+          this.maxColumnWidth,
           Math.max(
-            MIN_COLUMN,
+            this.minColumnWidth,
             startWidth + (moveEvent.clientX - startX) * (rtl ? -1 : 1),
           ),
         ),
@@ -643,16 +848,16 @@ export class BolleDataTable extends BolleElement {
         : event.key === shrink
           ? width - KEY_STEP
           : event.key === "Home"
-            ? MIN_COLUMN
+            ? this.minColumnWidth
             : event.key === "End"
-              ? MAX_COLUMN
+              ? this.maxColumnWidth
               : event.key === "Enter"
-                ? DEFAULT_WIDTH
+                ? this.defaultColumnWidth
                 : undefined;
     if (next === undefined) return;
     event.preventDefault();
     this.patchColumn(column.key, {
-      width: Math.min(MAX_COLUMN, Math.max(MIN_COLUMN, next)),
+      width: Math.min(this.maxColumnWidth, Math.max(this.minColumnWidth, next)),
     });
   }
 
@@ -832,19 +1037,19 @@ export class BolleDataTable extends BolleElement {
     const column = this.columns.find((item) => item.key === context.key);
     if (!column) return;
     if (id === "asc" || id === "desc")
-      this.emit<DataTableSortDetail>("sort", {
-        sort: [{ key: column.key, dir: id }],
-      });
+      void this.applySort([{ key: column.key, dir: id }]);
     else if (id === "unsort")
-      this.emit<DataTableSortDetail>("sort", {
-        sort: this.sort.filter((item) => item.key !== column.key),
-      });
+      void this.applySort(this.sort.filter((item) => item.key !== column.key));
     else if (id === "pin") this.togglePinned(column.key);
     else if (id === "start") this.moveColumnToEdge(column.key, "start");
     else if (id === "end") this.moveColumnToEdge(column.key, "end");
     else if (id === "hide") this.toggleHidden(column.key);
-    else if (id === "group" || id === "ungroup")
-      this.emit("group", { groupBy: id === "group" ? column.key : "" });
+    else if (id === "group" || id === "ungroup") {
+      const groupBy = id === "group" ? column.key : "";
+      this.groupBy = groupBy;
+      if (!this.appPages && this.page) this.page = 0;
+      this.emit("group", { groupBy });
+    }
   }
 
   /* Rendering --------------------------------------------------------- */
@@ -865,11 +1070,11 @@ export class BolleDataTable extends BolleElement {
     const selection = this.pageState;
     const lastPinned = this.lastPinned;
     const sort = (key: string) => this.sort.find((item) => item.key === key);
-    return html`<thead>
-      <tr>
+    return html`<thead part="header">
+      <tr part="header-row">
         ${
           this.selectable
-            ? html`<th
+            ? html` <th
                 class="select cell-pinned"
                 scope="col"
                 style="inset-inline-start:0"
@@ -905,6 +1110,7 @@ export class BolleDataTable extends BolleElement {
           return html`<th
             scope="col"
             data-key=${column.key}
+            part=${column.pinned ? "header-cell header-cell-pinned" : "header-cell"}
             class="data ${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""} ${dragging ? "dragging" : ""}"
             style=${column.pinned ? `inset-inline-start:${this.pinnedOffset(column.key)}px` : ""}
             aria-sort=${
@@ -915,9 +1121,10 @@ export class BolleDataTable extends BolleElement {
                 : nothing
             }
           >
-            <div class="head">
+            <div class="head" part="header-content">
               <span
                 class="grip"
+                part="column-grip"
                 aria-hidden="true"
                 @pointerdown=${(event: PointerEvent) => this.startDrag(event, column)}
                 >${columnGripIcon()}</span
@@ -925,10 +1132,17 @@ export class BolleDataTable extends BolleElement {
               ${
                 column.sortable === false
                   ? html`<span class="sort static"
-                      ><span class="ellipsis">${column.label}</span></span
+                      ><span class="ellipsis" part="header-label"
+                        >${
+                          this.headerRenderer
+                            ? this.headerRenderer(column, this)
+                            : column.label
+                        }</span
+                      ></span
                     >`
                   : html`<button
                       class="sort"
+                      part="sort"
                       aria-describedby="table-sort-hint"
                       @click=${(event: MouseEvent) => this.toggleSort(column, event)}
                       @keydown=${(event: KeyboardEvent) => {
@@ -953,8 +1167,17 @@ export class BolleDataTable extends BolleElement {
                         );
                       }}
                     >
-                      <span class="ellipsis">${column.label}</span>
-                      <span class="sort-mark ${current ? "on" : ""}">
+                      <span class="ellipsis" part="header-label"
+                        >${
+                          this.headerRenderer
+                            ? this.headerRenderer(column, this)
+                            : column.label
+                        }</span
+                      >
+                      <span
+                        class="sort-mark ${current ? "on" : ""}"
+                        part="sort-mark"
+                      >
                         ${
                           current
                             ? current.dir === "asc"
@@ -973,6 +1196,7 @@ export class BolleDataTable extends BolleElement {
               ${column.pinned ? html`<span class="pin-mark">${pinIcon()}</span>` : nothing}
               <bolle-icon-button
                 class="head-menu"
+                part="header-menu"
                 variant="standard"
                 size="xs"
                 label=${fill(this.text.column, { column: column.label })}
@@ -983,17 +1207,20 @@ export class BolleDataTable extends BolleElement {
             </div>
             <span
               class="resize"
+              part="column-resize"
               role="separator"
               tabindex="0"
               aria-orientation="vertical"
               aria-label=${fill(this.text.resizeColumn, { column: column.label })}
-              aria-valuemin=${MIN_COLUMN}
-              aria-valuemax=${MAX_COLUMN}
+              aria-valuemin=${this.minColumnWidth}
+              aria-valuemax=${this.maxColumnWidth}
               aria-valuenow=${this.width(column)}
               @pointerdown=${(event: PointerEvent) => this.startResize(event, column)}
               @keydown=${(event: KeyboardEvent) => this.resizeWithKeys(event, column)}
               @dblclick=${() =>
-                this.patchColumn(column.key, { width: DEFAULT_WIDTH })}
+                this.patchColumn(column.key, {
+                  width: this.defaultColumnWidth,
+                })}
             ></span>
           </th>`;
         })}
@@ -1020,6 +1247,7 @@ export class BolleDataTable extends BolleElement {
     const lastPinned = this.lastPinned;
     return html`<tr
         class="row ${selected ? "selected" : ""}"
+        part=${selected ? "row row-selected" : "row"}
         aria-selected=${this.selectable ? String(selected) : nothing}
         aria-rowindex=${virtual?.rowIndex ?? nothing}
         data-virtual-key=${virtual?.key ?? nothing}
@@ -1027,7 +1255,11 @@ export class BolleDataTable extends BolleElement {
       >
         ${
           this.selectable
-            ? html`<td class="select cell-pinned" style="inset-inline-start:0">
+            ? html`<td
+                class="select cell-pinned"
+                part="selection-cell"
+                style="inset-inline-start:0"
+              >
                 <bolle-checkbox
                   .checked=${selected}
                   @change=${(event: CustomEvent<{ checked: boolean }>) =>
@@ -1043,6 +1275,7 @@ export class BolleDataTable extends BolleElement {
           this.expandable
             ? html`<td
                 class="expand cell-pinned ${lastPinned ? "" : "pinned-edge"}"
+                part="expand-cell"
                 style=${this.selectable ? `inset-inline-start:${SELECT_WIDTH}px` : "inset-inline-start:0"}
               >
                 <bolle-icon-button
@@ -1061,22 +1294,33 @@ export class BolleDataTable extends BolleElement {
               </td>`
             : nothing
         }
-        ${this.visibleColumns.map(
-          (column) =>
-            html`<td
-              class="${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""}"
-              style=${
-                column.pinned
-                  ? `inset-inline-start:${this.pinnedOffset(column.key)}px`
-                  : ""
-              }
-            >
-              ${this.cell(column, row)}
-            </td>`,
-        )}
+        ${
+          this.rowRenderer
+            ? html`<td
+                class="row-custom"
+                part="row-content"
+                colspan=${this.visibleColumns.length}
+              >
+                ${this.rowRenderer(row, this)}
+              </td>`
+            : this.visibleColumns.map(
+                (column) =>
+                  html`<td
+                    class="${column.align === "end" ? "end" : ""} ${column.pinned ? "cell-pinned" : ""} ${column.key === lastPinned ? "pinned-edge" : ""}"
+                    part=${column.pinned ? "data-cell data-cell-pinned" : "data-cell"}
+                    style=${
+                      column.pinned
+                        ? `inset-inline-start:${this.pinnedOffset(column.key)}px`
+                        : ""
+                    }
+                  >
+                    ${this.cell(column, row)}
+                  </td>`,
+              )
+        }
         ${
           this.rowActions.length
-            ? html`<td class="actions cell-end">
+            ? html`<td class="actions cell-end" part="actions-cell">
                 <bolle-icon-button
                   variant="standard"
                   size="xs"
@@ -1091,9 +1335,11 @@ export class BolleDataTable extends BolleElement {
       </tr>
       ${
         open && this.detail && !virtual
-          ? html`<tr class="detail">
-              <td colspan=${this.columnCount}>
-                <div class="detail-inner">${this.detail(row)}</div>
+          ? html`<tr class="detail" part="detail">
+              <td colspan=${this.columnCount} part="detail-cell">
+                <div class="detail-inner" part="detail-inner">
+                  ${this.detail(row)}
+                </div>
               </td>
             </tr>`
           : nothing
@@ -1122,36 +1368,54 @@ export class BolleDataTable extends BolleElement {
     const collapsed = this._collapsed.has(name);
     return html`<tr
       class="group"
+      part="group"
       aria-rowindex=${virtual?.rowIndex ?? nothing}
       data-virtual-key=${virtual?.key ?? nothing}
     >
       <th colspan=${this.columnCount} scope="rowgroup">
-        <div class="group-inner">
-          <button
-            class="group-toggle"
-            aria-expanded=${String(!collapsed)}
-            @click=${() => {
-              const next = new Set(this._collapsed);
-              if (next.has(name)) next.delete(name);
-              else next.add(name);
-              this._collapsed = next;
-              this.virtualHeights.clear();
-              this.resetWindow();
-              requestAnimationFrame(this.measureWindow);
-            }}
-          >
-            <span class="chev ${collapsed ? "" : "open"}">${expandIcon()}</span>
-            <span class="group-title">${name}</span>
-            <span class="group-count">${rows.length}</span>
-          </button>
-          ${this.groupSummary ? html`<span class="group-summary">${this.groupSummary(rows)}</span>` : nothing}
+        <div class="group-inner" part="group-inner">
+          ${
+            this.groupRenderer
+              ? this.groupRenderer(name, rows, this)
+              : html`<button
+                    class="group-toggle"
+                    part="group-toggle"
+                    aria-expanded=${String(!collapsed)}
+                    @click=${() => {
+                      const next = new Set(this._collapsed);
+                      if (next.has(name)) next.delete(name);
+                      else next.add(name);
+                      this._collapsed = next;
+                      this.virtualHeights.clear();
+                      this.resetWindow();
+                      requestAnimationFrame(this.measureWindow);
+                    }}
+                  >
+                    <span
+                      class="chev ${collapsed ? "" : "open"}"
+                      part="group-chevron"
+                      >${expandIcon()}</span
+                    >
+                    <span class="group-title" part="group-title">${name}</span>
+                    <span class="group-count" part="group-count"
+                      >${rows.length}</span
+                    >
+                  </button>
+                  ${
+                    this.groupSummary
+                      ? html`<span class="group-summary" part="group-summary"
+                          >${this.groupSummary(rows)}</span
+                        >`
+                      : nothing
+                  }`
+          }
         </div>
       </th>
     </tr>`;
   }
 
   private renderBody() {
-    if (!this.groupBy) return this.rows.map((row) => this.renderRow(row));
+    if (!this.groupBy) return this.data.map((row) => this.renderRow(row));
     const out: unknown[] = [];
     for (const [name, rows] of this.groups) {
       out.push(this.renderGroup(name, rows));
@@ -1169,11 +1433,12 @@ export class BolleDataTable extends BolleElement {
     if (!this.detail) return nothing;
     return html`<tr
       class="detail"
+      part="detail"
       aria-rowindex=${rowIndex}
       data-virtual-key=${key}
     >
-      <td colspan=${this.columnCount}>
-        <div class="detail-inner">${this.detail(row)}</div>
+      <td colspan=${this.columnCount} part="detail-cell">
+        <div class="detail-inner" part="detail-inner">${this.detail(row)}</div>
       </td>
     </tr>`;
   }
@@ -1225,47 +1490,67 @@ export class BolleDataTable extends BolleElement {
 
   private renderState() {
     if (this.error)
-      return html`<div class="state">
-        <bolle-empty-state
-          class="empty"
-          tone="error"
-          role="alert"
-          .icon=${alertIcon()}
-          .title=${this.text.error}
-          .text=${this.error}
+      return html`<div class="state" part="error">
+        <slot name="error" part="error-slot"
+          >${
+            this.errorRenderer
+              ? this.errorRenderer(this)
+              : html`<bolle-empty-state
+                  class="empty"
+                  tone="error"
+                  role="alert"
+                  .icon=${alertIcon()}
+                  .title=${this.text.error}
+                  .text=${this.error}
+                >
+                  <bolle-button
+                    slot="actions"
+                    variant="filled"
+                    @click=${() => this.emit("retry", {})}
+                    >${this.text.retry}</bolle-button
+                  >
+                </bolle-empty-state>`
+          }</slot
         >
-          <bolle-button
-            slot="actions"
-            variant="filled"
-            @click=${() => this.emit("retry", {})}
-            >${this.text.retry}</bolle-button
-          >
-        </bolle-empty-state>
       </div>`;
-    return html`<div class="state">
-      <bolle-empty-state
-        class="empty"
-        .icon=${databaseOffIcon()}
-        .title=${this.emptyLabel || this.text.empty}
+    return html`<div class="state" part="empty">
+      <slot name="empty-state" part="empty-slot"
+        >${
+          this.emptyRenderer
+            ? this.emptyRenderer(this)
+            : html`<bolle-empty-state
+                class="empty"
+                .icon=${databaseOffIcon()}
+                .title=${this.emptyLabel || this.text.empty}
+              >
+                <div slot="actions"><slot name="empty"></slot></div>
+              </bolle-empty-state>`
+        }</slot
       >
-        <div slot="actions"><slot name="empty"></slot></div>
-      </bolle-empty-state>
     </div>`;
   }
 
   private renderFooter() {
     if (!this.pageSize) return nothing;
-    const total = this.total || this.rows.length;
-    return html`<footer class="footer">
-      <bolle-pagination
-        .page=${this.page}
-        .pageSize=${this.pageSize}
-        .total=${total}
-        form="compact"
-        @page-change=${(
-          event: CustomEvent<{ page: number; pageSize: number }>,
-        ) => this.emit<DataTablePageDetail>("page-change", event.detail)}
-      ></bolle-pagination>
+    const total = this.appPages
+      ? this.total || this.rows.length
+      : this.rows.length;
+    return html`<footer class="footer" part="footer">
+      <slot name="footer" part="footer-slot"
+        >${
+          this.footerRenderer
+            ? this.footerRenderer(this)
+            : html`<bolle-pagination
+                .page=${this.currentPage}
+                .pageSize=${this.pageSize}
+                .total=${total}
+                form="compact"
+                @page-change=${(
+                  event: CustomEvent<{ page: number; pageSize: number }>,
+                ) => void this.applyPage(event.detail)}
+              ></bolle-pagination>`
+        }</slot
+      >
     </footer>`;
   }
 
@@ -1275,24 +1560,30 @@ export class BolleDataTable extends BolleElement {
     const body = this.renderBody();
     return html`<div
       class="table ${this.variant === "free" ? "is-free" : ""} density-${this.density}"
+      part="table"
       role="group"
       aria-label=${this.label || nothing}
       aria-busy=${String(this.loading || this.updating)}
+      style=${`--table-row-height:${this.density === "compact" ? this.compactRowHeight : this.rowHeight}px;--table-header-height:${this.headerHeight}px;--table-group-height:${this.groupHeight}px`}
     >
       ${
         this.updating
           ? html`<bolle-loading-indicator
               class="busy"
+              part="busy"
               variant="contained"
               label=${this.text.updating}
             ></bolle-loading-indicator>`
           : nothing
       }
+      <slot name="header" part="header-slot"></slot>
       <div
         class="scroller ${this._scrolledX ? "scrolled-x" : ""} ${this.updating ? "dimmed" : ""}"
+        part="scroller"
         @scroll=${this.onScroll}
       >
         <table
+          part="table-grid"
           aria-rowcount=${
             this.virtualWindowed ? this.virtualItems.length + 1 : nothing
           }
@@ -1332,11 +1623,17 @@ export class BolleDataTable extends BolleElement {
         }
         ${
           loading
-            ? html`<div class="state loading">
-                <bolle-loading-indicator
-                  label=${this.text.loading}
-                ></bolle-loading-indicator>
-                <p class="state-text">${this.text.loading}…</p>
+            ? html`<div class="state loading" part="loading">
+                <slot name="loading" part="loading-slot"
+                  >${
+                    this.loadingRenderer
+                      ? this.loadingRenderer(this)
+                      : html`<bolle-loading-indicator
+                            label=${this.text.loading}
+                          ></bolle-loading-indicator>
+                          <p class="state-text">${this.text.loading}…</p>`
+                  }</slot
+                >
               </div>`
             : nothing
         }

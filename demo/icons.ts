@@ -48,6 +48,7 @@ import clock from "@tabler/icons/outline/clock.svg?raw";
 import volume from "@tabler/icons/outline/volume.svg?raw";
 import wifi from "@tabler/icons/outline/wifi.svg?raw";
 import wifiOff from "@tabler/icons/outline/wifi-off.svg?raw";
+import x from "@tabler/icons/outline/x.svg?raw";
 
 const icons: Record<string, string> = {
   archive,
@@ -98,6 +99,7 @@ const icons: Record<string, string> = {
   volume,
   wifi,
   "wifi-off": wifiOff,
+  x,
 };
 
 /** Tabler icon as an inline SVG so `currentColor` and the 24px sizing apply. */

@@ -177,11 +177,20 @@ export const buttonStyles = css`
   .button {
     white-space: nowrap;
   }
+  /* Icon slots stay out of the flex layout, so an empty slot adds no gap. */
   [part="icon"],
   [part="trailing-icon"] {
+    display: contents;
+    font-size: var(--md-comp-button-icon-size, 24px);
+    line-height: 1;
+  }
+  /* The label keeps text and inline icons on the same centre line. */
+  [part="label"] {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: inherit;
+  }
+  ::slotted([slot="trailing-icon"]) {
     font-size: var(--md-comp-button-icon-size, 24px);
     line-height: 1;
   }

@@ -31,8 +31,12 @@ const euro = new Intl.NumberFormat("it-IT", {
   currency: "EUR",
   maximumFractionDigits: 0,
 });
-const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
-const formatDate = (value: string) => dayMonth.format(new Date(`${value}T12:00`));
+const dayMonth = new Intl.DateTimeFormat("it-IT", {
+  day: "numeric",
+  month: "short",
+});
+const formatDate = (value: string) =>
+  dayMonth.format(new Date(`${value}T12:00`));
 const isLate = (card: JobCard) =>
   card.due < TODAY_ISO && card.column !== "chiuso";
 
@@ -116,37 +120,184 @@ const MANAGERS = [
 ];
 
 const makeCards = (): JobCard[] => {
-  const rows: Array<[string, string, string, string, string, string[], number, string, number]> = [
-    ["programmato", "C2026-1000", "Illuminazione pubblica a LED", "Hotel Bellavista Sirmione", "Bergamo", ["Edilizia"], 4, "2026-11-22", 79350],
-    ["programmato", "C2025-1001", "Bonifica amianto e nuova copertura", "Hotel Bellavista Sirmione", "Bergamo", ["Urgente"], 7, "2026-12-23", 305500],
-    ["programmato", "C2025-1002", "Rifacimento impianto elettrico", "Agricola Valcalepio", "Clusone", ["Variante"], 2, "2027-02-26", 141800],
-    ["in-corso", "C2025-1003", "Ristrutturazione facciata e cappotto", "Immobiliare Lago Srl", "Seriate", ["Urgente"], 23, "2026-11-09", 70600],
-    ["in-corso", "C2025-1004", "Illuminazione pubblica a LED", "Logistica Padana SpA", "Treviglio", ["Urgente", "Edilizia"], 70, "2026-10-20", 408700],
-    ["in-corso", "C2025-1005", "Rifacimento impianto elettrico", "Fondazione Carlo Rossi Onlus", "Brescia", ["Impianti"], 67, "2026-10-29", 67250],
-    ["in-corso", "C2026-1006", "Nuova pavimentazione industriale", "Fondazione Carlo Rossi Onlus", "Dalmine", ["Sicurezza"], 77, "2026-12-07", 320950],
-    ["in-corso", "C2025-1007", "Riqualificazione centrale termica", "Hotel Bellavista Sirmione", "Bergamo", [], 51, "2026-12-18", 122450],
-    ["in-corso", "C2025-1008", "Illuminazione pubblica a LED", "Hotel Bellavista Sirmione", "Treviglio", ["Variante"], 65, "2026-10-10", 171950],
-    ["collaudo", "C2026-1009", "Rifacimento impianto elettrico", "Provincia di Brescia", "Treviglio", ["Variante"], 92, "2027-02-09", 256650],
-    ["collaudo", "C2025-1010", "Bonifica amianto e nuova copertura", "Hotel Bellavista Sirmione", "Brescia", ["Variante", "Energia"], 96, "2027-01-18", 13300],
-    ["collaudo", "C2026-1011", "Nuovo impianto fotovoltaico 60 kWp", "ASST Papa Giovanni XXIII", "Dalmine", ["Impianti"], 89, "2026-12-21", 69900],
-    ["chiuso", "C2025-1012", "Rifacimento impianto elettrico", "Hotel Bellavista Sirmione", "Seriate", ["Urgente", "Impianti"], 100, "2027-03-03", 34600],
-    ["chiuso", "C2026-1013", "Bonifica amianto e nuova copertura", "ASST Papa Giovanni XXIII", "Bergamo", ["Edilizia"], 100, "2026-12-08", 16900],
+  const rows: Array<
+    [string, string, string, string, string, string[], number, string, number]
+  > = [
+    [
+      "programmato",
+      "C2026-1000",
+      "Illuminazione pubblica a LED",
+      "Hotel Bellavista Sirmione",
+      "Bergamo",
+      ["Edilizia"],
+      4,
+      "2026-11-22",
+      79350,
+    ],
+    [
+      "programmato",
+      "C2025-1001",
+      "Bonifica amianto e nuova copertura",
+      "Hotel Bellavista Sirmione",
+      "Bergamo",
+      ["Urgente"],
+      7,
+      "2026-12-23",
+      305500,
+    ],
+    [
+      "programmato",
+      "C2025-1002",
+      "Rifacimento impianto elettrico",
+      "Agricola Valcalepio",
+      "Clusone",
+      ["Variante"],
+      2,
+      "2027-02-26",
+      141800,
+    ],
+    [
+      "in-corso",
+      "C2025-1003",
+      "Ristrutturazione facciata e cappotto",
+      "Immobiliare Lago Srl",
+      "Seriate",
+      ["Urgente"],
+      23,
+      "2026-11-09",
+      70600,
+    ],
+    [
+      "in-corso",
+      "C2025-1004",
+      "Illuminazione pubblica a LED",
+      "Logistica Padana SpA",
+      "Treviglio",
+      ["Urgente", "Edilizia"],
+      70,
+      "2026-10-20",
+      408700,
+    ],
+    [
+      "in-corso",
+      "C2025-1005",
+      "Rifacimento impianto elettrico",
+      "Fondazione Carlo Rossi Onlus",
+      "Brescia",
+      ["Impianti"],
+      67,
+      "2026-10-29",
+      67250,
+    ],
+    [
+      "in-corso",
+      "C2026-1006",
+      "Nuova pavimentazione industriale",
+      "Fondazione Carlo Rossi Onlus",
+      "Dalmine",
+      ["Sicurezza"],
+      77,
+      "2026-12-07",
+      320950,
+    ],
+    [
+      "in-corso",
+      "C2025-1007",
+      "Riqualificazione centrale termica",
+      "Hotel Bellavista Sirmione",
+      "Bergamo",
+      [],
+      51,
+      "2026-12-18",
+      122450,
+    ],
+    [
+      "in-corso",
+      "C2025-1008",
+      "Illuminazione pubblica a LED",
+      "Hotel Bellavista Sirmione",
+      "Treviglio",
+      ["Variante"],
+      65,
+      "2026-10-10",
+      171950,
+    ],
+    [
+      "collaudo",
+      "C2026-1009",
+      "Rifacimento impianto elettrico",
+      "Provincia di Brescia",
+      "Treviglio",
+      ["Variante"],
+      92,
+      "2027-02-09",
+      256650,
+    ],
+    [
+      "collaudo",
+      "C2025-1010",
+      "Bonifica amianto e nuova copertura",
+      "Hotel Bellavista Sirmione",
+      "Brescia",
+      ["Variante", "Energia"],
+      96,
+      "2027-01-18",
+      13300,
+    ],
+    [
+      "collaudo",
+      "C2026-1011",
+      "Nuovo impianto fotovoltaico 60 kWp",
+      "ASST Papa Giovanni XXIII",
+      "Dalmine",
+      ["Impianti"],
+      89,
+      "2026-12-21",
+      69900,
+    ],
+    [
+      "chiuso",
+      "C2025-1012",
+      "Rifacimento impianto elettrico",
+      "Hotel Bellavista Sirmione",
+      "Seriate",
+      ["Urgente", "Impianti"],
+      100,
+      "2027-03-03",
+      34600,
+    ],
+    [
+      "chiuso",
+      "C2026-1013",
+      "Bonifica amianto e nuova copertura",
+      "ASST Papa Giovanni XXIII",
+      "Bergamo",
+      ["Edilizia"],
+      100,
+      "2026-12-08",
+      16900,
+    ],
   ];
-  return rows.map(([column, code, title, client, city, tags, progress, due, amount], index) => ({
-    id: `job-${index + 1}`,
-    column,
-    lane: MANAGERS[index % MANAGERS.length],
-    title,
-    subtitle: `${client} · ${city}`,
-    code,
-    client,
-    city,
-    manager: MANAGERS[index % MANAGERS.length],
-    tags,
-    progress,
-    due,
-    amount,
-  }));
+  return rows.map(
+    (
+      [column, code, title, client, city, tags, progress, due, amount],
+      index,
+    ) => ({
+      id: `job-${index + 1}`,
+      column,
+      lane: MANAGERS[index % MANAGERS.length],
+      title,
+      subtitle: `${client} · ${city}`,
+      code,
+      client,
+      city,
+      manager: MANAGERS[index % MANAGERS.length],
+      tags,
+      progress,
+      due,
+      amount,
+    }),
+  );
 };
 
 /** Documentation preview: the board plus the application state it reports. */
@@ -157,6 +308,10 @@ export class BolleKanbanDemo extends LitElement {
     collapsible: { type: Boolean },
     addable: { type: Boolean },
     movable: { type: Boolean },
+    columnMinWidth: { attribute: "column-min-width", type: Number },
+    columnMaxWidth: { attribute: "column-max-width", type: Number },
+    columnGap: { attribute: "column-gap", type: Number },
+    cardGap: { attribute: "card-gap", type: Number },
     label: {},
   };
 
@@ -165,6 +320,10 @@ export class BolleKanbanDemo extends LitElement {
   declare collapsible: boolean;
   declare addable: boolean;
   declare movable: boolean;
+  declare columnMinWidth: number;
+  declare columnMaxWidth: number;
+  declare columnGap: number;
+  declare cardGap: number;
   declare label: string;
 
   private cards: JobCard[] = makeCards();
@@ -176,7 +335,10 @@ export class BolleKanbanDemo extends LitElement {
     this.lanes = false;
     this.collapsible = true;
     this.addable = true;
-    this.movable = true;
+    this.columnMinWidth = 260;
+    this.columnMaxWidth = 360;
+    this.columnGap = 16;
+    this.cardGap = 8;
     this.label = l(m("Commesse"));
   }
 
@@ -200,8 +362,14 @@ export class BolleKanbanDemo extends LitElement {
       return l(m("Una commessa chiusa non si riapre dal kanban."));
     if (column.id === "chiuso" && job.progress < 100)
       return l(m("Per passare in Chiuso l'avanzamento deve essere al 100%."));
-    if (column.id === "in-corso" && job.column === "programmato" && job.progress > 60)
-      return l(m("Una commessa già avanzata non torna in cantiere senza un verbale."));
+    if (
+      column.id === "in-corso" &&
+      job.column === "programmato" &&
+      job.progress > 60
+    )
+      return l(
+        m("Una commessa già avanzata non torna in cantiere senza un verbale."),
+      );
     return undefined;
   };
 
@@ -222,7 +390,10 @@ export class BolleKanbanDemo extends LitElement {
     });
     const others = rest.filter(
       (card) =>
-        !(card.column === detail.column && (!this.lanes || card.lane === detail.lane)),
+        !(
+          card.column === detail.column &&
+          (!this.lanes || card.lane === detail.lane)
+        ),
     );
     this.cards = [...others, ...target];
     this.requestUpdate();
@@ -255,7 +426,8 @@ export class BolleKanbanDemo extends LitElement {
   };
 
   private onColumnAction = (event: Event) => {
-    const { id, column } = (event as CustomEvent<KanbanColumnActionDetail>).detail;
+    const { id, column } = (event as CustomEvent<KanbanColumnActionDetail>)
+      .detail;
     if (id === "sort") {
       const sorted = this.cards
         .filter((card) => card.column === column.id)
@@ -303,7 +475,11 @@ export class BolleKanbanDemo extends LitElement {
 
   private report(message: string) {
     this.dispatchEvent(
-      new CustomEvent("demo-report", { detail: message, bubbles: true, composed: true }),
+      new CustomEvent("demo-report", {
+        detail: message,
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 
@@ -314,11 +490,13 @@ export class BolleKanbanDemo extends LitElement {
       <p class="kcode">${job.code}</p>
       <p class="ktitle" dir="auto">${job.title}</p>
       <p class="kclient" dir="auto">${job.client} · ${job.city}</p>
-      ${job.tags.length
-        ? html`<div class="ktags">
-            ${job.tags.map((tag) => html`<span class="ktag">${tag}</span>`)}
-          </div>`
-        : ""}
+      ${
+        job.tags.length
+          ? html`<div class="ktags">
+              ${job.tags.map((tag) => html`<span class="ktag">${tag}</span>`)}
+            </div>`
+          : ""
+      }
       <div class="kprogress">
         <bolle-progress-indicator
           value=${job.progress}
@@ -327,7 +505,11 @@ export class BolleKanbanDemo extends LitElement {
         <span class="knum">${job.progress}%</span>
       </div>
       <div class="kfoot">
-        <bolle-avatar size="xs" color="tertiary" .name=${job.manager}></bolle-avatar>
+        <bolle-avatar
+          size="xs"
+          color="tertiary"
+          .name=${job.manager}
+        ></bolle-avatar>
         <span class="kmanager" dir="auto">${job.manager}</span>
         <span class="kdue ${late ? "late" : ""}"
           >${late ? l(m("in ritardo")) : formatDate(job.due)}</span
@@ -339,32 +521,36 @@ export class BolleKanbanDemo extends LitElement {
 
   protected render() {
     return html`<bolle-kanban
-        .label=${this.label}
-        .columns=${this.columns}
-        .cards=${this.cards}
-        .collapsed=${this.collapsed}
-        .density=${this.density}
-        ?lanes=${this.lanes}
-        ?collapsible=${this.collapsible}
-        ?addable=${this.addable}
-        ?movable=${this.movable}
-        .laneLabel=${(key: string) => key}
-        .restrict=${this.restrict}
-        .card=${this.cardContent}
-        .contentStyles=${contentCss.cssText}
-        .cardActions=${[
-          { id: "duplicate", label: l(m("Duplica la scheda")) },
-          { id: "archive", label: l(m("Archivia la scheda")) },
-        ]}
-        .columnActions=${[{ id: "sort", label: l(m("Ordina per scadenza")) }]}
-        @card-move=${this.onMove}
-        @card-move-blocked=${this.onBlocked}
-        @card-open=${this.onOpen}
-        @card-action=${this.onCardAction}
-        @column-action=${this.onColumnAction}
-        @column-collapse=${this.onCollapse}
-        @card-add=${this.onAdd}
-      ></bolle-kanban>`;
+      .label=${this.label}
+      .columns=${this.columns}
+      .cards=${this.cards}
+      .collapsed=${this.collapsed}
+      .density=${this.density}
+      ?lanes=${this.lanes}
+      ?collapsible=${this.collapsible}
+      ?addable=${this.addable}
+      ?movable=${this.movable}
+      .columnMinWidth=${this.columnMinWidth}
+      .columnMaxWidth=${this.columnMaxWidth}
+      .columnGap=${this.columnGap}
+      .cardGap=${this.cardGap}
+      .laneLabel=${(key: string) => key}
+      .restrict=${this.restrict}
+      .card=${this.cardContent}
+      .contentStyles=${contentCss.cssText}
+      .cardActions=${[
+        { id: "duplicate", label: l(m("Duplica la scheda")) },
+        { id: "archive", label: l(m("Archivia la scheda")) },
+      ]}
+      .columnActions=${[{ id: "sort", label: l(m("Ordina per scadenza")) }]}
+      @card-move=${this.onMove}
+      @card-move-blocked=${this.onBlocked}
+      @card-open=${this.onOpen}
+      @card-action=${this.onCardAction}
+      @column-action=${this.onColumnAction}
+      @column-collapse=${this.onCollapse}
+      @card-add=${this.onAdd}
+    ></bolle-kanban>`;
   }
 }
 

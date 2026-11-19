@@ -6,7 +6,7 @@ export const sidebarStyles = css`
       from color-mix(in srgb, var(--md-sys-color-primary) 12%, white) r g b /
         0.5
     );
-    --bolle-sidebar-padding: 12px;
+    --bolle-sidebar-padding: var(--md-comp-sidebar-padding, 12px);
     display: block;
     inline-size: max-content;
     block-size: 100%;
@@ -41,7 +41,10 @@ export const sidebarStyles = css`
     align-items: center;
     justify-content: space-between;
     gap: var(--md-comp-action-gap);
-    padding: 12px var(--bolle-sidebar-padding) 8px 28px;
+    padding: var(
+      --md-comp-sidebar-header-padding,
+      12px var(--bolle-sidebar-padding) 8px 28px
+    );
   }
   :host([collapsed]) .header {
     justify-content: center;
@@ -57,13 +60,16 @@ export const sidebarStyles = css`
     min-block-size: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    padding: 0 var(--bolle-sidebar-padding) 8px;
+    padding: var(
+      --md-comp-sidebar-body-padding,
+      0 var(--bolle-sidebar-padding) 8px
+    );
   }
   :host([collapsed]) .body {
     padding-inline: 0;
   }
   .filter {
-    padding-block: 4px 12px;
+    padding-block: var(--md-comp-sidebar-filter-block-padding, 4px 12px);
   }
   .filter bolle-text-field,
   .filter bolle-search {
@@ -90,7 +96,6 @@ export const sidebarStyles = css`
     inline-size: 100%;
     block-size: 100%;
   }
-
   /* Tree: one shrinkable column, so long labels end with an ellipsis. */
   .tree,
   .branch,
@@ -103,7 +108,7 @@ export const sidebarStyles = css`
   .branch {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: var(--md-comp-sidebar-group-gap, 4px);
   }
   .branch {
     margin-block-start: 4px;
@@ -118,11 +123,11 @@ export const sidebarStyles = css`
     position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--md-comp-sidebar-item-gap, 12px);
     box-sizing: border-box;
     inline-size: 100%;
-    min-block-size: 40px;
-    padding-inline: 16px;
+    min-block-size: var(--md-comp-sidebar-item-height, 48px);
+    padding-inline: var(--md-comp-sidebar-item-inline-padding, 16px);
     border: 0;
     border-radius: var(--bb-inset-radius, var(--md-sys-shape-corner-full));
     background: transparent;
@@ -142,7 +147,7 @@ export const sidebarStyles = css`
   }
   .row.level-3 {
     padding-inline-start: calc(16px + var(--md-sys-icon-size) + 28px);
-    min-block-size: 36px;
+    min-block-size: var(--md-comp-sidebar-item-height-nested, 48px);
     font: var(--md-sys-typescale-body-medium-font);
     letter-spacing: var(--md-sys-typescale-body-medium-tracking);
   }
@@ -247,7 +252,7 @@ export const sidebarStyles = css`
     display: grid;
     justify-items: start;
     gap: 4px;
-    padding: 16px 12px;
+    padding: var(--md-comp-sidebar-empty-padding, 16px 12px);
     color: var(--md-sys-color-on-surface-variant);
   }
   .empty p {
@@ -319,8 +324,8 @@ export const sidebarStyles = css`
     z-index: 2;
     display: grid;
     place-items: center;
-    inline-size: 24px;
-    block-size: 56px;
+    inline-size: var(--md-comp-sidebar-resize-handle-target, 48px);
+    block-size: var(--md-comp-sidebar-resize-handle-block-size, 56px);
     translate: 0 -50%;
     border-radius: var(--md-sys-shape-corner-full);
     cursor: col-resize;

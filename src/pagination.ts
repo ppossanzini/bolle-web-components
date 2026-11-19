@@ -21,8 +21,9 @@ const fill = (template: string, params: Record<string, string | number>) =>
   );
 
 /**
- * Pager of a list the application owns: it reports the page and the size the reader
- * asks for and never slices the data itself.
+ * Pager of a list the application owns: it moves to the page the reader asks for,
+ * keeps `page` and `pageSize` in step with the click and reports both in the
+ * `page-change` event. It never slices the data itself.
  */
 export class BollePagination extends BolleElement {
   static properties = {
@@ -99,6 +100,7 @@ export class BollePagination extends BolleElement {
   private goTo(page: number) {
     const next = Math.max(0, Math.min(this.pages - 1, page));
     if (next === this.current) return;
+    this.page = next;
     this.emit<PaginationChangeDetail>("page-change", {
       page: next,
       pageSize: this.pageSize,
@@ -107,6 +109,8 @@ export class BollePagination extends BolleElement {
 
   private changeSize(size: number) {
     if (size === this.pageSize) return;
+    this.page = 0;
+    this.pageSize = size;
     this.emit<PaginationChangeDetail>("page-change", {
       page: 0,
       pageSize: size,

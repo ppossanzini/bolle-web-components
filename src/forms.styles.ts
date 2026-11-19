@@ -518,15 +518,29 @@ export const formStyles = css`
     position: relative;
     isolation: isolate;
   }
-  /* Borderless track: one filled pill holds the segments and the liquid drop. */
+  /* Borderless track: one filled pill holds the segments and the liquid drop.
+     The segments never wrap: a pill broken over two rows stops reading as a
+     control, so a narrow container scrolls it instead. */
   .segments {
     position: relative;
     display: inline-flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--md-comp-segmented-button-gap, 2px);
     padding: var(--md-comp-segmented-button-padding, 4px);
     border-radius: var(--md-sys-shape-corner-full);
     background: var(--md-sys-color-surface-container-high);
+    max-inline-size: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .segments::-webkit-scrollbar {
+    block-size: 0;
+  }
+  fieldset .segments label {
+    flex: 0 0 auto;
+  }
+  fieldset .segments [part~="segment-label"] {
+    white-space: nowrap;
   }
   fieldset .segments label {
     border: 0;

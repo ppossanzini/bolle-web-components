@@ -5,10 +5,29 @@
       "bottom-bar",
       "default",
       "navigation",
+      "navigation-compact",
       "status",
-      "supporting"
+      "supporting",
+      "supporting-actions",
+      "supporting-header",
+      "supporting-inline",
+      "supporting-modal"
     ],
-    "parts": []
+    "parts": [
+      "bar",
+      "body",
+      "bottom",
+      "content",
+      "navigation",
+      "navigation-compact",
+      "shell",
+      "status",
+      "supporting",
+      "supporting-body",
+      "supporting-header",
+      "supporting-sheet",
+      "supporting-title"
+    ]
   },
   "BolleAvatarGroup": {
     "slots": [
@@ -103,9 +122,32 @@
   "BolleWidget": {
     "slots": [
       "actions",
-      "default"
+      "body",
+      "default",
+      "error",
+      "footer",
+      "header",
+      "icon",
+      "loading"
     ],
-    "parts": []
+    "parts": [
+      "actions",
+      "actions-slot",
+      "body",
+      "body-content",
+      "error",
+      "footer",
+      "grip",
+      "header",
+      "header-custom",
+      "icon",
+      "loading",
+      "resize-handle",
+      "subtitle",
+      "tile",
+      "title",
+      "titles"
+    ]
   },
   "BolleDashboard": {
     "slots": [
@@ -115,9 +157,57 @@
   },
   "BolleDataTable": {
     "slots": [
-      "empty"
+      "empty",
+      "empty-state",
+      "error",
+      "footer",
+      "header",
+      "loading"
     ],
-    "parts": []
+    "parts": [
+      "actions-cell",
+      "busy",
+      "column-grip",
+      "column-resize",
+      "data-cell",
+      "data-cell-pinned",
+      "detail",
+      "detail-cell",
+      "detail-inner",
+      "empty",
+      "empty-slot",
+      "error",
+      "error-slot",
+      "expand-cell",
+      "footer",
+      "footer-slot",
+      "group",
+      "group-chevron",
+      "group-count",
+      "group-inner",
+      "group-summary",
+      "group-title",
+      "group-toggle",
+      "header",
+      "header-cell",
+      "header-cell-pinned",
+      "header-content",
+      "header-label",
+      "header-menu",
+      "header-row",
+      "header-slot",
+      "loading",
+      "loading-slot",
+      "row",
+      "row-content",
+      "row-selected",
+      "scroller",
+      "selection-cell",
+      "sort",
+      "sort-mark",
+      "table",
+      "table-grid"
+    ]
   },
   "BolleEmptyState": {
     "slots": [
@@ -301,12 +391,40 @@
     ]
   },
   "BolleGantt": {
-    "slots": [],
-    "parts": []
+    "slots": [
+      "empty",
+      "error",
+      "loading"
+    ],
+    "parts": [
+      "empty",
+      "error",
+      "loading"
+    ]
   },
   "BolleKanban": {
-    "slots": [],
-    "parts": []
+    "slots": [
+      "empty",
+      "error",
+      "loading"
+    ],
+    "parts": [
+      "board",
+      "card",
+      "card-grip",
+      "card-header",
+      "card-row",
+      "column",
+      "column-collapsed",
+      "column-count",
+      "column-header",
+      "column-title",
+      "empty",
+      "error",
+      "lane",
+      "lane-header",
+      "loading"
+    ]
   },
   "BolleMenu": {
     "slots": [],
@@ -371,7 +489,7 @@
   },
   "BolleTabs": {
     "slots": [
-      "content-{id}",
+      "content-{itemId}",
       "default"
     ],
     "parts": [
@@ -664,9 +782,33 @@
   },
   "BolleSidebar": {
     "slots": [
+      "empty",
+      "filter",
+      "footer",
       "header"
     ],
-    "parts": []
+    "parts": [
+      "body",
+      "branch",
+      "brand",
+      "empty",
+      "filter",
+      "footer",
+      "header",
+      "item",
+      "item-chevron",
+      "item-count",
+      "item-icon",
+      "item-label",
+      "rail",
+      "rail-icon",
+      "rail-indicator",
+      "rail-item",
+      "rail-label",
+      "resize-handle",
+      "surface",
+      "tree"
+    ]
   },
   "BolleSlider": {
     "slots": [
@@ -769,9 +911,7 @@
   },
   "BolleList": {
     "slots": [
-      "default",
-      "leading-{id}",
-      "trailing-{id}"
+      "default"
     ],
     "parts": [
       "list",
@@ -783,12 +923,10 @@
       "list-item",
       "list-item-row",
       "list-label",
-      "list-leading",
       "list-row",
       "list-sublist",
       "list-supporting-text",
-      "list-text",
-      "list-trailing"
+      "list-text"
     ]
   },
   "BolleChip": {

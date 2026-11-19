@@ -4,7 +4,6 @@ import type {
   DataTableColumn,
   DataTableColumnChangeDetail,
   DataTableExpandDetail,
-  DataTablePageDetail,
   DataTableRow,
   DataTableSelectDetail,
   DataTableSort,
@@ -132,7 +131,14 @@ const contentCss = css`
   }
 `;
 
-const STATUSES = ["In offerta", "Pianificata", "In corso", "Sospesa", "In collaudo", "Chiusa"];
+const STATUSES = [
+  "In offerta",
+  "Pianificata",
+  "In corso",
+  "Sospesa",
+  "In collaudo",
+  "Chiusa",
+];
 const STATUS_TONE: Record<string, string> = {
   "In offerta": "neutral",
   Pianificata: "secondary",
@@ -153,8 +159,24 @@ const CLIENTS = [
   "Parrocchia San Giorgio",
   "Agricola Valcalepio",
 ];
-const CITIES = ["Bergamo", "Brescia", "Seriate", "Treviglio", "Dalmine", "Sirmione", "Lovere", "Clusone"];
-const MANAGERS = ["Giulia Ferraro", "Marco Bellini", "Sara Colombo", "Luca De Santis", "Francesca Moretti", "Davide Rinaldi"];
+const CITIES = [
+  "Bergamo",
+  "Brescia",
+  "Seriate",
+  "Treviglio",
+  "Dalmine",
+  "Sirmione",
+  "Lovere",
+  "Clusone",
+];
+const MANAGERS = [
+  "Giulia Ferraro",
+  "Marco Bellini",
+  "Sara Colombo",
+  "Luca De Santis",
+  "Francesca Moretti",
+  "Davide Rinaldi",
+];
 const WORKS = [
   "Rifacimento impianto elettrico",
   "Ristrutturazione facciata e cappotto termico",
@@ -185,17 +207,30 @@ const iso = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 const TODAY_ISO = iso(TODAY);
 
-const dateFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
-const euro = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const formatDate = (value: string) => dateFormat.format(new Date(`${value}T12:00`));
+const dateFormat = new Intl.DateTimeFormat("it-IT", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+const euro = new Intl.NumberFormat("it-IT", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
+const formatDate = (value: string) =>
+  dateFormat.format(new Date(`${value}T12:00`));
 
 function makeJobs(count: number): JobRow[] {
   const next = random(20261116);
-  const pick = <T,>(list: T[]) => list[Math.floor(next() * list.length)];
+  const pick = <T>(list: T[]) => list[Math.floor(next() * list.length)];
   return Array.from({ length: count }, (_, index) => {
     const status = pick(STATUSES);
     const progress =
-      status === "Chiusa" ? 100 : status === "In offerta" ? 0 : 5 + Math.round(next() * 90);
+      status === "Chiusa"
+        ? 100
+        : status === "In offerta"
+          ? 0
+          : 5 + Math.round(next() * 90);
     const started = new Date(TODAY);
     started.setDate(started.getDate() - Math.round(next() * 400));
     const due = new Date(started);
@@ -217,10 +252,14 @@ function makeJobs(count: number): JobRow[] {
 }
 
 const isLate = (row: DataTableRow) =>
-  String(row.due) < TODAY_ISO && row.status !== "Chiusa" && row.status !== "In collaudo";
+  String(row.due) < TODAY_ISO &&
+  row.status !== "Chiusa" &&
+  row.status !== "In collaudo";
 
 const statusPill = (status: string) =>
-  html`<span class="status tone-${STATUS_TONE[status] ?? "neutral"}">${status}</span>`;
+  html`<span class="status tone-${STATUS_TONE[status] ?? "neutral"}"
+    >${status}</span
+  >`;
 
 const columns = (): DataTableColumn[] => [
   {
@@ -245,46 +284,47 @@ const columns = (): DataTableColumn[] => [
     label: m("Responsabile"),
     width: 200,
     groupable: true,
-    render: (row) => html`<span class="person"
-      ><bolle-avatar size="xs" color="tertiary" .name=${String(row.manager)}></bolle-avatar
-      >${row.manager}</span
-    >`,
+    render: (row) =>
+      html`<span class="person"
+        ><bolle-avatar
+          size="xs"
+          color="tertiary"
+          .name=${String(row.manager)}
+        ></bolle-avatar
+        >${row.manager}</span
+      >`,
   },
   {
     key: "amount",
     label: m("Importo"),
     width: 140,
     align: "end",
-    render: (row) => html`<span class="num">${euro.format(Number(row.amount))}</span>`,
+    render: (row) =>
+      html`<span class="num">${euro.format(Number(row.amount))}</span>`,
   },
   {
     key: "progress",
     label: m("Avanzamento"),
     width: 160,
-    render: (row) => html`<span class="progress"
-      ><bolle-progress-indicator
-        value=${Number(row.progress)}
-        label=${m("Avanzamento")}
-      ></bolle-progress-indicator
-      ><span class="num">${row.progress}%</span></span
-    >`,
+    render: (row) =>
+      html`<span class="progress"
+        ><bolle-progress-indicator
+          value=${Number(row.progress)}
+          label=${m("Avanzamento")}
+        ></bolle-progress-indicator
+        ><span class="num">${row.progress}%</span></span
+      >`,
   },
   {
     key: "due",
     label: m("Scadenza"),
     width: 160,
     render: (row) =>
-      html`<span class="due ${isLate(row) ? "late" : ""}">${formatDate(String(row.due))}</span>`,
+      html`<span class="due ${isLate(row) ? "late" : ""}"
+        >${formatDate(String(row.due))}</span
+      >`,
   },
 ];
-
-/** The same sorting the table asks for, applied by the application. */
-const compare = (a: DataTableRow, b: DataTableRow, key: string) => {
-  const left = key === "status" ? STATUSES.indexOf(String(a.status)) : a[key];
-  const right = key === "status" ? STATUSES.indexOf(String(b.status)) : b[key];
-  if (typeof left === "number" && typeof right === "number") return left - right;
-  return String(left).localeCompare(String(right), "it");
-};
 
 /** Documentation preview: the table plus the application state it reports. */
 export class BolleDataTableDemo extends LitElement {
@@ -313,7 +353,6 @@ export class BolleDataTableDemo extends LitElement {
   private sort: DataTableSort[] = [{ key: "due", dir: "asc" }];
   private selected: string[] = [];
   private expanded: string[] = [];
-  private page = 0;
 
   constructor() {
     super();
@@ -331,81 +370,70 @@ export class BolleDataTableDemo extends LitElement {
     return this;
   }
 
-  private get ordered() {
-    const rows = [...this.jobs];
-    if (!this.sort.length) return rows;
-    rows.sort((a, b) => {
-      for (const item of this.sort) {
-        const value = compare(a, b, item.key);
-        if (value) return item.dir === "asc" ? value : -value;
-      }
-      return 0;
-    });
-    return rows;
-  }
-
-  private get pageRows() {
-    if (!this.pageSize) return this.ordered;
-    const start = this.page * this.pageSize;
-    return this.ordered.slice(start, start + this.pageSize);
-  }
-
+  /** Keeps the arrow of the header in step with the order the table applied. */
   private onSort = (event: Event) => {
     this.sort = (event as CustomEvent<DataTableSortDetail>).detail.sort;
-    this.page = 0;
-    this.requestUpdate();
-  };
-
-  private onPage = (event: Event) => {
-    this.page = (event as CustomEvent<DataTablePageDetail>).detail.page;
     this.requestUpdate();
   };
 
   private onSelect = (event: Event) => {
-    this.selected = (event as CustomEvent<DataTableSelectDetail>).detail.selected;
+    this.selected = (
+      event as CustomEvent<DataTableSelectDetail>
+    ).detail.selected;
     this.requestUpdate();
   };
 
   private onExpand = (event: Event) => {
-    this.expanded = (event as CustomEvent<DataTableExpandDetail>).detail.expanded;
+    this.expanded = (
+      event as CustomEvent<DataTableExpandDetail>
+    ).detail.expanded;
     this.requestUpdate();
   };
 
   private onColumns = (event: Event) => {
-    this.columns = (event as CustomEvent<DataTableColumnChangeDetail>).detail.columns;
+    this.columns = (
+      event as CustomEvent<DataTableColumnChangeDetail>
+    ).detail.columns;
     this.requestUpdate();
   };
 
   private onGroup = (event: Event) => {
     this.groupBy = (event as CustomEvent<{ groupBy: string }>).detail.groupBy;
-    this.page = 0;
     this.requestUpdate();
   };
 
-  private detail = (row: DataTableRow): TemplateResult => html`<div class="detail-body">
-    <div>
-      <p class="detail-kicker">${row.client} · ${row.city}</p>
-      <p class="detail-title">${row.title}</p>
-      <p class="detail-notes">${row.notes}</p>
-    </div>
-    <dl class="detail-facts">
-      <div><dt>${m("Inizio lavori")}</dt><dd>${formatDate(String(row.due))}</dd></div>
-      <div><dt>${m("Importo")}</dt><dd class="num">${euro.format(Number(row.amount))}</dd></div>
-      <div><dt>${m("Responsabile")}</dt><dd>${row.manager}</dd></div>
-    </dl>
-  </div>`;
+  private detail = (row: DataTableRow): TemplateResult =>
+    html`<div class="detail-body">
+      <div>
+        <p class="detail-kicker">${row.client} · ${row.city}</p>
+        <p class="detail-title">${row.title}</p>
+        <p class="detail-notes">${row.notes}</p>
+      </div>
+      <dl class="detail-facts">
+        <div>
+          <dt>${m("Inizio lavori")}</dt>
+          <dd>${formatDate(String(row.due))}</dd>
+        </div>
+        <div>
+          <dt>${m("Importo")}</dt>
+          <dd class="num">${euro.format(Number(row.amount))}</dd>
+        </div>
+        <div>
+          <dt>${m("Responsabile")}</dt>
+          <dd>${row.manager}</dd>
+        </div>
+      </dl>
+    </div>`;
 
   protected render() {
     return html`<bolle-data-table
       .label=${this.label}
       .columns=${this.columns}
-      .rows=${this.pageRows}
+      .rows=${this.jobs}
       .sort=${this.sort}
       .selected=${this.selected}
       .expanded=${this.expanded}
       .detail=${this.detail}
-      .total=${this.jobs.length}
-      .page=${this.page}
       .pageSize=${this.pageSize}
       .groupBy=${this.groupBy}
       .groupSummary=${(rows: DataTableRow[]) =>
@@ -422,7 +450,6 @@ export class BolleDataTableDemo extends LitElement {
       .expandable=${this.expandable}
       .virtual=${this.virtual}
       @sort=${this.onSort}
-      @page-change=${this.onPage}
       @select=${this.onSelect}
       @expand=${this.onExpand}
       @column-change=${this.onColumns}

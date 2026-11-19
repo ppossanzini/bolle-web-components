@@ -24,7 +24,8 @@ const HEX = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 export function normalizeHex(text: string): string {
   const match = HEX.exec(text.trim());
   if (!match) return "";
-  const digits = match[1].length === 3 ? [...match[1]].map((c) => c + c).join("") : match[1];
+  const digits =
+    match[1].length === 3 ? [...match[1]].map((c) => c + c).join("") : match[1];
   return `#${digits.toUpperCase()}`;
 }
 
@@ -100,16 +101,24 @@ export class DocsColor extends LitElement {
 
   private renderCustom() {
     const hex = normalizeHex(this.draft);
-    return html`<section class="custom-color" aria-label=${l("Colore personalizzato")}>
+    return html`<section
+      class="custom-color"
+      aria-label=${l("Colore personalizzato")}
+    >
       <p class="palette-caption">${l("Colore personalizzato")}</p>
       <div class="custom-color-row">
-        <label class="custom-color-well" style=${`background:${hex || this.value}`}>
+        <label
+          class="custom-color-well"
+          style=${`background:${hex || this.value}`}
+        >
           <input
             type="color"
             aria-label=${l("Scegli un colore qualsiasi")}
             .value=${(hex || this.value).toLowerCase()}
             @input=${(event: Event) =>
-              (this.draft = (event.target as HTMLInputElement).value.toUpperCase())}
+              (this.draft = (
+                event.target as HTMLInputElement
+              ).value.toUpperCase())}
           />
         </label>
         <bolle-text-field
@@ -119,7 +128,9 @@ export class DocsColor extends LitElement {
           ?error=${this.draft !== "" && !hex}
           supporting-text=${this.draft !== "" && !hex ? l("Usa #RGB o #RRGGBB") : ""}
           @value-input=${(event: Event) =>
-            (this.draft = (event as CustomEvent<{ value: string }>).detail.value)}
+            (this.draft = (
+              event as CustomEvent<{ value: string }>
+            ).detail.value)}
           @keydown=${(event: KeyboardEvent) => {
             if (event.key === "Enter" && hex) this.choose(hex);
           }}
@@ -136,45 +147,59 @@ export class DocsColor extends LitElement {
       MATERIAL_FAMILIES.find((item) => item.name === this.family) ??
       MATERIAL_FAMILIES[0];
     const current = this.value.toUpperCase();
-    const changed = this.previous !== "" && this.previous.toLowerCase() !== this.value.toLowerCase();
+    const changed =
+      this.previous !== "" &&
+      this.previous.toLowerCase() !== this.value.toLowerCase();
     return html`
-      ${this.tile
-        ? html`<button
-            type="button"
-            class="color-tile ${changed ? "is-changed" : ""}"
-            style=${`background:${this.value};color:${readableOn(this.value)}`}
-            aria-haspopup="dialog"
-            aria-label=${`${this.label}, ${this.token}: ${this.value}${changed ? l(", prima {color}", { color: this.previous }) : ""}`}
-            @click=${this.open}
-          >
-            ${changed
-              ? html`<span
-                  class="color-tile-before"
-                  style=${`background:${this.previous};color:${readableOn(this.previous)}`}
-                  title=${l("Prima: {color}", { color: this.previous })}
-                  >${l("prima")}</span
-                >`
-              : ""}
-            <span class="color-tile-name">${this.label}</span>
-            <code class="color-tile-token">${this.token}</code>
-            <code class="color-tile-value"
-              >${changed
-                ? html`<span class="color-tile-old">${this.previous} → </span>`
-                : ""}${this.value}</code
+      ${
+        this.tile
+          ? html`<button
+              type="button"
+              class="color-tile ${changed ? "is-changed" : ""}"
+              style=${`background:${this.value};color:${readableOn(this.value)}`}
+              aria-haspopup="dialog"
+              aria-label=${`${this.label}, ${this.token}: ${this.value}${changed ? l(", prima {color}", { color: this.previous }) : ""}`}
+              @click=${this.open}
             >
-          </button>`
-        : html`<button
-            type="button"
-            class="color-trigger"
-            aria-haspopup="dialog"
-            aria-label=${`${this.label}: ${this.value}`}
-            @click=${this.open}
-          >
-            <span class="color-swatch" style=${`background:${this.value}`}></span>
-            <span class="color-value">${this.value}</span>
-          </button>`}
+              ${
+                changed
+                  ? html`<span
+                      class="color-tile-before"
+                      style=${`background:${this.previous};color:${readableOn(this.previous)}`}
+                      title=${l("Prima: {color}", { color: this.previous })}
+                      >${l("prima")}</span
+                    >`
+                  : ""
+              }
+              <span class="color-tile-name">${this.label}</span>
+              <code class="color-tile-token">${this.token}</code>
+              <code class="color-tile-value"
+                >${
+                  changed
+                    ? html`<span class="color-tile-old"
+                        >${this.previous} →
+                      </span>`
+                    : ""
+                }${this.value}</code
+              >
+            </button>`
+          : html`<button
+              type="button"
+              class="color-trigger"
+              aria-haspopup="dialog"
+              aria-label=${`${this.label}: ${this.value}`}
+              @click=${this.open}
+            >
+              <span
+                class="color-swatch"
+                style=${`background:${this.value}`}
+              ></span>
+              <span class="color-value">${this.value}</span>
+            </button>`
+      }
 
       <bolle-dialog
+        modal
         ${ref(this.dialog)}
         class="palette-dialog"
         label=${l("Colore · {name}", { name: this.label })}
@@ -183,9 +208,14 @@ export class DocsColor extends LitElement {
         <div class="palette-content">
           ${this.renderCustom()}
           <div class="palette-head">
-            <span class="palette-caption">${l("Colore selezionato · {name}", { name: family.name })}</span>
+            <span class="palette-caption"
+              >${l("Colore selezionato · {name}", { name: family.name })}</span
+            >
             <span class="palette-current">
-              <span class="color-swatch" style=${`background:${this.value}`}></span>
+              <span
+                class="color-swatch"
+                style=${`background:${this.value}`}
+              ></span>
               <code>${this.value}</code>
             </span>
           </div>
@@ -210,8 +240,14 @@ export class DocsColor extends LitElement {
             })}
           </div>
 
-          <p class="palette-caption">${l("Toni {name}", { name: family.name })}</p>
-          <div class="shade-grid" role="group" aria-label=${l("Toni {name}", { name: family.name })}>
+          <p class="palette-caption">
+            ${l("Toni {name}", { name: family.name })}
+          </p>
+          <div
+            class="shade-grid"
+            role="group"
+            aria-label=${l("Toni {name}", { name: family.name })}
+          >
             ${family.shades.map((shade) =>
               this.swatch(
                 shade.hex,

@@ -44,10 +44,13 @@ import {
 import { BolleSidebar } from "./sidebar.js";
 import { BolleDataTable } from "./data-table.js";
 import { BolleKanban } from "./kanban.js";
+import { BolleGantt } from "./gantt.js";
 import { BolleBottomAppBar } from "./bottom-app-bar.js";
 import { BolleAvatar } from "./avatar.js";
 import { BolleEmptyState } from "./empty-state.js";
 import { BollePagination } from "./pagination.js";
+import { BolleBreadcrumb } from "./breadcrumb.js";
+import { BolleAvatarGroup } from "./avatar-group.js";
 import { BolleAppShell } from "./app-shell.js";
 import { BolleDashboard, BolleWidget } from "./dashboard.js";
 import {
@@ -62,6 +65,7 @@ export {
   BolleWidget,
   BolleDataTable,
   BolleKanban,
+  BolleGantt,
   BolleBottomAppBar,
   BolleSidebar,
   BolleButton,
@@ -103,6 +107,8 @@ export {
   BolleLoadingIndicator,
   BolleCarousel,
   BolleAvatar,
+  BolleAvatarGroup,
+  BolleBreadcrumb,
   BolleEmptyState,
   BollePagination,
 };
@@ -140,15 +146,28 @@ export type {
   KanbanCollapseDetail,
   KanbanAddDetail,
 } from "./kanban.js";
+export type {
+  GanttTask,
+  GanttColumn,
+  GanttScale,
+  GanttGroup,
+  GanttChangeRequest,
+  GanttChangeDetail,
+  GanttDependencyDetail,
+  GanttTaskDetail,
+  GanttViewDetail,
+  GanttColumnsDetail,
+} from "./gantt.js";
+export type { GanttLabels } from "./localization.js";
 export type { KanbanLabels, PaginationLabels } from "./localization.js";
 export type { AvatarShape, AvatarSize, AvatarStatus } from "./avatar.js";
 export { avatarInitials } from "./avatar.js";
+export type { BreadcrumbItem } from "./breadcrumb.js";
+export type { AvatarGroupSelectDetail } from "./avatar-group.js";
+export type { BreadcrumbLabels } from "./localization.js";
 export type { PaginationChangeDetail } from "./pagination.js";
 export type { AppShellForm, AppShellFormDetail } from "./app-shell.js";
-export {
-  APP_SHELL_MEDIUM,
-  APP_SHELL_EXPANDED,
-} from "./app-shell.js";
+export { APP_SHELL_MEDIUM, APP_SHELL_EXPANDED } from "./app-shell.js";
 export type {
   DashboardLayoutEntry,
   DashboardLayoutDetail,
@@ -193,8 +212,11 @@ export const catalogue = {
   "bolle-widget": BolleWidget,
   "bolle-data-table": BolleDataTable,
   "bolle-kanban": BolleKanban,
+  "bolle-gantt": BolleGantt,
   "bolle-bottom-app-bar": BolleBottomAppBar,
   "bolle-avatar": BolleAvatar,
+  "bolle-avatar-group": BolleAvatarGroup,
+  "bolle-breadcrumb": BolleBreadcrumb,
   "bolle-empty-state": BolleEmptyState,
   "bolle-pagination": BollePagination,
   "bolle-sidebar": BolleSidebar,
@@ -248,6 +270,14 @@ declare global {
     "bolle-dashboard": BolleDashboard;
     "bolle-widget": BolleWidget;
     "bolle-data-table": BolleDataTable;
+    "bolle-kanban": BolleKanban;
+    "bolle-gantt": BolleGantt;
+    "bolle-bottom-app-bar": BolleBottomAppBar;
+    "bolle-avatar": BolleAvatar;
+    "bolle-avatar-group": BolleAvatarGroup;
+    "bolle-breadcrumb": BolleBreadcrumb;
+    "bolle-empty-state": BolleEmptyState;
+    "bolle-pagination": BollePagination;
     "bolle-sidebar": BolleSidebar;
     "bolle-slider": BolleSlider;
     "bolle-snackbar": BolleSnackbar;

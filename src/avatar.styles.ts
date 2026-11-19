@@ -5,7 +5,16 @@ export const avatarStyles = css`
     display: inline-block;
     flex: none;
     vertical-align: middle;
+    /* A ring of the surface behind lets the avatar sit on an overlap without a seam. */
+    box-shadow: 0 0 0 var(--bb-avatar-ring-width, 0) var(--bb-avatar-ring, transparent);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
     --bb-avatar-size: var(--md-comp-avatar-medium-size, 40px);
+  }
+  :host([shape="rounded"]) {
+    border-radius: var(--bb-avatar-radius, var(--md-sys-shape-corner-medium, 12px));
+  }
+  :host([shape="square"]) {
+    border-radius: var(--md-sys-shape-corner-none, 0);
   }
   :host([size="xs"]) {
     --bb-avatar-size: var(--md-comp-avatar-xs-size, 24px);

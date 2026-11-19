@@ -548,8 +548,7 @@ mode déterminé et indéterminé.
 
 ### bolle-loading-indicator
 
-Attributs : `label`, `variant` (default, contained). Toujours indéterminé, avec
-`role="progressbar"`.
+Attributs : `label`, `variant` (default, morph, contained). Toujours indéterminé, avec `role="progressbar"`. La variante `morph` suit la séquence de sept formes ; `contained` dessine le conteneur plein.
 
 ```vue
 <template>
@@ -644,7 +643,9 @@ Attributs : `label`, `variant` (hero, multi-browse, uncontained,
 uncontained-multi-aspect-ratio, center-aligned-hero, full-screen),
 `previous-label`, `next-label`, `index`. Enfants : les slides. Méthode :
 `goTo(index)`. Événement : `change` avec `{ index }`. La variante `full-screen`
-défile verticalement.
+défile verticalement. Les keylines suivent la largeur du carrousel : `hero`
+remplit le conteneur, `multi-browse` montre trois entrées et `uncontained` reste
+entre 160 et 220px.
 
 ```vue
 <script setup lang="ts">
@@ -1837,11 +1838,19 @@ function onEvening(event: Event) {
 ### bolle-menu
 
 Attributs : `items` (`MenuEntry[]`), `menu-label` (obligatoire), `variant`
-(vertical, baseline), `color-scheme` (standard, vibrant ; uniquement vertical),
-`selection-mode` (none, single, multi), `quick`, `density` (nombre, les valeurs
-négatives sont plus compactes), `inactive`. Méthodes : `show(anchor, { last?, x?, y? })`,
-`close(restoreFocus?)`. Getters : `open`, `selectedIds`. Événements :
-`menu-open`, `menu-close`, `menu-select` avec `{ item, selectedIds }`.
+(vertical, baseline), `color-scheme` (standard, vibrant ; vertical uniquement),
+`selection-mode` (none, single, multi), `filterable`, `filter`, `locale`,
+`compact-width` (480px par défaut), `quick`, `density` (nombre, les valeurs
+négatives sont plus compactes), `inactive`. Méthodes :
+`show(anchor, { last?, x?, y? })`, `close(restoreFocus?)`. Getters : `open`,
+`selectedIds`. Événements : `menu-open`, `menu-close`, `menu-select` avec
+`{ item, selectedIds }`.
+
+Avec `filterable` le menu affiche un champ qui filtre les entrées ; `filter`
+contient la requête et peut être défini de l'extérieur. Sous `compact-width` le
+menu vertical devient une feuille par le bas, fermée par Escape ou un appui
+extérieur. `selectedIds` agrège la sélection des sous-menus et `menu-select`
+rapporte la sélection de la racine.
 
 ```vue
 <script setup lang="ts">

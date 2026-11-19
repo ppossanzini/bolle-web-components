@@ -26,6 +26,7 @@ import {
 } from "./reference.js";
 import "./docs-color.js";
 import "./docs-select.js";
+import { renderStateMatrix } from "./states.js";
 import {
   componentTokenUsage,
   tokenDefault,
@@ -104,6 +105,7 @@ interface DocSection {
 /** Groups whose previews need the full row, so variants stack instead of tiling. */
 const WIDE_GROUPS = new Set<string>([
   "App bars",
+  "Gantt",
   "Cards",
   "Carousel",
   "Date & time pickers",
@@ -126,13 +128,36 @@ const PANEL_GROUPS = new Set<string>([
   "App shell",
   "Dashboard",
   "Kanban",
+  "Gantt",
   "Pagination",
   "App bars",
+  "Breadcrumb",
 ]);
 
 const SCHIUMA = "Schiuma";
+/** Reading order of the Schiuma group: whole surfaces first, then the primitives. */
+const SCHIUMA_ORDER = [
+  "bolle-sidebar",
+  "bolle-app-shell",
+  "bolle-dashboard",
+  "bolle-kanban",
+  "bolle-gantt",
+  "bolle-data-table",
+  "bolle-avatar",
+  "bolle-avatar-group",
+  "bolle-breadcrumb",
+  "bolle-empty-state",
+  "bolle-pagination",
+];
+const bySchiumaOrder = (a: Entry, b: Entry) => {
+  const index = (entry: Entry) => {
+    const position = SCHIUMA_ORDER.indexOf(entry.tag);
+    return position === -1 ? SCHIUMA_ORDER.length : position;
+  };
+  return index(a) - index(b);
+};
 const coreEntries = entries.filter((entry) => !entry.section);
-const schiumaEntries = entries.filter((entry) => entry.section === SCHIUMA);
+const schiumaEntries = entries.filter((entry) => entry.section === SCHIUMA).sort(bySchiumaOrder);
 /** Material families first, then the Schiuma components for admin applications. */
 const orderedEntries = [
   ...groups.flatMap((group) =>
@@ -999,7 +1024,8 @@ export class DocsApp extends LitElement {
             <p>${l(entry.summary)}</p>
           </bolle-card>`,
         )}
-      </div>`;
+      </div>
+      ${renderStateMatrix()}`;
   }
 
   private inspect = (event: Event) => {

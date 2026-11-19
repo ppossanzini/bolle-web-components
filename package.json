@@ -1,7 +1,8 @@
 {
   "name": "bolle-web-components",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "A material based web component library",
+  "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",

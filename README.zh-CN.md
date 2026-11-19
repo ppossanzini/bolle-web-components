@@ -497,10 +497,10 @@ Angular 集成仍未完成。
 在发布身份、许可证和发布检查确认之前，该包保持私有。
 本阶段不会进行发布。
 
-## 0.2.1 版组件目录
+## 0.3.2 版组件目录
 
-该包现在注册了全部 36 个目录条目：原有的菜单和
-下列 35 个新增组件。每个新增组件都有可用的原生控件或语义化
+该包现在注册了全部 52 个标签：菜单和
+`catalogue` 映射中的下列 51 个条目。每个新增组件都有可用的原生控件或语义化
 表面。条目覆盖**并不**意味着完全符合 Material 3 或 Expressive。
 “支持”列说明已实现的接口。“限制”列
 说明缺失的变体或行为。
@@ -561,8 +561,11 @@ Schiuma 收录面向管理类应用的高级组件。它们使用与 Material �
 | 应用外壳 | `bolle-app-shell` | 以插槽提供应用区域——`bar`、`navigation`、默认内容、`supporting`、`status`、`bottom-bar`——形态按自身宽度决定：低于 840px 时导航移到底部栏、辅助面板变为抽屉，高于 1240px 时导航保持展开；`form` 可强制形态，`form-change` 报告实测形态；辅助面板在内容旁作为列显示，打开时获得焦点 | 外壳不负责路由或持久化：应用填充插槽并响应 `form-change` 与 `supporting-close`。断点固定为 840 与 1240。会在自身设置 `data-form` 供页面样式使用 |
 | 仪表板 | `bolle-dashboard` | 十二列的 `bolle-widget` 块网格；每个块声明 `span` 与 `min-span`，带有把手、标题、可选副标题、操作插槽，以及宽度、前后移动和隐藏的菜单；可通过指针拖拽重新排序：副本跟随指针，落点处显示虚线空位，指针提示显示位置，边缘自动滚动，Esc 取消；也可用 Alt 加方向键或菜单；可通过角把手、方向键或菜单调整宽度；每次操作都有实时区域播报 | 组件只移动和调整给定的块，并通过 `layout-change`、`widget-hide` 报告；顺序、宽度和隐藏状态归应用所有。宽度为整列，不用像素 |
 | 看板 | `bolle-kanban` | 列与卡片组成的看板：卡片由应用声明，包含 `id`、`column`、可选的 `lane` 以及用于播报的 `title`；可在列之间移动和重新排序，方式是带指针跟随副本、虚线占位符、错误角色表示的拒绝列和边缘自动滚动的指针拖拽，或从卡片把手使用 Alt 加方向键；`restrict` 返回拒绝移动的原因；每列的 `wip` 只作为超出提示，从不阻塞；`collapsed` 折叠列；`lanes` 与 `laneLabel` 按泳道把卡片分组为堆叠条带；`addable` 快速添加；`cardActions` 与 `columnActions` 提供卡片和列菜单；加载、错误和空状态；`comfortable` 与 `compact` 密度；纵向滚动属于列，不属于看板 | 组件从不移动卡片、不施加流转规则、不保存顺序：它通过 `card-move` 请求，通过 `card-move-blocked` 报告拒绝，并由 `restrict` 决定。顺序、折叠状态和卡片归应用所有，应用响应 `card-move`、`card-move-blocked`、`card-open`、`card-action`、`column-action`、`column-collapse`、`card-add` 和 `retry`。宿主需要高度，因为看板会填满它。`card` 返回的标记位于 shadow root 中，其 CSS 需通过 `contentStyles` 传入。不支持列排序、按列排序和跨看板拖拽 |
+| 甘特图 | `bolle-gantt` | 计划表面：任务由应用声明，包含 `id`、`code`、`name`、`start`、`end`，可选的 `parent`、`progress`、`milestone`、`hours`、`deps`、`resource`、`phase` 和 `baseline`；日、周、月、季度四种时间刻度，双行表头、周末底纹与今日线；带端帽的汇总条、里程碑菱形与条形下方的基线；带箭头的依赖折线；指针移动与缩放，跟随指针的提示条，被拒绝时显示红色原因提示，按 Esc 取消；键盘 Alt 加方向键与 Shift+Alt 加方向键；`group-by` 支持由 `parent` 构成的树、`resource` 或 `phase`，按负责人显示负荷条；列菜单带可见列，拖动分隔线调整宽度，并按宿主宽度自动预设；行虚拟化，网格列在横向上固定，时间表头在顶部固定；`baseline` 显示已批准计划；加载、错误与空状态 | 该表面从不缩短、延长或连接任务：通过 `task-change` 请求，通过 `task-change-blocked` 报告拒绝并应用应用端在 `restrict` 中给出的规则，通过 `task-open` 报告打开。它自身只拒绝结构性问题——结束早于开始、依赖已存在或形成循环——并通过 `dependency-add` 与 `dependency-blocked` 发出。刻度、密度与基线是表面持有的视图状态，通过 `view-change` 报告；可见列通过 `columns-change` 报告。宿主需要高度，因为计划会填满它。每个任务只占一行：不支持行排序、单元格内编辑、日期区间筛选，依赖连接也没有键盘路径 |
 | 数据表格 | `bolle-data-table` | 受控表格的行：应用声明列，可设明确宽度，以及 `align`、`pinned`、`hidden`、`groupable`、`sortable`、`value` 和 `render`；单列与多列排序，带序号标记和 `aria-sort`；表头菜单可排序、分组、固定、移动和隐藏列；拖拽列，Esc 取消，Alt 加方向键为无需拖拽的方式；可用指针、双击和方向键调整列宽；表头固定；固定列带边缘阴影；选择支持整页与不确定状态；行详情；分组带计数和应用提供的汇总；带范围的分页器；`virtual` 窗口化渲染；加载、更新、空和错误状态；`card` 与 `free` 形态；`comfortable` 与 `compact` 密度 | 组件不排序、不过滤、不分页：数据归应用所有，应用响应 `sort`、`page-change`、`select`、`expand`、`group`、`column-change`、`row-action`、`row-activate` 和 `retry` 事件。`virtual` 需要宿主有高度。`render`、`detail` 和 `groupSummary` 返回的标记位于 shadow root 中，其 CSS 需通过 `contentStyles` 传入。不支持行内编辑、导出、列合并和拖拽行排序 |
 | 头像 | `bolle-avatar` | 身份标记：图片、缩写或图标；未提供缩写时由 `name` 推导，在无空格的语言中同样可读；`size` 从 `xs` 到 `xl`，`shape` 为 circle、rounded 或 square，`color` 角色，可选 `status` 指示点；`icon` 与 `badge` 插槽；图片加载失败时回退到缩写；可访问名称来自 `label`、`alt`、`name` 或缩写 | 按约定为装饰元素：本身不带链接、按钮或菜单，由调用方放入其中。不支持头像组或堆叠，也不带在线状态提示 |
+| 头像组 | `bolle-avatar-group` | 排列收到的 `bolle-avatar`，按尺寸比例重叠；`max` 保留前几个可见，其余汇总到计数气泡，`total` 计入未作为头像传入的人员，`size` 设定共享尺寸，`overlap` 设定重叠比例；气泡为纯文本，或在启用 `interactive` 时成为按钮并通过 `avatar-group-select` 上报；背景色描边分隔相邻头像；`label` 为组命名 | 只负责排列与计数：不获取人员，也不打开列表，`avatar-group-select` 仅报告隐藏数量。气泡不是提示或浮层。自行声明 `size` 的头像保持自身尺寸 |
+| 面包屑 | `bolle-breadcrumb` | 由应用声明的层级路径，含 `id`、`label`、可选 `href`、`icon` 与 `current`；当前层级不是链接并带 `aria-current="page"`；`max-items` 把过长路径缩为第一级、可展开的省略按钮和最后几级；`separator` 为 chevron、slash 或 none，在从右到左的布局中镜像；标签以省略号截断，从不绘制到宿主之外；可用 `labels` 覆盖文案；`breadcrumb-select` 报告所选层级 | 自身从不导航：应用响应 `breadcrumb-select` 并决定路由。省略按钮只展开一次路径，不是菜单。不随宽度自动折叠，也无法弹出同级或上级 |
 | 空状态 | `bolle-empty-state` | 容器无内容可显示时使用的界面：`icon` 及其插槽、`title`、`text` 与 `actions` 插槽；`tone` 为 neutral 或 error，`align` 为 center 或 start，`role` 可让错误以 alert 播报 | 它只绘制状态，不判定状态：区分“无数据”与“无结果”以及选择操作属于应用。除图标外不提供插图插槽，也不自带重试逻辑 |
 | 分页 | `bolle-pagination` | 列表分页控件，数据归应用所有：`page`、`pageSize` 与 `total`，含范围文字、随容器收窄的页码窗口、首页/上一页/下一页/末页箭头，以及来自 `pageSizes` 的每页行数选择；`form` 为 full 或 compact；容器变窄时页码列表让位于页码文字，边缘箭头也先行隐藏；可用 `labels` 覆盖文案；`page-change` 同时报告页码与每页行数 | 从不切分数据：应用响应 `page-change` 并传入行。`page` 从 0 开始，`pageSize` 为 0 时隐藏分页器。不支持无限滚动或跳页输入 |
 
@@ -713,3 +716,12 @@ snackbar 排队、rich tooltip 保留、自定义复选框控件、
 Firefox/WebKit、触摸/指针拖动、屏幕阅读器、完整的颜色状态
 对比度、每个新组件的缩放/文本间距以及框架集成
 仍未验证。这些检查不构成无障碍合规。
+
+## 许可证
+
+本包以 Apache License 2.0 发布。完整文本见 [LICENSE](./LICENSE)，`package.json`
+中以 `"license": "Apache-2.0"` 声明同一标识符。
+
+该许可证覆盖本仓库的源码与构建产物，不改变第三方资源的授权条款：
+Fontsource 字体家族的许可证随字体一同发布；
+`src/icons.ts` 中的图标路径数据来自 Tabler Icons，以 MIT 许可证授权。

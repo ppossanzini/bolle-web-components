@@ -455,11 +455,15 @@ render(
       component(
         "loading-indicator",
         "Loading indicator",
-        "Indicatore Morph Expressive; configurazione libera e contenuta.",
+        "Indicatore Morph Expressive; bolle, sequenza di sette forme e configurazione contenuta.",
         specimen(
-          "Default · contenuto",
+          "Default · morph · contenuto",
           html`<bolle-loading-indicator
               label="Caricamento"
+            ></bolle-loading-indicator>
+            <bolle-loading-indicator
+              variant="morph"
+              label="Caricamento sequenza"
             ></bolle-loading-indicator>
             <bolle-loading-indicator
               variant="contained"
@@ -1391,7 +1395,7 @@ render(
       component(
         "menus",
         "Menus",
-        "Baseline, verticale standard, verticale vibrant, selezione singola e multipla, sottomenu.",
+        "Baseline, verticale standard, verticale vibrant, filtro interno, selezione singola e multipla, sottomenu; sotto 480px il menu verticale diventa un foglio dal basso.",
         specimen(
           "Baseline · vertical standard",
           html`<bolle-button
@@ -1412,6 +1416,19 @@ render(
               id="demo-menu-standard"
               selection-mode="single"
               menu-label="Ordinamento"
+            ></bolle-menu>`,
+        ),
+        specimen(
+          "Filtro interno",
+          html`<bolle-button
+              variant="outlined"
+              aria-haspopup="menu"
+              @click=${(event: Event) => menu("demo-menu-filter", event)}
+              >Documenti</bolle-button
+            ><bolle-menu
+              id="demo-menu-filter"
+              filterable
+              menu-label="Documenti"
             ></bolle-menu>`,
         ),
         specimen(
@@ -1468,6 +1485,13 @@ document.querySelector<BolleMenu>("#demo-menu-baseline")!.items = [
   { separator: true },
   { id: "archive", label: "Archivia", disabled: true },
   { id: "docs", label: "Documentazione", href: "https://m3.material.io/" },
+];
+document.querySelector<BolleMenu>("#demo-menu-filter")!.items = [
+  { id: "contract", label: "Contratto", supportingText: "PDF · 2,4 MB" },
+  { id: "estimate", label: "Preventivo", supportingText: "PDF · 380 KB" },
+  { id: "plan", label: "Computo metrico", supportingText: "XLSX · 1,1 MB" },
+  { separator: true },
+  { id: "photo", label: "Sopralluogo", supportingText: "JPG · 4,8 MB" },
 ];
 document.querySelector<BolleMenu>("#demo-menu-standard")!.items = [
   { id: "name", label: "Nome", selected: true },

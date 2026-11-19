@@ -1,8 +1,10 @@
 import { LitElement, html, nothing } from "lit";
+import type { PropertyValues } from "lit";
 import { menuStyles } from "./menu.styles.js";
 import { checkIcon } from "./icons.js";
 import { bolleStyles } from "./shared.styles.js";
 import { applyTail, type SurfaceTail } from "./shared.js";
+import { menuLabels } from "./localization.js";
 import {
   flattenMenu,
   isAction,
@@ -15,6 +17,15 @@ import {
 
 let menuId = 0;
 
+const normalize = (text: string) =>
+  text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+
+const fill = (template: string, params: Record<string, string>) =>
+  template.replace(/\{(\w+)\}/g, (_, key: string) => params[key] ?? "");
+
+/** Pointer travel allowed between an item and its submenu before the submenu closes. */
+const SUBMENU_GRACE = 240;
+
 export class BolleMenu extends LitElement {
   static properties = {
     items: { attribute: false },
@@ -23,12 +34,18 @@ export class BolleMenu extends LitElement {
     selectionMode: { attribute: "selection-mode" },
     menuLabel: { attribute: "menu-label" },
     quick: { type: Boolean, reflect: true },
+    filterable: { type: Boolean, reflect: true },
+    filter: { attribute: "filter", reflect: true },
+    locale: {},
+    compactWidth: { attribute: "compact-width", type: Number },
     tail: { reflect: true },
     density: { type: Number, reflect: true },
     inactive: { type: Boolean, reflect: true },
     _active: { state: true },
     _selected: { state: true },
     _childItems: { state: true },
+    _childId: { state: true },
+    _compact: { state: true },
   };
 
   static styles = [bolleStyles, menuStyles];
@@ -38,12 +55,18 @@ export class BolleMenu extends LitElement {
   selectionMode: SelectionMode = "none";
   menuLabel = "";
   quick = false;
+  filterable = false;
+  filter = "";
+  locale = "";
+  compactWidth = 480;
   tail: SurfaceTail = "auto";
   density = 0;
   inactive = false;
   private _active = 0;
   private _selected: Set<string> | undefined;
   private _childItems: MenuEntry[] = [];
+  private _childId: string | null = null;
+  private _compact = false;
   private anchor?: HTMLElement;
   private point?: { x: number; y: number };
   private listeners?: AbortController;
@@ -51,6 +74,7 @@ export class BolleMenu extends LitElement {
   private buffer = "";
   private typedAt = 0;
   private hoverTimer?: ReturnType<typeof setTimeout>;
+  private childTimer?: ReturnType<typeof setTimeout>;
   private previousControls: string | null = null;
   private previousExpanded: string | null = null;
   private readonly surfaceId = `bolle-menu-${++menuId}`;
@@ -61,22 +85,60 @@ export class BolleMenu extends LitElement {
   private get surface() {
     return this.renderRoot.querySelector<HTMLDivElement>("[popover]");
   }
+  private get filterInput() {
+    return this.renderRoot.querySelector<HTMLInputElement>(".filter input");
+  }
   private get controls() {
     return [...this.renderRoot.querySelectorAll<HTMLElement>("[data-item]")];
   }
+  private get query() {
+    return normalize(this.filter.trim());
+  }
+  /** Entries left by the filter; groups and dividers that lose every row drop out. */
+  private get entries(): MenuEntry[] {
+    if (!this.query) return this.items;
+    const matches = (item: MenuAction): boolean =>
+      normalize(item.label).includes(this.query) ||
+      normalize(item.supportingText ?? "").includes(this.query) ||
+      flattenMenu(item.children ?? []).some((child) => matches(child));
+    const visible: MenuEntry[] = [];
+    for (const entry of this.items) {
+      if (isGroup(entry)) {
+        const items = entry.items.filter(matches);
+        if (items.length) visible.push({ ...entry, items });
+      } else if (isAction(entry)) {
+        if (matches(entry)) visible.push(entry);
+      } else if (visible.length && !("separator" in visible.at(-1)!))
+        visible.push(entry);
+    }
+    while (visible.length && "separator" in visible.at(-1)!) visible.pop();
+    return visible;
+  }
   private get actions() {
-    return flattenMenu(this.items);
+    return flattenMenu(this.entries);
   }
   private get child() {
     return this.renderRoot.querySelector<BolleMenu>("bolle-menu");
   }
+  /** Selection recorded per submenu, so a submenu reopens with its own rows checked. */
+  private _submenuSelection = new Map<string, Set<string>>();
+  /** Selection of this surface plus every entry selected in a nested submenu. */
   get selectedIds(): string[] {
-    return [
-      ...(this._selected ??
-        new Set(
-          this.actions.filter((item) => item.selected).map((item) => item.id),
-        )),
-    ];
+    const own =
+      this._selected ??
+      new Set(
+        this.actions.filter((item) => item.selected).map((item) => item.id),
+      );
+    const nested = [...this._submenuSelection.values()].flatMap((ids) => [
+      ...ids,
+    ]);
+    return [...new Set([...nested, ...own])];
+  }
+  private recordSubmenuSelection(detail: MenuSelectDetail) {
+    const owner = this.actions[this._active];
+    if (owner)
+      this._submenuSelection.set(owner.id, new Set(detail.selectedIds));
+    this.requestUpdate();
   }
   setSelection(ids: string[]) {
     this._selected = new Set(ids);
@@ -94,6 +156,9 @@ export class BolleMenu extends LitElement {
       throw new Error("Vibrant colours require the vertical menu variant.");
     this.validateItems(this.items);
     this.anchor = anchor;
+    // Below the compact breakpoint a vertical menu becomes a bottom sheet.
+    this._compact =
+      this.variant === "vertical" && innerWidth < this.compactWidth;
     this.point =
       options.x !== undefined && options.y !== undefined
         ? { x: options.x, y: options.y }
@@ -116,7 +181,12 @@ export class BolleMenu extends LitElement {
     surface.showPopover();
     surface.dir = getComputedStyle(anchor).direction;
     this.reposition();
-    this.controls[this._active]?.focus();
+    // A keyboard request for the last item keeps the focus on it; otherwise the
+    // filter field takes the first focus, as a filterable menu expects.
+    const target = options.last
+      ? (this.controls[this._active] ?? this.filterInput)
+      : (this.filterInput ?? this.controls[this._active] ?? this.controls[0]);
+    target?.focus();
     this.listeners = new AbortController();
     const signal = this.listeners.signal;
     document.addEventListener("pointerdown", this.onOutside, {
@@ -139,9 +209,11 @@ export class BolleMenu extends LitElement {
 
   close(restoreFocus = true) {
     clearTimeout(this.hoverTimer);
+    clearTimeout(this.childTimer);
     this.child?.close(false);
     this.inactive = false;
     this._childItems = [];
+    this._childId = null;
     this.listeners?.abort();
     this.resize?.disconnect();
     if (!this.open) return;
@@ -211,6 +283,17 @@ export class BolleMenu extends LitElement {
   private reposition = () => {
     if (!this.open || !this.anchor) return;
     const surface = this.surface!;
+    if (this.variant === "vertical") {
+      const compact = innerWidth < this.compactWidth;
+      if (compact !== this._compact) this._compact = compact;
+    }
+    if (this._compact) {
+      // The sheet is pinned to the bottom edge by CSS, so the opener may scroll away.
+      surface.dataset.tail = "none";
+      surface.style.removeProperty("left");
+      surface.style.removeProperty("top");
+      return;
+    }
     const rect = this.anchor.getBoundingClientRect();
     if (
       !this.anchor.isConnected ||
@@ -267,9 +350,11 @@ export class BolleMenu extends LitElement {
 
   private async focusItem(index: number) {
     if (!this.actions.length) return;
+    clearTimeout(this.childTimer);
     this._active = (index + this.actions.length) % this.actions.length;
     this.child?.close(false);
     this._childItems = [];
+    this._childId = null;
     this.inactive = false;
     await this.updateComplete;
     this.controls[this._active]?.focus();
@@ -277,17 +362,97 @@ export class BolleMenu extends LitElement {
 
   private async openChild(item: MenuAction, anchor: HTMLElement) {
     if (item.disabled || !item.children?.length) return;
+    clearTimeout(this.childTimer);
     this.child?.close(false);
     this._active = this.actions.indexOf(item);
     this._childItems = item.children;
+    this._childId = item.id;
     this.inactive = true;
     await this.updateComplete;
     await this.child!.show(anchor);
+    const saved = this._submenuSelection.get(item.id);
+    if (saved) this.child!.setSelection([...saved]);
+  }
+
+  /** Pointer left an item or the surface: the submenu closes unless it is re-entered. */
+  private scheduleChildClose = () => {
+    if (!this._childId) return;
+    clearTimeout(this.childTimer);
+    this.childTimer = setTimeout(() => {
+      this.child?.close(false);
+      this._childId = null;
+      this.inactive = false;
+      // The surface stays mounted for its exit transition, then leaves the tree.
+      setTimeout(() => {
+        if (!this.child?.open) this._childItems = [];
+      }, 220);
+    }, SUBMENU_GRACE);
+  };
+  private cancelChildClose = () => clearTimeout(this.childTimer);
+
+  private rippleAt(host: HTMLElement, x: number, y: number) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const clip = host.querySelector<HTMLElement>(".ripple-clip");
+    if (!clip) return;
+    const rect = host.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 2.2;
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    ripple.style.inlineSize = `${size}px`;
+    ripple.style.blockSize = `${size}px`;
+    ripple.style.left = `${x - rect.left - size / 2}px`;
+    ripple.style.top = `${y - rect.top - size / 2}px`;
+    clip.append(ripple);
+    ripple.addEventListener("animationend", () => ripple.remove(), {
+      once: true,
+    });
+  }
+  private onRipple = (event: PointerEvent) => {
+    if (event.button !== 0) return;
+    this.rippleAt(
+      event.currentTarget as HTMLElement,
+      event.clientX,
+      event.clientY,
+    );
+  };
+  /** Keyboard activation has no pointer origin, so the ripple starts from the item centre. */
+  private rippleFromCenter(event: MouseEvent) {
+    if (event.detail !== 0) return;
+    const host = event.currentTarget as HTMLElement;
+    const rect = host.getBoundingClientRect();
+    this.rippleAt(host, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  }
+
+  protected willUpdate(changed: PropertyValues) {
+    if (!changed.has("filter")) return;
+    clearTimeout(this.childTimer);
+    this.child?.close(false);
+    this._childItems = [];
+    this._childId = null;
+    this.inactive = false;
+    this._active = 0;
   }
 
   private onKey = (event: KeyboardEvent) => {
     const rtl = this.surface?.dir === "rtl";
     const index = this._active;
+    if (event.composedPath()[0] === this.filterInput) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        this.close();
+      } else if (event.key === "Tab") {
+        event.stopPropagation();
+        this.close();
+      } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        if (this.actions.length)
+          void this.focusItem(
+            event.key === "ArrowDown" ? 0 : this.actions.length - 1,
+          );
+      }
+      return;
+    }
     if (event.key === "Tab") {
       event.stopPropagation();
       this.close();
@@ -308,7 +473,12 @@ export class BolleMenu extends LitElement {
       event.preventDefault();
       event.stopPropagation();
       if (event.key === "ArrowDown") void this.focusItem(index + 1);
-      if (event.key === "ArrowUp") void this.focusItem(index - 1);
+      if (event.key === "ArrowUp") {
+        if (index === 0 && this.filterInput) {
+          this._active = 0;
+          this.filterInput.focus();
+        } else void this.focusItem(index - 1);
+      }
       if (event.key === "Home") void this.focusItem(0);
       if (event.key === "End") void this.focusItem(this.actions.length - 1);
       if (
@@ -351,6 +521,7 @@ export class BolleMenu extends LitElement {
       event.preventDefault();
       return;
     }
+    this.rippleFromCenter(event);
     if (item.children) {
       event.preventDefault();
       void this.openChild(item, event.currentTarget as HTMLElement);
@@ -378,20 +549,24 @@ export class BolleMenu extends LitElement {
   private renderItem(item: MenuAction, index: number) {
     const selected = this.selectedIds.includes(item.id);
     const showsIndicator =
-      this.selectionMode !== "none" || this.actions.some((action) => action.icon);
+      this.selectionMode !== "none" ||
+      this.actions.some((action) => action.icon);
     const role =
       this.selectionMode === "single"
         ? "menuitemradio"
         : this.selectionMode === "multi"
           ? "menuitemcheckbox"
           : "menuitem";
-    const content = html` ${showsIndicator
-        ? html`<span
-            class=${selected ? "indicator" : "indicator icon"}
-            aria-hidden="true"
-            >${selected ? checkIcon() : (item.icon ?? "")}</span
-          >`
-        : nothing}
+    const content = html`<span class="ripple-clip" aria-hidden="true"></span>
+      ${
+        showsIndicator
+          ? html`<span
+              class=${selected ? "indicator" : "indicator icon"}
+              aria-hidden="true"
+              >${selected ? checkIcon() : (item.icon ?? "")}</span
+            >`
+          : nothing
+      }
       <span class="content"
         >${item.label}${item.supportingText ? html`<span class="supporting">${item.supportingText}</span>` : nothing}</span
       >
@@ -401,6 +576,7 @@ export class BolleMenu extends LitElement {
     const click = (event: MouseEvent) => this.activate(event, item);
     const enter = () => {
       clearTimeout(this.hoverTimer);
+      this.cancelChildClose();
       if (item.children && !item.disabled)
         this.hoverTimer = setTimeout(() => {
           const anchor = this.controls[index];
@@ -408,8 +584,13 @@ export class BolleMenu extends LitElement {
         }, 200);
       else {
         this.child?.close(false);
+        this._childId = null;
         this.inactive = false;
       }
+    };
+    const leave = () => {
+      clearTimeout(this.hoverTimer);
+      if (item.children) this.scheduleChildClose();
     };
     if (item.href)
       return html`<a
@@ -422,7 +603,9 @@ export class BolleMenu extends LitElement {
           this._active = index;
         }}
         @click=${click}
+        @pointerdown=${this.onRipple}
         @pointerenter=${enter}
+        @pointerleave=${leave}
         >${content}</a
       >`;
     return html`<button
@@ -433,12 +616,14 @@ export class BolleMenu extends LitElement {
       aria-checked=${this.selectionMode === "none" ? nothing : String(selected)}
       aria-disabled=${item.disabled ? "true" : nothing}
       aria-haspopup=${item.children ? "menu" : nothing}
-      aria-expanded=${item.children ? String(this.inactive && this._childItems === item.children) : nothing}
+      aria-expanded=${item.children ? String(this._childId === item.id) : nothing}
       @focus=${() => {
         this._active = index;
       }}
       @click=${click}
+      @pointerdown=${this.onRipple}
       @pointerenter=${enter}
+      @pointerleave=${leave}
     >
       ${content}
     </button>`;
@@ -457,21 +642,56 @@ export class BolleMenu extends LitElement {
   render() {
     let index = 0;
     const next = () => index++;
-    return html` <div
+    const text = menuLabels(this.locale);
+    const filtering = this.query !== "";
+    return html`<div
         id=${this.surfaceId}
         part="surface"
         popover="manual"
         role="menu"
         aria-label=${this.menuLabel}
+        class=${this._compact ? "compact" : nothing}
         style=${
           this.density
             ? `--md-comp-menu-item-target-height: calc(48px + ${this.density * 4}px)`
             : nothing
         }
         @keydown=${this.onKey}
-        @pointerleave=${() => clearTimeout(this.hoverTimer)}
+        @pointerleave=${() => {
+          clearTimeout(this.hoverTimer);
+          this.scheduleChildClose();
+        }}
       >
-        ${this.items.map((entry) => this.renderEntry(entry, next))}
+        ${
+          this._compact
+            ? html`<div class="grabber" aria-hidden="true"></div>`
+            : nothing
+        }
+        ${
+          this.filterable
+            ? html`<div class="filter">
+                <input
+                  type="search"
+                  part="filter"
+                  .value=${this.filter}
+                  placeholder=${text.filter}
+                  aria-label=${text.filter}
+                  @input=${(event: Event) => {
+                    this.filter = (
+                      event.currentTarget as HTMLInputElement
+                    ).value;
+                  }}
+                />
+              </div>`
+            : nothing
+        }
+        ${
+          filtering && !this.actions.length
+            ? html`<p class="empty" aria-live="polite">
+                ${fill(text.noResults, { query: this.filter.trim() })}
+              </p>`
+            : this.entries.map((entry) => this.renderEntry(entry, next))
+        }
       </div>
       ${
         this._childItems.length
@@ -480,13 +700,31 @@ export class BolleMenu extends LitElement {
               .variant=${this.variant}
               .colorScheme=${this.colorScheme}
               .selectionMode=${this.selectionMode}
-              .menuLabel=${this.actions[this._active]?.label ?? this.menuLabel}
+              .locale=${this.locale}
               .quick=${this.quick}
+              .menuLabel=${this.actions[this._active]?.label ?? this.menuLabel}
+              @pointerover=${this.cancelChildClose}
               @menu-close=${(event: Event) => {
-                if (event.target === this.child) this.inactive = false;
+                if (event.target === this.child) {
+                  this._childId = null;
+                  this.inactive = false;
+                }
               }}
-              @menu-select=${() => {
+              @menu-select=${(event: CustomEvent<MenuSelectDetail>) => {
+                event.stopPropagation();
+                this.recordSubmenuSelection(event.detail);
                 if (this.selectionMode !== "multi") this.close();
+                else
+                  this.dispatchEvent(
+                    new CustomEvent<MenuSelectDetail>("menu-select", {
+                      detail: {
+                        item: event.detail.item,
+                        selectedIds: this.selectedIds,
+                      },
+                      bubbles: true,
+                      composed: true,
+                    }),
+                  );
               }}
             ></bolle-menu>`
           : nothing

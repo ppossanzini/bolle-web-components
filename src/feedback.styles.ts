@@ -201,8 +201,13 @@ export const feedbackStyles = css`
     .linear-value,
     .indeterminate,
     .indeterminate .value,
+    .morph-shape,
     .bubbles span {
       animation: none;
+    }
+    .morph-shape {
+      border-radius: 38%;
+      rotate: none;
     }
     .bubbles span {
       opacity: 1;
@@ -222,6 +227,54 @@ export const feedbackStyles = css`
   :host([variant="contained"]) .bubbles span {
     background: var(--md-sys-color-on-primary-container);
   }
+  /* Expressive shape sequence: one form rotating and morphing through seven
+     shapes. The forms are project-authored, not a measured replica. */
+  .loading.morph {
+    inline-size: auto;
+    block-size: auto;
+  }
+  .morph-shape {
+    display: block;
+    inline-size: var(--md-comp-loading-morph-size);
+    block-size: var(--md-comp-loading-morph-size);
+    background: var(--md-sys-color-primary);
+    animation:
+      morph-shapes var(--md-comp-loading-morph-duration)
+        var(--md-sys-motion-easing-emphasized) infinite,
+      morph-turn var(--md-comp-loading-morph-duration) linear infinite;
+  }
+  @keyframes morph-shapes {
+    0%,
+    100% {
+      border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    }
+    14% {
+      border-radius: 38% 38% 38% 38% / 38% 38% 38% 38%;
+    }
+    28% {
+      border-radius: 50% 18% 50% 18% / 18% 50% 18% 50%;
+    }
+    42% {
+      border-radius: 62% 6% 62% 6% / 6% 62% 6% 62%;
+    }
+    56% {
+      border-radius: 50% 50% 50% 50% / 28% 28% 28% 28%;
+    }
+    70% {
+      border-radius: 16% 50% 16% 50% / 50% 16% 50% 16%;
+    }
+    84% {
+      border-radius: 30% 30% 30% 30% / 30% 30% 30% 30%;
+    }
+  }
+  @keyframes morph-turn {
+    to {
+      rotate: 360deg;
+    }
+  }
+  :host([variant="contained"]) .morph-shape {
+    background: var(--md-sys-color-on-primary-container);
+  }
   @keyframes rotate {
     to {
       transform: rotate(360deg);
@@ -229,6 +282,7 @@ export const feedbackStyles = css`
   }
   .carousel {
     position: relative;
+    container-type: inline-size;
   }
   .viewport {
     display: flex;
@@ -238,32 +292,48 @@ export const feedbackStyles = css`
     scroll-behavior: smooth;
     padding: var(--md-comp-field-gap);
   }
+  /* Keylines follow the carousel's own inline size, not the viewport, so the
+     focal item keeps its proportions inside a narrow column or a wide pane.
+     cqi resolves against the container in the flat tree, which is why the
+     width belongs to the slotted rule rather than a variable on .viewport. */
   ::slotted(*) {
     flex: 0 0 78%;
     scroll-snap-align: start;
     border-radius: var(--md-sys-shape-corner-extra-large);
     overflow: clip;
   }
+  :host([variant="hero"]) ::slotted(*) {
+    flex-basis: calc(
+      100cqi - var(--md-comp-carousel-leading-space) - var(
+          --md-comp-carousel-trailing-space
+        )
+    );
+  }
   :host([variant="multi-browse"]) .viewport {
     scroll-padding-inline-start: var(--md-comp-carousel-leading-space);
   }
   :host([variant="multi-browse"]) ::slotted(*) {
-    flex-basis: min(30%, 220px);
+    flex-basis: max(
+      96px,
+      calc(
+        (
+            100cqi - 2 * var(--md-comp-carousel-leading-space) - 2 *
+              var(--md-comp-carousel-gap)
+          ) /
+          3
+      )
+    );
   }
   :host([variant="uncontained"]) ::slotted(*) {
-    flex-basis: auto;
-    inline-size: clamp(160px, 20vw, 220px);
+    flex-basis: clamp(160px, 24cqi, 220px);
   }
   :host([variant="center-aligned-hero"]) .viewport {
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 14%;
   }
   :host([variant="center-aligned-hero"]) ::slotted(*) {
-    flex-basis: 60%;
+    flex-basis: 60cqi;
     scroll-snap-align: center;
-  }
-  :host([variant="full-screen"]) ::slotted(*) {
-    flex-basis: 100%;
   }
   :host([variant="full-screen"]) .viewport {
     flex-direction: column;
@@ -274,18 +344,19 @@ export const feedbackStyles = css`
     padding: 0;
     gap: var(--md-comp-carousel-full-screen-gap);
   }
-  :host([variant="full-screen"]) ::slotted(*) {
-    flex: 0 0 100%;
-  }
   :host([variant="uncontained"]) .viewport,
   :host([variant="uncontained-multi-aspect-ratio"]) .viewport {
     scroll-snap-type: none;
   }
   :host([variant="uncontained-multi-aspect-ratio"]) ::slotted(*) {
     flex-basis: auto;
+    max-inline-size: 70cqi;
   }
   :host([variant="center-aligned-hero"]) ::slotted(*) {
     scroll-snap-align: center;
+  }
+  :host([variant="full-screen"]) ::slotted(*) {
+    flex: 0 0 100%;
   }
 
   .controls {

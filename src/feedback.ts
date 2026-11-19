@@ -115,6 +115,14 @@ export class BolleLoadingIndicator extends BolleElement {
   label = "";
   variant = "default";
   protected render() {
+    if (this.variant === "morph")
+      return html`<div
+        class="loading morph"
+        role="progressbar"
+        aria-label=${this.label}
+      >
+        <span class="morph-shape"></span>
+      </div>`;
     return html`<div
       class="loading"
       role="progressbar"

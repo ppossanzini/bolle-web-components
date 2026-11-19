@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.2",
   "specification": "Material Design 3",
   "sourceDate": "2026-11-10",
   "tokenSnapshot": "34.0.21",
@@ -8,12 +8,31 @@
   "colorUtilitiesVersion": null,
   "contexts": [
     "standard-contrast-light",
-    "standard-contrast-dark"
+    "standard-contrast-dark",
+    "medium-contrast-light",
+    "medium-contrast-dark",
+    "high-contrast-light",
+    "high-contrast-dark"
   ],
   "fullConformanceVerified": false,
-  "componentEntries": 44,
+  "componentEntries": 47,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-17",
+      "classification": "additive",
+      "description": "`bolle-gantt` adds the planning surface of the Schiuma group: tasks declared by the application on a time axis with four scales, summary bars, milestones, dependencies, approved-plan baseline, workload per resource, configurable columns, virtualised rows and changes by pointer or keyboard. It never modifies a task: it asks with `task-change`, reports the refusal with `task-change-blocked` applying the rule passed in `restrict`, and reports the opening with `task-open`; a dependency that already exists or closes a loop is refused by the surface itself with `dependency-blocked`. View state — scale, density, baseline — is reported with `view-change` and the visible columns with `columns-change`."
+    },
+    {
+      "date": "2026-11-17",
+      "classification": "additive",
+      "description": "Two Schiuma components for navigation and identity: `bolle-breadcrumb` renders the path the application declares, marks the current level with `aria-current`, shortens a long path behind an expandable gap with `max-items`, mirrors the chevron separator in a right-to-left layout and reports the chosen level with `breadcrumb-select`; `bolle-avatar-group` arranges the `bolle-avatar` children it receives in an overlapping row, keeps the first `max` visible and sums the rest, including the people declared with `total`, in an overflow bubble that becomes a button with `interactive` and emits `avatar-group-select`. `bolle-avatar` gains an optional ring of the surface colour, so an avatar stays separate from the one it overlaps."
+    },
+    {
+      "date": "2026-11-17",
+      "classification": "additive",
+      "description": "Menus close the interaction gaps recorded in the previous audit: a built-in `filterable` field with `filter`, `locale` and an empty state, submenu dismissal when the pointer leaves item and submenu, the surface exit transition kept alive while the submenu animates out, an origin-aware ripple through a clipped layer, root `selectedIds` that aggregates nested selection and a compact form that turns the vertical menu into a bottom sheet below `compact-width`. Spring easings are now sampled from the spring tokens by `npm run motion` and used by the floating surfaces, `npm run colors` writes medium and high contrast presets as `data-contrast` blocks, the loading indicator gains a seven-shape `morph` variant, carousel keylines follow the component width through container query units, and the documentation overview prints a state matrix derived from the component definitions."
+    },
     {
       "date": "2026-11-17",
       "classification": "additive",

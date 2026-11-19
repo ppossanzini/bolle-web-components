@@ -82,7 +82,9 @@ export type SupportedLocale = "en" | "it" | "fr" | "zh";
 /** Language subtag of a BCP 47 tag mapped to a bundled message set; English otherwise. */
 export function supportedLocale(locale: string): SupportedLocale {
   const language = (locale || "").toLowerCase().split(/[-_]/)[0];
-  return language === "it" || language === "fr" || language === "zh" ? language : "en";
+  return language === "it" || language === "fr" || language === "zh"
+    ? language
+    : "en";
 }
 export type PickerLabels = { [K in keyof typeof pickerMessages.en]: string };
 export function messages(
@@ -115,11 +117,48 @@ export function listLabels(
   };
 }
 
+/** Built-in texts of the menu filter. `{query}` is filled at runtime. */
+export const menuMessages = {
+  en: {
+    filter: "Filter the menu",
+    noResults: "No menu item contains “{query}”.",
+  },
+  it: {
+    filter: "Filtra il menu",
+    noResults: "Nessuna voce del menu contiene «{query}».",
+  },
+  fr: {
+    filter: "Filtrer le menu",
+    noResults: "Aucun élément du menu ne contient « {query} ».",
+  },
+  zh: {
+    filter: "筛选菜单",
+    noResults: "没有包含“{query}”的菜单项。",
+  },
+} as const;
+
+export type MenuLabels = { [K in keyof typeof menuMessages.en]: string };
+
+export const menuLabels = (locale = "") =>
+  menuMessages[supportedLocale(locale || document.documentElement.lang)];
+
 /** Built-in labels of controls the caller cannot name: tab scroll buttons, tooltip dismiss. */
 export const controlMessages = {
-  en: { previousTabs: "Previous tabs", nextTabs: "Next tabs", dismiss: "Dismiss" },
-  it: { previousTabs: "Schede precedenti", nextTabs: "Schede successive", dismiss: "Chiudi" },
-  fr: { previousTabs: "Onglets précédents", nextTabs: "Onglets suivants", dismiss: "Fermer" },
+  en: {
+    previousTabs: "Previous tabs",
+    nextTabs: "Next tabs",
+    dismiss: "Dismiss",
+  },
+  it: {
+    previousTabs: "Schede precedenti",
+    nextTabs: "Schede successive",
+    dismiss: "Chiudi",
+  },
+  fr: {
+    previousTabs: "Onglets précédents",
+    nextTabs: "Onglets suivants",
+    dismiss: "Fermer",
+  },
   zh: { previousTabs: "上一组标签", nextTabs: "下一组标签", dismiss: "关闭" },
 } as const;
 
@@ -355,7 +394,9 @@ export function dataTableLabels(
   overrides: Partial<DataTableLabels> = {},
 ): DataTableLabels {
   return {
-    ...dataTableMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...dataTableMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ],
     ...overrides,
   };
 }
@@ -508,14 +549,65 @@ export const paginationMessages = {
   },
 } as const;
 
-export type PaginationLabels = { [K in keyof typeof paginationMessages.en]: string };
+export type PaginationLabels = {
+  [K in keyof typeof paginationMessages.en]: string;
+};
 
 export function paginationLabels(
   locale: string,
   overrides: Partial<PaginationLabels> = {},
 ): PaginationLabels {
   return {
-    ...paginationMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...paginationMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ],
+    ...overrides,
+  };
+}
+
+/** Built-in texts of the breadcrumb and the avatar group. */
+export const navigationTrailMessages = {
+  en: {
+    label: "Breadcrumb",
+    expand: "Show the full path, {count} levels",
+    group: "People",
+    more: "{count} more",
+  },
+  it: {
+    label: "Percorso",
+    expand: "Mostra il percorso completo, {count} livelli",
+    group: "Persone",
+    more: "altri {count}",
+  },
+  fr: {
+    label: "Fil d'Ariane",
+    expand: "Afficher le chemin complet, {count} niveaux",
+    group: "Personnes",
+    more: "{count} de plus",
+  },
+  zh: {
+    label: "面包屑",
+    expand: "显示完整路径，共 {count} 级",
+    group: "人员",
+    more: "另有 {count} 位",
+  },
+} as const;
+
+export type BreadcrumbLabels = {
+  label: string;
+  expand: string;
+  group: string;
+  more: string;
+};
+
+export function breadcrumbLabels(
+  locale: string,
+  overrides: Partial<BreadcrumbLabels> = {},
+): BreadcrumbLabels {
+  return {
+    ...navigationTrailMessages[
+      supportedLocale(locale || document.documentElement.lang)
+    ],
     ...overrides,
   };
 }
@@ -644,6 +736,194 @@ export function kanbanLabels(
 ): KanbanLabels {
   return {
     ...kanbanMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...overrides,
+  };
+}
+
+/** Built-in texts of the gantt surface. */
+export const ganttMessages = {
+  en: {
+    scale: "Time scale",
+    scaleDay: "Day",
+    scaleWeek: "Week",
+    scaleMonth: "Month",
+    scaleQuarter: "Quarter",
+    density: "Density",
+    densityComfortable: "Comfortable",
+    densityCompact: "Compact",
+    baseline: "Approved plan",
+    columns: "Columns",
+    columnCode: "Code",
+    columnName: "Task",
+    columnResource: "Owner",
+    columnStart: "Start",
+    columnEnd: "End",
+    columnDuration: "Days",
+    columnProgress: "Done",
+    columnDeps: "Predecessors",
+    rowCount: "{count} tasks",
+    week: "W{week}",
+    quarter: "Q{quarter}",
+    taskLabel: "{code} {name}, from {from} to {to}, {progress}%",
+    milestoneLabel: "{code} {name}, {date}",
+    linkTitle: "Link {code} to another task",
+    linkTarget: "Release to link {code}",
+    linkHint: "Release on another task",
+    loadTitle: "{resource} · {date} · {hours} h per day",
+    moved: "{code}: {from} → {to}.",
+    cancelled: "Change cancelled.",
+    endBeforeStart: "The end cannot come before the start.",
+    dependencyAdded: "{predecessor} comes before {task}.",
+    dependencyExists: "That dependency already exists.",
+    dependencyLoop: "That dependency would close a loop.",
+    dependencySame: "A task cannot depend on itself.",
+    expand: "Expand {label}",
+    collapse: "Collapse {label}",
+    today: "Today",
+    loading: "Loading the plan",
+    empty: "The plan is empty",
+    error: "The plan could not be loaded",
+    retry: "Try again",
+  },
+  it: {
+    scale: "Scala temporale",
+    scaleDay: "Giorno",
+    scaleWeek: "Settimana",
+    scaleMonth: "Mese",
+    scaleQuarter: "Trimestre",
+    density: "Densità",
+    densityComfortable: "Comoda",
+    densityCompact: "Compatta",
+    baseline: "Piano approvato",
+    columns: "Colonne",
+    columnCode: "Codice",
+    columnName: "Attività",
+    columnResource: "Responsabile",
+    columnStart: "Inizio",
+    columnEnd: "Fine",
+    columnDuration: "Giorni",
+    columnProgress: "Avanz.",
+    columnDeps: "Predecessori",
+    rowCount: "{count} attività",
+    week: "S{week}",
+    quarter: "T{quarter}",
+    taskLabel: "{code} {name}, dal {from} al {to}, {progress}%",
+    milestoneLabel: "{code} {name}, {date}",
+    linkTitle: "Collega {code} a un'altra attività",
+    linkTarget: "Rilascia per collegare {code}",
+    linkHint: "Rilascia su un'altra attività",
+    loadTitle: "{resource} · {date} · {hours} h al giorno",
+    moved: "{code}: {from} → {to}.",
+    cancelled: "Modifica annullata.",
+    endBeforeStart: "La fine non può precedere l'inizio.",
+    dependencyAdded: "{predecessor} precede {task}.",
+    dependencyExists: "La dipendenza esiste già.",
+    dependencyLoop: "La dipendenza chiuderebbe un ciclo.",
+    dependencySame: "Un'attività non può dipendere da sé stessa.",
+    expand: "Espandi {label}",
+    collapse: "Comprimi {label}",
+    today: "Oggi",
+    loading: "Caricamento della pianificazione",
+    empty: "La pianificazione è vuota",
+    error: "Non riusciamo a caricare la pianificazione",
+    retry: "Riprova",
+  },
+  fr: {
+    scale: "Échelle de temps",
+    scaleDay: "Jour",
+    scaleWeek: "Semaine",
+    scaleMonth: "Mois",
+    scaleQuarter: "Trimestre",
+    density: "Densité",
+    densityComfortable: "Confortable",
+    densityCompact: "Compacte",
+    baseline: "Plan approuvé",
+    columns: "Colonnes",
+    columnCode: "Code",
+    columnName: "Tâche",
+    columnResource: "Responsable",
+    columnStart: "Début",
+    columnEnd: "Fin",
+    columnDuration: "Jours",
+    columnProgress: "Avanc.",
+    columnDeps: "Prédécesseurs",
+    rowCount: "{count} tâches",
+    week: "S{week}",
+    quarter: "T{quarter}",
+    taskLabel: "{code} {name}, du {from} au {to}, {progress} %",
+    milestoneLabel: "{code} {name}, {date}",
+    linkTitle: "Relier {code} à une autre tâche",
+    linkTarget: "Relâcher pour relier {code}",
+    linkHint: "Relâcher sur une autre tâche",
+    loadTitle: "{resource} · {date} · {hours} h par jour",
+    moved: "{code} : {from} → {to}.",
+    cancelled: "Modification annulée.",
+    endBeforeStart: "La fin ne peut pas précéder le début.",
+    dependencyAdded: "{predecessor} précède {task}.",
+    dependencyExists: "Cette dépendance existe déjà.",
+    dependencyLoop: "Cette dépendance fermerait une boucle.",
+    dependencySame: "Une tâche ne peut pas dépendre d'elle-même.",
+    expand: "Déplier {label}",
+    collapse: "Replier {label}",
+    today: "Aujourd'hui",
+    loading: "Chargement du planning",
+    empty: "Le planning est vide",
+    error: "Le planning ne peut pas être chargé",
+    retry: "Réessayer",
+  },
+  zh: {
+    scale: "时间刻度",
+    scaleDay: "日",
+    scaleWeek: "周",
+    scaleMonth: "月",
+    scaleQuarter: "季度",
+    density: "密度",
+    densityComfortable: "舒适",
+    densityCompact: "紧凑",
+    baseline: "已批准计划",
+    columns: "列",
+    columnCode: "编号",
+    columnName: "任务",
+    columnResource: "负责人",
+    columnStart: "开始",
+    columnEnd: "结束",
+    columnDuration: "天数",
+    columnProgress: "完成",
+    columnDeps: "前置任务",
+    rowCount: "{count} 个任务",
+    week: "第{week}周",
+    quarter: "第{quarter}季度",
+    taskLabel: "{code} {name}，{from} 至 {to}，{progress}%",
+    milestoneLabel: "{code} {name}，{date}",
+    linkTitle: "将 {code} 连接到其他任务",
+    linkTarget: "松开以连接 {code}",
+    linkHint: "在其他任务上松开",
+    loadTitle: "{resource} · {date} · 每日 {hours} 小时",
+    moved: "{code}：{from} → {to}。",
+    cancelled: "已取消修改。",
+    endBeforeStart: "结束日期不能早于开始日期。",
+    dependencyAdded: "{predecessor}先于{task}。",
+    dependencyExists: "该依赖已存在。",
+    dependencyLoop: "该依赖会形成循环。",
+    dependencySame: "任务不能依赖于自身。",
+    expand: "展开{label}",
+    collapse: "折叠{label}",
+    today: "今天",
+    loading: "正在加载计划",
+    empty: "计划为空",
+    error: "无法加载计划",
+    retry: "重试",
+  },
+} as const;
+
+export type GanttLabels = { [K in keyof typeof ganttMessages.en]: string };
+
+export function ganttLabels(
+  locale: string,
+  overrides: Partial<GanttLabels> = {},
+): GanttLabels {
+  return {
+    ...ganttMessages[supportedLocale(locale || document.documentElement.lang)],
     ...overrides,
   };
 }

@@ -10,6 +10,7 @@ import type { AttrSpec, SnippetSpec } from "./codegen.js";
 import "./data-table-demo.js";
 import "./app-shell-demo.js";
 import "./kanban-demo.js";
+import "./gantt-demo.js";
 import "./pagination-demo.js";
 import { code } from "./codegen.js";
 import { l, libraryLocale, m } from "./i18n.js";
@@ -18,6 +19,7 @@ export type Group =
   | "App bars"
   | "Avatars"
   | "Badges"
+  | "Breadcrumb"
   | "Buttons"
   | "Cards"
   | "Carousel"
@@ -31,6 +33,7 @@ export type Group =
   | "Divider"
   | "Empty states"
   | "HTML controls"
+  | "Gantt"
   | "Kanban"
   | "Lists"
   | "Loading indicator"
@@ -146,6 +149,18 @@ const portrait =
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="#d6c8f0"/><circle cx="48" cy="38" r="17" fill="#6b53a8"/><path d="M14 96c0-19 15-30 34-30s34 11 34 30z" fill="#6b53a8"/></svg>`,
   );
+
+/** Fixed names for the avatar preview, so the initials do not change per render. */
+const people = [
+  "Francesca Moretti",
+  "Marco Bellini",
+  "Sara Colombo",
+  "Luca De Santis",
+  "Giulia Ferraro",
+  "Davide Rinaldi",
+  "Anna Pavesi",
+  "Pietro Sala",
+];
 
 const ICON_ITEMS = [
   { id: "inbox", label: m("Posta"), icon: "inbox" },
@@ -658,6 +673,7 @@ export const entries: Entry[] = [
     tag: "bolle-avatar",
     title: "Avatar",
     group: "Avatars",
+    section: "Schiuma",
     summary: m(
       "Segno di identità di una persona o di un ente: immagine, iniziali o icona, con un indicatore di stato.",
     ),
@@ -693,9 +709,118 @@ export const entries: Entry[] = [
     }),
   },
   {
+    tag: "bolle-breadcrumb",
+    title: "Breadcrumb",
+    group: "Breadcrumb",
+    section: "Schiuma",
+    summary: m(
+      "Percorso dalla radice dell'applicazione alla pagina aperta: livelli dell'applicazione, livello corrente non collegato, percorso lungo raccorciato.",
+    ),
+    note: m(
+      "Le briciole non navigano da sole: ricevono i livelli con href e segnalano con breadcrumb-select quello scelto, così l'applicazione decide se cambiare rotta. Con max-items il percorso mostra il primo livello, un pulsante con i puntini e gli ultimi livelli; il pulsante apre il percorso completo. Il separatore a chevron si specchia in una lingua da destra a sinistra.",
+    ),
+    controls: [
+      rg("depth", m("Livelli"), 1, 6, 4),
+      rg("maxItems", m("Livelli visibili"), 0, 6, 0),
+      en("separator", m("Separatore"), ["chevron", "slash", "none"], "chevron"),
+      tx("label", m("Etichetta accessibile"), m("Percorso")),
+    ],
+    render: (state) => {
+      const depth = n(state, "depth");
+      const levels = [
+        m("Cantieri"),
+        m("Commesse"),
+        "C2025-1004",
+        m("Documenti"),
+        m("Verbali"),
+        m("Sopralluogo"),
+      ].slice(0, depth);
+      return html`<bolle-breadcrumb
+        .items=${levels.map((label, index) => ({
+          id: `level-${index}`,
+          label: l(label),
+          href: index === depth - 1 ? undefined : `#/level-${index}`,
+        }))}
+        .maxItems=${n(state, "maxItems")}
+        .separator=${s(state, "separator")}
+        .label=${s(state, "label")}
+      ></bolle-breadcrumb>`;
+    },
+    code: (state) => ({
+      attrs: [
+        a("max-items", n(state, "maxItems")),
+        a("separator", s(state, "separator")),
+        a("label", s(state, "label")),
+        { name: "items", raw: "levels" },
+      ],
+      vuePreamble: [
+        `const levels = [
+  { id: "jobs", label: "${l(m("Cantieri"))}", href: "/jobs" },
+  { id: "orders", label: "${l(m("Commesse"))}", href: "/orders" },
+  { id: "order", label: "C2025-1004 · Logistica Padana" },
+]`,
+      ],
+      reactPreamble: [
+        `const levels = [
+  { id: "jobs", label: "${l(m("Cantieri"))}", href: "/jobs" },
+  { id: "orders", label: "${l(m("Commesse"))}", href: "/orders" },
+  { id: "order", label: "C2025-1004 · Logistica Padana" },
+]`,
+      ],
+      content: undefined,
+    }),
+  },
+  {
+    tag: "bolle-avatar-group",
+    title: "Avatar group",
+    group: "Avatars",
+    section: "Schiuma",
+    summary: m(
+      "Persone mostrate come avatar sovrapposti, con un contatore per quelle che non entrano nello spazio.",
+    ),
+    note: m(
+      "Il gruppo dispone gli avatar che riceve e non conosce le persone: con max nasconde i successivi e somma nel contatore anche quelle non passate come avatar, dichiarate con total. Il contatore è una semplice somma, oppure un pulsante con interactive che chiede l'elenco completo con avatar-group-select. L'anello del colore di fondo stacca un avatar dal successivo.",
+    ),
+    controls: [
+      rg("max", m("Avatar visibili"), 1, 8, 3),
+      rg("total", m("Persone totali"), 0, 40, 12),
+      en("size", m("Dimensione"), ["xs", "small", "medium", "large"], "medium"),
+      rg("overlap", m("Sovrapposizione"), 0, 60, 20, 5),
+      fl("interactive", m("Contatore premibile"), false),
+      tx("label", m("Etichetta accessibile"), m("Partecipanti")),
+    ],
+    render: (state) =>
+      html`<bolle-avatar-group
+        .max=${n(state, "max")}
+        .total=${n(state, "total")}
+        .size=${s(state, "size")}
+        .overlap=${n(state, "overlap") / 100}
+        ?interactive=${b(state, "interactive")}
+        .label=${s(state, "label")}
+      >
+        ${people.map(
+          (name) => html`<bolle-avatar .name=${name} size=${s(state, "size")}></bolle-avatar>`,
+        )}
+      </bolle-avatar-group>`,
+    code: (state) => ({
+      attrs: [
+        a("max", n(state, "max")),
+        a("total", n(state, "total")),
+        a("size", s(state, "size")),
+        a("overlap", n(state, "overlap") / 100),
+        ...(b(state, "interactive") ? [a("interactive", true)] : []),
+        a("label", s(state, "label")),
+      ],
+      content: `<bolle-avatar name="Francesca Moretti" size="${s(state, "size")}"></bolle-avatar>
+<bolle-avatar name="Marco Bellini" size="${s(state, "size")}"></bolle-avatar>
+<bolle-avatar name="Sara Colombo" size="${s(state, "size")}"></bolle-avatar>`,
+    }),
+  },
+  {
     tag: "bolle-empty-state",
     title: "Empty state",
     group: "Empty states",
+    section: "Schiuma",
     summary: m(
       "Superficie da mostrare quando un contenitore non ha nulla da disegnare: icona, titolo, una riga di testo e le azioni che ne escono.",
     ),
@@ -740,6 +865,7 @@ export const entries: Entry[] = [
     tag: "bolle-pagination",
     title: "Pagination",
     group: "Pagination",
+    section: "Schiuma",
     summary: m(
       "Controllo delle pagine di un elenco che resta all'applicazione: intervallo, pagine numerate, frecce e righe per pagina.",
     ),
@@ -813,9 +939,11 @@ export const entries: Entry[] = [
     tag: "bolle-loading-indicator",
     title: "Loading indicator",
     group: "Loading indicator",
-    summary: m("Indicatore Morph, libero o dentro un contenitore."),
+    summary: m(
+      "Indicatore Morph con le bolle, con la sequenza di sette forme o dentro un contenitore.",
+    ),
     controls: [
-      en("variant", m("Variante"), ["default", "contained"], "default"),
+      en("variant", m("Variante"), ["default", "morph", "contained"], "default"),
       tx("label", m("Etichetta accessibile"), m("Caricamento")),
     ],
     render: (state) => html`<bolle-loading-indicator
@@ -1891,13 +2019,14 @@ export const entries: Entry[] = [
     group: "Menus",
     summary: m("Menu baseline o verticale, con gruppi, sottomenu e selezione."),
     note: m(
-      "Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor). tail=\"none\" disegna il menu senza coda, con i quattro angoli uguali.",
+      "Vibrant è disponibile solo con menu verticale. Il menu si apre con show(anchor). tail=\"none\" disegna il menu senza coda, con i quattro angoli uguali. Con filterable il menu mostra un campo di filtro; sotto 480px il menu verticale diventa un foglio dal basso.",
     ),
     controls: [
       en("variant", m("Variante"), ["vertical", "baseline"], "vertical"),
       en("colorScheme", m("Schema colore"), ["standard", "vibrant"], "standard"),
       en("selectionMode", m("Selezione"), ["none", "single", "multi"], "none"),
       fl("quick", m("Senza animazione"), false),
+      fl("filterable", m("Filtro interno"), false),
       rg("density", m("Densità"), -3, 1, 0),
       fl("inactive", m("Inattivo"), false),
       en("tail", m("Coda"), ["auto", "none"], "auto"),
@@ -1916,6 +2045,7 @@ export const entries: Entry[] = [
         .colorScheme=${s(state, "variant") === "baseline" ? "standard" : s(state, "colorScheme")}
         .selectionMode=${s(state, "selectionMode")}
         ?quick=${b(state, "quick")}
+        ?filterable=${b(state, "filterable")}
         .density=${n(state, "density")}
         ?inactive=${b(state, "inactive")}
         .tail=${s(state, "tail")}
@@ -1929,6 +2059,7 @@ export const entries: Entry[] = [
         a("colorScheme", s(state, "variant") === "baseline" ? "standard" : s(state, "colorScheme")),
         a("selectionMode", s(state, "selectionMode")),
         a("quick", b(state, "quick")),
+        a("filterable", b(state, "filterable")),
         a("density", n(state, "density")),
         a("inactive", b(state, "inactive")),
         a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
@@ -2318,6 +2449,73 @@ export const entries: Entry[] = [
     }),
   },
   {
+    tag: "bolle-gantt",
+    title: "Gantt",
+    group: "Gantt",
+    section: "Schiuma",
+    summary: m(
+      "Piano a barre su un asse temporale: quattro scale, riepiloghi e milestone, dipendenze, piano approvato, carico per responsabile, colonne regolabili e modifica da puntatore o da tastiera.",
+    ),
+    note: m(
+      "Il piano non modifica le attività: chiede lo spostamento con task-change, riporta il rifiuto con task-change-blocked applicando la regola che l'applicazione passa in restrict e segnala l'apertura con task-open. Le righe sono virtualizzate, la colonna della griglia resta ferma in orizzontale e l'intestazione del tempo resta ferma in alto. L'altezza del host è obbligatoria.",
+    ),
+    controls: [
+      en("scale", m("Scala"), ["day", "week", "month", "quarter"], "week"),
+      en("density", m("Densità"), ["comfortable", "compact"], "comfortable"),
+      en("groupBy", m("Raggruppa per"), ["", "resource", "phase"], ""),
+      fl("baseline", m("Piano approvato"), true),
+      fl("editable", m("Modifica"), true),
+      fl("linkable", m("Dipendenze"), true),
+      tx("label", m("Etichetta"), m("Pianificazione lavori")),
+    ],
+    render: (state) =>
+      html`<demo-gantt
+        .scale=${s(state, "scale")}
+        .density=${s(state, "density")}
+        .groupBy=${s(state, "groupBy")}
+        ?baseline=${b(state, "baseline")}
+        ?editable=${b(state, "editable")}
+        ?linkable=${b(state, "linkable")}
+        .label=${s(state, "label")}
+      ></demo-gantt>`,
+    code: (state) => ({
+      attrs: [
+        a("label", s(state, "label")),
+        a("scale", s(state, "scale")),
+        a("density", s(state, "density")),
+        ...(s(state, "groupBy") ? [a("group-by", s(state, "groupBy"))] : []),
+        ...(b(state, "baseline") ? [] : [a("baseline", false)]),
+        ...(b(state, "editable") ? [] : [a("editable", false)]),
+        ...(b(state, "linkable") ? [] : [a("linkable", false)]),
+        { name: "tasks", raw: "tasks" },
+        { name: "restrict", raw: "restrict" },
+      ],
+      vuePreamble: [
+        `const tasks = ref([
+  { id: "p-1", code: "C2026-1000", name: "${l(m("Provincia di Brescia"))}", start: "2026-09-07", end: "2027-03-12", progress: 48 },
+  { id: "p-1-1", parent: "p-1", code: "C2026-1000.01", name: "${l(m("Rifacimento impianto elettrico"))}", start: "2026-09-14", end: "2026-10-02", progress: 30, resource: "${l(m("Giulia Ferraro"))}", baseline: { start: "2026-09-10", end: "2026-09-28" } },
+])`,
+        `const restrict = ({ start }) => {
+  const floor = "${new Date().toISOString().slice(0, 10)}"
+  return start < floor ? "${l(m("Non si sposta un'attività prima del"))} " + floor : undefined
+}`,
+        `const onChange = ({ task, start, end }) => (tasks.value = tasks.value.map((item) => (item.id === task.id ? { ...item, start, end } : item)))`,
+      ],
+      reactPreamble: [
+        `const [tasks, setTasks] = useState([
+  { id: "p-1", code: "C2026-1000", name: "${l(m("Provincia di Brescia"))}", start: "2026-09-07", end: "2027-03-12", progress: 48 },
+  { id: "p-1-1", parent: "p-1", code: "C2026-1000.01", name: "${l(m("Rifacimento impianto elettrico"))}", start: "2026-09-14", end: "2026-10-02", progress: 30, resource: "${l(m("Giulia Ferraro"))}", baseline: { start: "2026-09-10", end: "2026-09-28" } },
+])`,
+        `const restrict = ({ start }) => {
+  const floor = "${new Date().toISOString().slice(0, 10)}"
+  return start < floor ? "${l(m("Non si sposta un'attività prima del"))} " + floor : undefined
+}`,
+        `const onChange = ({ task, start, end }) => setTasks((list) => list.map((item) => (item.id === task.id ? { ...item, start, end } : item)))`,
+      ],
+      content: undefined,
+    }),
+  },
+  {
     tag: "bolle-data-table",
     title: "Data table",
     group: "Data table",
@@ -2390,6 +2588,7 @@ export const groups: Group[] = [
   "App shell",
   "Avatars",
   "Badges",
+  "Breadcrumb",
   "Buttons",
   "Cards",
   "Carousel",

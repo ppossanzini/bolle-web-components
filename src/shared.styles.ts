@@ -86,33 +86,25 @@ export const bolleStyles = css`
   }
   [popover][data-tail] {
     transition:
-      opacity var(--bb-pop-duration) ease-in,
-      scale var(--bb-pop-duration) ease-in,
-      overlay var(--bb-pop-duration) allow-discrete,
-      display var(--bb-pop-duration) allow-discrete,
+      opacity var(--bb-spring-effects-fast-duration)
+        var(--bb-spring-effects-fast),
+      scale var(--bb-spring-spatial-fast-duration) var(--bb-spring-spatial-fast),
+      overlay var(--bb-spring-spatial-fast-duration) allow-discrete,
+      display var(--bb-spring-effects-fast-duration) allow-discrete,
       var(--bb-shape-motion);
   }
   [popover][data-tail]:popover-open {
-    animation: bb-inflate var(--bb-inflate-duration) ease-out;
+    animation: bb-inflate var(--bb-spring-spatial-duration)
+      var(--bb-spring-spatial);
   }
   [popover][data-tail]:not(:popover-open) {
     opacity: 0;
     scale: 1.05;
   }
   @keyframes bb-inflate {
-    0% {
+    from {
       opacity: 0;
       scale: 0.6;
-    }
-    55% {
-      opacity: 1;
-      scale: 1.04;
-    }
-    80% {
-      scale: 0.99;
-    }
-    100% {
-      scale: 1;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -146,7 +138,8 @@ export const commonStyles = css`
       linear-gradient(#000 0 0);
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--md-sys-motion-duration-short3),
+    transition:
+      opacity var(--md-sys-motion-duration-short3),
       var(--bb-shape-motion);
   }
   .button:focus-visible::before,
@@ -186,7 +179,8 @@ export const commonStyles = css`
     line-height: 1;
     direction: ltr;
     text-transform: none;
-    transition: font-variation-settings var(--md-sys-motion-duration-short4),
+    transition:
+      font-variation-settings var(--md-sys-motion-duration-short4),
       var(--bb-shape-motion);
     display: inline-flex;
     align-items: center;
@@ -249,8 +243,12 @@ export const commonStyles = css`
     background-image:
       linear-gradient(var(--bolle-state-hover), var(--bolle-state-hover)),
       var(--bb-hover-glint);
-    background-size: 100% 100%, var(--bb-glint-box) var(--bb-glint-box);
-    background-position: 0 0, var(--bb-glint-position);
+    background-size:
+      100% 100%,
+      var(--bb-glint-box) var(--bb-glint-box);
+    background-position:
+      0 0,
+      var(--bb-glint-position);
     background-repeat: no-repeat;
   }
   button:not(:disabled):active,
@@ -259,8 +257,12 @@ export const commonStyles = css`
     background-image:
       linear-gradient(var(--bolle-state-pressed), var(--bolle-state-pressed)),
       var(--bb-hover-glint);
-    background-size: 100% 100%, var(--bb-glint-box) var(--bb-glint-box);
-    background-position: 0 0, var(--bb-glint-position);
+    background-size:
+      100% 100%,
+      var(--bb-glint-box) var(--bb-glint-box);
+    background-position:
+      0 0,
+      var(--bb-glint-position);
     background-repeat: no-repeat;
   }
   :host {

@@ -82,6 +82,83 @@ export const menuStyles = css`
   :host([quick]) [popover] {
     animation: none;
   }
+  /* Below the compact breakpoint the menu becomes a bottom sheet. */
+  [popover].compact {
+    inset: auto 0 0 0;
+    inline-size: auto;
+    min-inline-size: 0;
+    max-inline-size: none;
+    max-block-size: min(70dvh, 32rem);
+    border-start-start-radius: var(--md-sys-shape-corner-extra-large);
+    border-start-end-radius: var(--md-sys-shape-corner-extra-large);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-block-end: calc(
+      var(--md-comp-menu-container-padding-block) +
+        env(safe-area-inset-bottom, 0px)
+    );
+    transition:
+      translate var(--bb-spring-spatial-fast-duration)
+        var(--bb-spring-spatial-fast),
+      opacity var(--bb-spring-effects-fast-duration)
+        var(--bb-spring-effects-fast),
+      overlay var(--bb-spring-spatial-fast-duration) allow-discrete,
+      display var(--bb-spring-effects-fast-duration) allow-discrete;
+  }
+  [popover].compact:popover-open {
+    animation: menu-sheet-in var(--bb-spring-spatial-duration)
+      var(--bb-spring-spatial);
+  }
+  [popover].compact:not(:popover-open) {
+    opacity: 0;
+    scale: 1;
+    translate: 0 100%;
+  }
+  @keyframes menu-sheet-in {
+    from {
+      opacity: 0;
+      translate: 0 100%;
+    }
+  }
+  .grabber {
+    inline-size: 32px;
+    block-size: 4px;
+    margin: 4px auto 8px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-outline-variant);
+  }
+  .filter {
+    padding: var(--md-comp-menu-item-vertical-padding)
+      var(--md-comp-menu-item-horizontal-padding);
+  }
+  .filter input {
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-block-size: var(--md-comp-menu-item-height);
+    padding-inline: var(--md-comp-menu-item-between-space);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--menu-item-radius);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+  }
+  .filter input::placeholder {
+    color: var(--menu-secondary);
+  }
+  .filter input:focus-visible {
+    outline: var(--md-sys-state-focus-indicator-thickness) solid
+      var(--md-sys-color-secondary);
+    outline-offset: var(--md-sys-state-focus-indicator-inner-offset);
+  }
+  .empty {
+    margin: 0;
+    padding: var(--md-comp-menu-item-vertical-padding)
+      var(--md-comp-menu-item-horizontal-padding);
+    color: var(--menu-secondary);
+    font: var(--md-sys-typescale-body-small-font);
+    letter-spacing: var(--md-sys-typescale-body-small-tracking);
+  }
   button,
   a {
     position: relative;
@@ -103,8 +180,9 @@ export const menuStyles = css`
     font: inherit;
     cursor: pointer;
     isolation: isolate;
-    transition: border-radius var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-standard),
+    transition:
+      border-radius var(--md-sys-motion-duration-short2)
+        var(--md-sys-motion-easing-standard),
       var(--bb-shape-motion);
   }
   button::after,
@@ -132,6 +210,37 @@ export const menuStyles = css`
     opacity: 0;
     content: "";
     pointer-events: none;
+  }
+  /* Ripple origin is the press point; clipping keeps it inside the item radius
+     without clipping the 2px taller target that surrounds it. */
+  .ripple-clip {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: scale(0);
+    animation: menu-ripple var(--bb-tension-duration) var(--bb-tension) forwards;
+  }
+  @keyframes menu-ripple {
+    0% {
+      transform: scale(0);
+      opacity: var(--md-sys-state-pressed-state-layer-opacity);
+    }
+    70% {
+      opacity: calc(var(--md-sys-state-pressed-state-layer-opacity) * 0.4);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
   }
   :is(button, a):hover::before,
   [aria-expanded="true"]::before {
@@ -204,6 +313,15 @@ export const menuStyles = css`
     button,
     a {
       transition: none;
+    }
+    .ripple {
+      display: none;
+    }
+    [popover].compact:popover-open {
+      animation: none;
+    }
+    [popover].compact:not(:popover-open) {
+      translate: none;
     }
   }
   @media (forced-colors: active) {

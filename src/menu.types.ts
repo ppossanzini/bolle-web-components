@@ -26,6 +26,7 @@ export type SelectionMode = "none" | "single" | "multi";
 
 export interface MenuSelectDetail {
   item: MenuAction;
+  /** Root selection, including the entries selected in nested submenus. */
   selectedIds: string[];
 }
 

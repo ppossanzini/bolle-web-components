@@ -1,0 +1,661 @@
+/* PROTOTIPO USA E GETTA. Non promuovere a codice di produzione. */
+html,
+body {
+  margin: 0;
+  block-size: 100%;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.icon {
+  display: inline-flex;
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+}
+.icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+  stroke-width: 1.75;
+}
+proto-gantt-app {
+  display: block;
+}
+
+/* Shell ------------------------------------------------------------------ */
+.app {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  block-size: 100dvh;
+  overflow: hidden;
+  --row-h: 40px;
+  --day-w: 34px;
+  --grid-w: 640px;
+}
+.app[data-density="compact"] {
+  --row-h: 30px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px 10px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: 15px 15px 15px 5px;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.brand h1 {
+  margin: 0;
+  font-family: "Fredoka", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.brand p {
+  margin: 2px 0 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+.topbar-actions .search {
+  inline-size: 260px;
+  flex: none;
+}
+.topbar-actions bolle-select {
+  inline-size: 190px;
+  flex: none;
+}
+.topbar-actions bolle-select.harness {
+  inline-size: 130px;
+}
+.topbar-actions bolle-button {
+  flex: none;
+}
+/* The theme and direction controls belong to the prototype harness, not to the product. */
+@media (max-width: 760px) {
+  .topbar-actions bolle-select.harness {
+    display: none;
+  }
+  .topbar {
+    padding: 12px 12px 8px;
+  }
+  .topbar-actions,
+  .topbar-actions .search,
+  .topbar-actions bolle-select {
+    inline-size: 100%;
+    flex: 1 1 100%;
+  }
+  .toolbar {
+    padding: 0 12px 8px;
+  }
+  .chart-frame {
+    margin: 0 12px 12px;
+  }
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 20px 10px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* Chart ------------------------------------------------------------------ */
+/* The frame owns the rounded clip: sticky cells otherwise paint past the corner. */
+.chart-frame {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-block-size: 0;
+  margin: 0 20px 16px;
+  border-radius: 20px 20px 20px 6px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  overflow: hidden;
+}
+.chart {
+  position: relative;
+  display: block;
+  overflow: auto;
+  background: var(--md-sys-color-surface-container-lowest);
+  /* Reserved gutter: the virtualisation reads the scroll position on every move. */
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+.inner {
+  position: relative;
+  inline-size: calc(var(--grid-w) + var(--timeline-w));
+  min-block-size: 100%;
+}
+.head {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
+  display: flex;
+  background: var(--md-sys-color-surface-container);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+.corner {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 6;
+  inline-size: var(--grid-w);
+  flex: none;
+  display: grid;
+  grid-template-columns: var(--columns);
+  align-items: stretch;
+  background: var(--md-sys-color-surface-container);
+  border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+}
+.col-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+  padding: 0 8px;
+  block-size: 28px;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.col-head .grip {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -3px;
+  inline-size: 7px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.col-head .grip::after {
+  content: "";
+  position: absolute;
+  inset-block: 6px;
+  inset-inline-start: 3px;
+  inline-size: 1px;
+  background: var(--md-sys-color-outline-variant);
+}
+.head-time {
+  position: relative;
+  flex: none;
+  inline-size: var(--timeline-w);
+}
+.head-row {
+  position: relative;
+  block-size: 28px;
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+.tick {
+  position: absolute;
+  inset-block: 0;
+  display: flex;
+  align-items: center;
+  padding-inline: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  border-inline-start: 1px solid var(--md-sys-color-outline-variant);
+  box-sizing: border-box;
+}
+.head-row.primary .tick {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Rows ------------------------------------------------------------------- */
+.rows {
+  position: relative;
+}
+/* Rows are placed by index: the window keeps only the visible slice in the DOM. */
+.row {
+  position: absolute;
+  inset-inline: 0;
+}
+.row {
+  display: flex;
+  block-size: var(--row-h);
+  border-block-end: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+.row:hover .cell,
+.row:hover .track {
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 4%, transparent);
+}
+.row.selected .cell,
+.row.selected .track {
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent);
+}
+.cell {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 3;
+  inline-size: var(--grid-w);
+  flex: none;
+  display: grid;
+  grid-template-columns: var(--columns);
+  align-items: center;
+  background: var(--md-sys-color-surface-container-lowest);
+  border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+}
+.cell > div {
+  min-inline-size: 0;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--md-sys-typescale-body-small-font);
+}
+.cell .name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cell .name .label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toggle {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--md-sys-color-outline);
+  cursor: pointer;
+}
+.toggle:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.toggle .icon {
+  inline-size: 16px;
+  block-size: 16px;
+  transition: rotate 120ms;
+}
+.row.collapsed .toggle .icon {
+  rotate: -90deg;
+}
+.row.summary .cell .name {
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+.row.group .cell {
+  background: var(--md-sys-color-surface-container);
+}
+.row.group .cell .name {
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+.track {
+  position: relative;
+  flex: none;
+  inline-size: var(--timeline-w);
+  /* Weekend shading: the timeline always starts on a Monday, at the inline-start edge. */
+  background-image: repeating-linear-gradient(
+    var(--gradient-side, to right),
+    transparent 0 calc(var(--day-w) * 5),
+    color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)
+      calc(var(--day-w) * 5) calc(var(--day-w) * 7)
+  );
+}
+.row.group .track {
+  background-color: var(--md-sys-color-surface-container);
+}
+.today {
+  position: absolute;
+  inset-block-start: 56px;
+  inset-block-end: 0;
+  inline-size: 2px;
+  background: var(--md-sys-color-error);
+  z-index: 1;
+  pointer-events: none;
+}
+.today::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -5px;
+  inset-inline-start: -3px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--md-sys-color-error);
+}
+
+/* Bars ------------------------------------------------------------------- */
+.bar {
+  position: absolute;
+  inset-block-start: 8px;
+  block-size: calc(var(--row-h) - 18px);
+  min-block-size: 12px;
+  border-radius: 6px;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent);
+  overflow: hidden;
+}
+.app[data-density="compact"] .bar {
+  inset-block-start: 6px;
+  block-size: calc(var(--row-h) - 13px);
+}
+.bar .fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--md-sys-color-primary);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.bar .bar-label {
+  position: relative;
+  padding-inline: 6px;
+  font: var(--md-sys-typescale-label-small-font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  color: var(--md-sys-color-on-primary-container);
+  mix-blend-mode: normal;
+}
+.bar.dragging {
+  opacity: 0.85;
+  cursor: grabbing;
+  box-shadow: var(--bb-float-2);
+  z-index: 4;
+}
+.bar.refused {
+  box-shadow: 0 0 0 2px var(--md-sys-color-error);
+}
+.bar:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+.bar.summary-bar {
+  inset-block-start: calc(var(--row-h) / 2 - 5px);
+  block-size: 10px;
+  border-radius: 2px;
+  /* A softer tone than on-surface: pure white reads as an alert in the dark theme. */
+  background: var(--md-sys-color-on-surface-variant);
+  box-shadow: none;
+  cursor: default;
+  overflow: visible;
+}
+.bar.summary-bar .fill {
+  background: var(--md-sys-color-on-surface);
+  opacity: 1;
+}
+.bar.summary-bar::before,
+.bar.summary-bar::after {
+  content: "";
+  position: absolute;
+  inset-block: -4px;
+  inline-size: 2px;
+  background: var(--md-sys-color-on-surface-variant);
+}
+.bar.summary-bar::before {
+  inset-inline-start: 0;
+}
+.bar.summary-bar::after {
+  inset-inline-end: 0;
+}
+.milestone {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 14px;
+  block-size: 14px;
+  translate: -50% -50%;
+  rotate: 45deg;
+  border-radius: 2px;
+  background: var(--md-sys-color-tertiary);
+  cursor: grab;
+}
+.milestone:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+.baseline {
+  position: absolute;
+  inset-block-end: 3px;
+  block-size: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--md-sys-color-outline) 70%, transparent);
+  pointer-events: none;
+}
+.handle {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 8px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.handle.start {
+  inset-inline-start: 0;
+}
+.handle.end {
+  inset-inline-end: 0;
+}
+.bar:hover .handle::after,
+.bar.dragging .handle::after {
+  content: "";
+  position: absolute;
+  inset-block: 30%;
+  inset-inline-start: 3px;
+  inline-size: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+/* The connector sits outside the bar: no clipping, no fight with the resize handle. */
+.link {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 10px;
+  block-size: 10px;
+  translate: 0 -50%;
+  border-radius: 50%;
+  border: 2px solid var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface-container-lowest);
+  cursor: crosshair;
+  opacity: 0;
+  touch-action: none;
+  z-index: 3;
+}
+.row:hover .link {
+  opacity: 1;
+}
+.link:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* Dependency arrows ------------------------------------------------------ */
+.deps {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--grid-w);
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}
+.deps path {
+  fill: none;
+  stroke: var(--md-sys-color-outline);
+  stroke-width: 1.5;
+}
+.deps path.hot {
+  stroke: var(--md-sys-color-error);
+  stroke-width: 2;
+}
+/* The dependency layer draws physical coordinates from the timeline origin, which sits
+   on the right when the page runs right to left: the whole layer is mirrored. */
+[dir="rtl"] .deps {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .track {
+  --gradient-side: to left;
+}
+[dir="rtl"] .milestone {
+  translate: 50% -50%;
+}
+.deps .arrow {
+  fill: var(--md-sys-color-outline);
+}
+
+/* Load strip ------------------------------------------------------------- */
+.load-cells {
+  position: relative;
+  flex: none;
+  inline-size: var(--timeline-w);
+  block-size: 100%;
+  display: flex;
+}
+.load-cell {
+  block-size: 100%;
+  flex: none;
+  border-inline-end: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
+}
+.load-cell[data-level="over"] {
+  background: var(--md-sys-color-error-container);
+}
+.load-cell[data-level="full"] {
+  background: color-mix(in srgb, var(--md-sys-color-tertiary) 38%, transparent);
+}
+.load-cell[data-level="some"] {
+  background: color-mix(in srgb, var(--md-sys-color-tertiary) 20%, transparent);
+}
+.load-cell[data-level="off"] {
+  background: color-mix(in srgb, var(--md-sys-color-outline-variant) 18%, transparent);
+}
+
+/* Drag note -------------------------------------------------------------- */
+.drag-note {
+  position: fixed;
+  z-index: 30;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font: var(--md-sys-typescale-label-medium-font);
+  box-shadow: var(--bb-float-2);
+  pointer-events: none;
+  translate: 0 0;
+  white-space: nowrap;
+}
+.drag-note[data-refused] {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  box-shadow: var(--bb-float-2), inset 0 0 0 1px var(--md-sys-color-error);
+}
+
+/* States ----------------------------------------------------------------- */
+.state {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 64px 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.state p {
+  margin: 0;
+}
+
+/* Detail sheet ----------------------------------------------------------- */
+.detail {
+  display: grid;
+  gap: 12px;
+}
+.detail h2 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+}
+.facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.facts div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+.facts dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.facts dd {
+  margin: 0;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kchip {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: var(--md-sys-typescale-label-small-font);
+}
+
+/* Responsive ------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .app {
+    --grid-w: 300px;
+  }
+  .topbar,
+  .toolbar {
+    padding-inline: 12px;
+  }
+  .chart {
+    margin-inline: 12px;
+  }
+  .search {
+    inline-size: 100%;
+  }
+}

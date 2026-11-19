@@ -313,6 +313,9 @@ bolle-docs {
 .preview-surface:has(.bar-preview) {
   align-items: flex-end;
 }
+.preview-surface > bolle-breadcrumb {
+  flex: 1 1 100%;
+}
 demo-pagination {
   display: block;
   inline-size: 100%;
@@ -331,6 +334,90 @@ demo-pagination .readout {
   border-radius: 18px;
   background: var(--md-sys-color-surface);
   box-shadow: var(--bb-float-1);
+}
+
+
+/* The plan is a whole panel: full stage, its own surface and a height. */
+.preview-surface:has(> demo-gantt) {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.preview-surface > demo-gantt {
+  flex: 1 1 100%;
+  inline-size: 100%;
+  block-size: 640px;
+}
+demo-gantt {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-inline-size: 0;
+  padding: 16px;
+  border-radius: 22px;
+  box-shadow: var(--bb-float-1);
+  background: var(--md-sys-color-surface);
+}
+demo-gantt > bolle-gantt {
+  min-block-size: 0;
+}
+/* A plan cannot be judged in a 332px cell: one variant per row, full width. */
+.variant-grid.is-panel:has(demo-gantt) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.variant-grid.is-panel .variant-stage > demo-gantt {
+  inline-size: 100%;
+  block-size: 480px;
+  padding: 10px;
+}
+.overview-stage > demo-gantt {
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--md-sys-color-surface);
+}
+/* The thumbnail shrinks the plan further, so the chart and not only the toolbar shows. */
+/* Content of the detail sheet the demo opens; it lives in the page, not in the shadow. */
+.gdetail {
+  display: grid;
+  gap: 12px;
+}
+.gdetail .gcode {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: var(--md-sys-color-primary);
+}
+.gdetail h2 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+}
+.gfacts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.gfacts div {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+.gfacts dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.gfacts dd {
+  margin: 0;
+}
+.gchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gchip {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: var(--md-sys-typescale-label-small-font);
 }
 
 /* Shell and dashboard are whole panels: they need the full stage and a height. */
@@ -650,6 +737,12 @@ demo-data-table {
 
 .overview-stage.is-wide > * {
   flex: 1 1 100%;
+}
+
+/* Zoom 0.6 from the wide rule: 480px of stage renders as 288px of card, so the
+   thumbnail shows the chart and not only the toolbar. */
+.overview-stage.is-wide:has(> demo-gantt) {
+  block-size: 400px;
 }
 
 .overview-grid bolle-card h3 {
@@ -1502,6 +1595,7 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="App shell"]),
 .playground-stage:has(.preview-surface[data-group="Dashboard"]),
 .playground-stage:has(.preview-surface[data-group="Kanban"]),
+.playground-stage:has(.preview-surface[data-group="Gantt"]),
 .playground-stage:has(.preview-surface[data-group="Pagination"]),
 .playground-stage:has(.preview-surface[data-group="App bars"]) {
   grid-template-columns: minmax(0, 1fr);
@@ -1510,6 +1604,7 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="App shell"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Dashboard"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Kanban"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="Gantt"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Pagination"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="App bars"]) .playground-side {
   border-inline-start: 0;
@@ -1520,6 +1615,7 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="App shell"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Dashboard"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Kanban"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="Gantt"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Pagination"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="App bars"]) .side-body {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -2694,4 +2790,31 @@ docs-select bolle-button {
 
 .locale-select {
   min-inline-size: 0;
+}
+
+/* State matrix on the overview page: one row per catalogue entry. */
+.state-matrix {
+  margin-block-start: 40px;
+}
+
+.state-matrix h2 {
+  margin: 0 0 8px;
+  font-family: var(--md-ref-typeface-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.state-matrix > p {
+  margin: 0 0 16px;
+  max-inline-size: var(--md-sys-layout-measure-max);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.state-matrix .api-table td code {
+  white-space: nowrap;
+}
+
+.state-matrix .api-table td:empty::after {
+  content: "—";
+  color: var(--md-sys-color-outline);
 }

@@ -19,6 +19,8 @@ const CHEVRONS_RIGHT = ["M7 7l5 5l-5 5", "M13 7l5 5l-5 5"];
 const GRIP_VERTICAL = ["M9 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M9 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M9 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M13 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M13 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M13 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"];
 const PIN = ["M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4", "M9 15l-4.5 4.5", "M14.5 4l5.5 5.5"];
 const PUSH_PIN_OFF = ["M9 4.5l6 0", "M14 4.5v3.5l3 3v1.5l-6 0", "M10 9.5l-3 3v1.5h6", "M12 14.5v5", "M4 4l16 16"];
+// Path data from Tabler Icons (outline, MIT).
+const REFRESH = ["M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4", "M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"];
 const ALERT_TRIANGLE = ["M12 9v4", "M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.871l-8.106 -13.534a1.914 1.914 0 0 0 -3.274 0z", "M12 16h.01"];
 const DATABASE_OFF = ["M12 6v6", "M6 6v6", "M18 6v6", "M6 12v6", "M18 12v6", "M3 3l18 18"];
 const FILTER_OFF = ["M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-5.414 -5.414a2 2 0 0 1 -.586 -1.414v-2.172z"];
@@ -71,6 +73,7 @@ export const groupIcon = () => tabler(LAYOUT_ROWS);
 export const densityComfortableIcon = () => tabler(DENSITY_MEDIUM);
 export const densityCompactIcon = () => tabler(DENSITY_SMALL);
 export const plusIcon = () => tabler(PLUS);
+export const refreshIcon = () => tabler(REFRESH);
 
 /** Tabler check as a CSS mask, for ::before content painted with currentColor. */
 export const checkMask = unsafeCSS(

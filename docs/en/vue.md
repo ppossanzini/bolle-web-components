@@ -540,8 +540,7 @@ determinate and indeterminate.
 
 ### bolle-loading-indicator
 
-Attributes: `label`, `variant` (default, contained). Always indeterminate, with
-`role="progressbar"`.
+Attributes: `label`, `variant` (default, morph, contained). Always indeterminate, with `role="progressbar"`. The `morph` variant follows the seven-shape sequence; `contained` draws the filled container.
 
 ```vue
 <template>
@@ -635,8 +634,10 @@ const tip = ref<BolleTooltip | null>(null);
 Attributes: `label`, `variant` (hero, multi-browse, uncontained,
 uncontained-multi-aspect-ratio, center-aligned-hero, full-screen),
 `previous-label`, `next-label`, `index`. Children: the slides. Method:
-`goTo(index)`. Event: `change` with `{ index }`. The `full-screen`
-variant scrolls vertically.
+`goTo(index)`. Event: `change` with `{ index }`. The `full-screen` variant
+scrolls vertically. Keylines follow the carousel width: `hero` fills the
+container, `multi-browse` shows three entries and `uncontained` stays between
+160 and 220px.
 
 ```vue
 <script setup lang="ts">
@@ -1828,10 +1829,17 @@ function onEvening(event: Event) {
 
 Attributes: `items` (`MenuEntry[]`), `menu-label` (mandatory), `variant`
 (vertical, baseline), `color-scheme` (standard, vibrant; vertical only),
-`selection-mode` (none, single, multi), `quick`, `density` (number, negative
-values are more compact), `inactive`. Methods: `show(anchor, { last?, x?, y? })`,
+`selection-mode` (none, single, multi), `filterable`, `filter`, `locale`,
+`compact-width` (480px by default), `quick`, `density` (number, negative values
+are more compact), `inactive`. Methods: `show(anchor, { last?, x?, y? })`,
 `close(restoreFocus?)`. Getters: `open`, `selectedIds`. Events: `menu-open`,
 `menu-close`, `menu-select` with `{ item, selectedIds }`.
+
+With `filterable` the menu shows a field that filters the entries; `filter` holds
+the query and can be set from outside. Below `compact-width` the vertical menu
+becomes a bottom sheet, dismissed with Escape or an outside press. `selectedIds`
+aggregates the selection of nested submenus and `menu-select` reports the root
+selection.
 
 ```vue
 <script setup lang="ts">

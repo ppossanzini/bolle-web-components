@@ -541,8 +541,7 @@ determinato e indeterminato.
 
 ### bolle-loading-indicator
 
-Attributi: `label`, `variant` (default, contained). Sempre indeterminato, con
-`role="progressbar"`.
+Attributi: `label`, `variant` (default, morph, contained). Sempre indeterminato, con `role="progressbar"`. La variante `morph` segue la sequenza di sette forme; `contained` disegna il contenitore pieno.
 
 ```vue
 <template>
@@ -637,7 +636,9 @@ Attributi: `label`, `variant` (hero, multi-browse, uncontained,
 uncontained-multi-aspect-ratio, center-aligned-hero, full-screen),
 `previous-label`, `next-label`, `index`. Figli: le slide. Metodo:
 `goTo(index)`. Evento: `change` con `{ index }`. La variante `full-screen`
-scorre in verticale.
+scorre in verticale. Le keyline seguono la larghezza del carosello: `hero`
+riempie il contenitore, `multi-browse` mostra tre voci e `uncontained` resta fra
+160 e 220px.
 
 ```vue
 <script setup lang="ts">
@@ -1828,10 +1829,17 @@ function onEvening(event: Event) {
 
 Attributi: `items` (`MenuEntry[]`), `menu-label` (obbligatorio), `variant`
 (vertical, baseline), `color-scheme` (standard, vibrant; solo vertical),
-`selection-mode` (none, single, multi), `quick`, `density` (numero, valori
-negativi più compatti), `inactive`. Metodi: `show(anchor, { last?, x?, y? })`,
+`selection-mode` (none, single, multi), `filterable`, `filter`, `locale`,
+`compact-width` (480px per difetto), `quick`, `density` (numero, valori negativi
+più compatti), `inactive`. Metodi: `show(anchor, { last?, x?, y? })`,
 `close(restoreFocus?)`. Getter: `open`, `selectedIds`. Eventi: `menu-open`,
 `menu-close`, `menu-select` con `{ item, selectedIds }`.
+
+Con `filterable` il menu mostra un campo che filtra le voci; `filter` contiene la
+query e si può impostare dall'esterno. Sotto `compact-width` il menu verticale
+diventa un foglio dal basso, chiuso da Escape o da un tocco esterno. `selectedIds`
+aggrega la selezione dei sottomenu e `menu-select` riporta la selezione della
+radice.
 
 ```vue
 <script setup lang="ts">

@@ -472,7 +472,7 @@ const formats = ref<string[]>(["bold"]);
 
 ### bolle-loading-indicator
 
-属性：`label`、`variant`（default、contained）。始终为不确定模式，带有 `role="progressbar"`。
+属性：`label`、`variant`（default、morph、contained）。始终为不确定模式，带有 `role="progressbar"`。`morph` 变体跟随七形状序列；`contained` 绘制填充容器。
 
 ```vue
 <template>
@@ -555,7 +555,7 @@ const tip = ref<BolleTooltip | null>(null);
 
 ### bolle-carousel
 
-属性：`label`、`variant`（hero、multi-browse、uncontained、uncontained-multi-aspect-ratio、center-aligned-hero、full-screen）、`previous-label`、`next-label`、`index`。子元素：各个幻灯片。方法：`goTo(index)`。事件：`change`，携带 `{ index }`。`full-screen` 变体垂直滚动。
+属性：`label`、`variant`（hero、multi-browse、uncontained、uncontained-multi-aspect-ratio、center-aligned-hero、full-screen）、`previous-label`、`next-label`、`index`。子元素：各个幻灯片。方法：`goTo(index)`。事件：`change`，携带 `{ index }`。`full-screen` 变体垂直滚动。Keyline 跟随轮播自身宽度：`hero` 占满容器，`multi-browse` 显示三项，`uncontained` 保持在 160 到 220px 之间。
 
 ```vue
 <script setup lang="ts">
@@ -1673,7 +1673,9 @@ function onEvening(event: Event) {
 
 ### bolle-menu
 
-属性：`items`（`MenuEntry[]`）、`menu-label`（必需）、`variant`（vertical、baseline）、`color-scheme`（standard、vibrant；仅 vertical）、`selection-mode`（none、single、multi）、`quick`、`density`（数值，负值更紧凑）、`inactive`。方法：`show(anchor, { last?, x?, y? })`、`close(restoreFocus?)`。Getter：`open`、`selectedIds`。事件：`menu-open`、`menu-close`、`menu-select`（携带 `{ item, selectedIds }`）。
+属性：`items`（`MenuEntry[]`）、`menu-label`（必填）、`variant`（vertical、baseline）、`color-scheme`（standard、vibrant；仅 vertical）、`selection-mode`（none、single、multi）、`filterable`、`filter`、`locale`、`compact-width`（默认 480px）、`quick`、`density`（数字，负值更紧凑）、`inactive`。方法：`show(anchor, { last?, x?, y? })`、`close(restoreFocus?)`。Getter：`open`、`selectedIds`。事件：`menu-open`、`menu-close`、`menu-select`，携带 `{ item, selectedIds }`。
+
+启用 `filterable` 后菜单显示筛选输入框；`filter` 保存查询并可外部设置。宽度低于 `compact-width` 时垂直菜单变为底部面板，可用 Escape 或点击外部关闭。`selectedIds` 汇总子菜单的选择，`menu-select` 报告根级选择。
 
 ```vue
 <script setup lang="ts">

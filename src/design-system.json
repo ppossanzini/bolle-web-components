@@ -21,6 +21,91 @@
     {
       "date": "2026-11-19",
       "classification": "additive",
+      "description": "All 51 catalogued components now carry the code documentation the data table had: two or three recipes each in HTML with JavaScript, Vue 3 and React, a runnable example in the playground for the first recipe of every component, and the anatomy guide with the purpose of each public slot and CSS part. The i18n collector now reads the recipe fields from their own indentation and ignores the same words inside a code sample, so only page text is collected."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "Every catalogued component now carries an anatomy guide, like the data table: a sentence on where its content goes, the purpose of every public slot and CSS part, the markup of each slot, and a complete example. Slots and parts share a purpose dictionary, so the documentation of one control is consistent with the others, and the detected names always lead the list: a guide can add a purpose but never hide a public seam."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "fix",
+      "description": "The segments of `bolle-segmented-buttons` wrapped onto a second row when the container was narrower than their content, and the pill broke into a two-line blob. The track no longer wraps: the segments keep one row, the labels never break and a container too narrow scrolls the track horizontally."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-gantt` gains the seams the other surfaces already had: `GanttColumn.render` returns the markup of a cell and `barRenderer` the content of a bar, both with `contentStyles` for their rules; the slots `loading`, `error` and `empty` and the matching `loadingRenderer`, `errorRenderer` and `emptyRenderer` replace the built-in states; `groupLabel` names a group row. The chart also selects the task the reader clicks, applying `selected` and reporting it with `task-select`."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "fix",
+      "description": "A column `bolle-gantt` does not know stayed hidden: the width preset that picks the built-in columns also switched it off. The preset now chooses among the built-in columns only, and a column the application declares keeps the visibility it asked for."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "breaking",
+      "description": "Each component now applies the change the reader makes before reporting it, instead of waiting for the application to write the state back. `bolle-pagination` moves to the requested page and size; `bolle-data-table` applies row selection, row expansion, grouping and column pin, hide, order and width; `bolle-kanban` moves the card and folds the column; `bolle-gantt` moves the task and adds the dependency. The events `page-change`, `select`, `expand`, `group`, `column-change`, `card-move`, `column-collapse`, `task-change` and `dependency-add` report the change rather than ask for it. An application that mirrors the same state keeps working, because a later assignment still wins, but the event listener is no longer required for the component to work."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-data-table` gains `columnHandler`, called with the new column list after every pin, hide, reorder or width change, for applications that store the layout outside the page: the table applies the change first and redraws again once the returned promise settles."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "breaking",
+      "description": "`bolle-data-table` sorts and pages on its own: a header click goes ascending then descending and never drops the order, `page-size` slices the rows it holds, `total` falls back to their count and the requested page is clamped to the pages the data has. The new properties `sortHandler` and `pageHandler` take over only when the application loads the data from a server: the table calls them with the requested order or page, keeps the `sort` and `page-change` events, and redraws once the returned promise settles, so an in-place change to `rows` is shown without a manual `refresh()`. A header click therefore no longer needs an application sort, and the `sort` property is the current order rather than only the incoming one."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "breaking",
+      "description": "Boolean properties that defaulted to true now default to false, as the Lit reactive-properties guide requires for an attribute-controlled boolean: `bolle-gantt` `editable` and `linkable`, `bolle-kanban` `movable`, `bolle-widget` `removable`, `movable` and `resizable`, `bolle-bottom-app-bar` `divider`, `bolle-dialog` `modal`. Markup can now turn each feature off by removing the attribute; `bolle-side-sheet` keeps `modal` on because it always blocks the page. The documentation examples set the attribute explicitly, and the redundant `attribute: false` next to `state: true` is removed from seven internal properties."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "The data table documentation states the reactivity contract: the component reads the array it receives and the frameworks pass a new array on every change. An in-place mutation is invisible to the component, so Vue and React examples derive a new array with `toSorted`, and `refresh()` covers the imperative case."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-data-table` gains the public method `refresh()`, which redraws the rows after the application changed its own array in place. Assigning the same array back does not reach the component, because the property keeps its identity, so the method replaces the copy-then-assign workaround in the sorting example."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-list` gains `itemRenderer`, which the component calls for every row, replacing the per-item `leading-{id}` and `trailing-{id}` slots. The same correction removes the per-item slots of `bolle-sidebar`, `bolle-kanban` and `bolle-data-table`: the application supplies one renderer per element kind and the component calls it, so no caller prepares one slot per row."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-data-table` exposes public CSS parts and the shell slots `header`, `loading`, `error`, `empty`, `empty-state` and `footer`. Cell, row, detail and group content arrives from renderers the component calls: `column.render`, `rowRenderer`, `headerRenderer`, `detail`, `groupSummary`, `groupRenderer`, plus loading, error, empty and footer renderers. Row, header and group heights, column widths and virtual overscan are configurable; the sorting, selection, paging and column-change event contract is unchanged."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-kanban` exposes public CSS parts, configurable column width and gaps, and the state slots `loading`, `error` and `empty`. Card, column and lane content arrives from the renderers the component calls (`card`, `columnRenderer`, `laneRenderer`), so the application never pre-declares one slot per item. Card grips reach 48px and the move and action event contract is unchanged."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-dashboard` and `bolle-widget` gain configurable compact, medium and full column counts, public anatomy parts and slots, movable/resizable controls, and 48px grip and resize targets. The grid reflows at 600, 840 and 1200px and keeps the application-owned layout contract."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-app-shell` exposes configurable medium and expanded breakpoints, supporting pane mode, public CSS parts and slots for inline or modal supporting content and compact navigation. Pane, supporting, status and spacing geometry use component-token fallbacks, and dynamic slot changes update the shell regions. The documentation demo removes the narrow topbar overflow."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
+      "description": "`bolle-sidebar` exposes public CSS parts and the slots `header`, `filter`, `empty` and `footer`. Item and rail content arrives from the `item` and `railItem` renderers the component calls, so the application never pre-declares one slot per row. Width bounds and geometry are configurable, row and resize targets reach 48px, and action-only entries render as buttons instead of links with a fragment URL."
+    },
+    {
+      "date": "2026-11-19",
+      "classification": "additive",
       "description": "All Material 3 components outside Schiuma expose a public anatomy contract through CSS parts and named slots. Component-token fallbacks cover the configurable geometry introduced for actions, inputs, navigation, feedback and overlays. Native form, link, picker and slider options are forwarded where the platform supports them, with accessible slot labels and required picker validation. The documentation derives properties, slots and parts from the registered implementation and publishes copyable examples."
     },
     {

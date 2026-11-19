@@ -133,6 +133,10 @@ export type {
   DataTableExpandDetail,
   DataTableRowDetail,
   DataTableRowActionDetail,
+  DataTableRowRenderer,
+  DataTableHeaderRenderer,
+  DataTableGroupRenderer,
+  DataTableStateRenderer,
 } from "./data-table.js";
 export type {
   KanbanCard,
@@ -173,13 +177,21 @@ export type { BreadcrumbItem } from "./breadcrumb.js";
 export type { AvatarGroupSelectDetail } from "./avatar-group.js";
 export type { BreadcrumbLabels } from "./localization.js";
 export type { PaginationChangeDetail } from "./pagination.js";
-export type { AppShellForm, AppShellFormDetail } from "./app-shell.js";
+export type {
+  AppShellForm,
+  AppShellFormDetail,
+  SupportingMode,
+} from "./app-shell.js";
 export { APP_SHELL_MEDIUM, APP_SHELL_EXPANDED } from "./app-shell.js";
 export type {
   DashboardLayoutEntry,
   DashboardLayoutDetail,
 } from "./dashboard.js";
-export { DASHBOARD_COLUMNS } from "./dashboard.js";
+export {
+  DASHBOARD_COLUMNS,
+  DASHBOARD_COMPACT_COLUMNS,
+  DASHBOARD_MEDIUM_COLUMNS,
+} from "./dashboard.js";
 export type { ShellLabels } from "./localization.js";
 export type { PickerLabels, SupportedLocale } from "./localization.js";
 export { supportedLocale } from "./localization.js";

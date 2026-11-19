@@ -1,4 +1,4 @@
-import { html, nothing, type PropertyValues } from "lit";
+import { html, nothing, unsafeCSS, type PropertyValues } from "lit";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
@@ -47,9 +47,18 @@ export interface GanttColumn {
   label?: string;
   width?: number;
   visible?: boolean;
-  /** Value of a column the component does not know; plain text. */
+  /** Text of a cell the component does not know. */
   value?: (task: GanttTask) => string;
+  /** Cell content, replacing the text; runs inside the chart shadow root. */
+  render?: (task: GanttTask, gantt: BolleGantt) => unknown;
 }
+
+export type GanttBarRenderer = (
+  task: GanttTask,
+  gantt: BolleGantt,
+  span: GanttSpan,
+) => unknown;
+export type GanttRenderer = (gantt: BolleGantt) => unknown;
 
 export interface GanttChangeRequest {
   task: GanttTask;
@@ -83,7 +92,8 @@ export interface GanttColumnsDetail {
   visible: string[];
 }
 
-interface Span {
+/** Start, end and progress a row shows, from the task or from its descendants. */
+export interface GanttSpan {
   start: string;
   end: string;
   progress: number;
@@ -94,7 +104,7 @@ interface Row {
   task?: GanttTask;
   depth: number;
   kind: "summary" | "task" | "group";
-  span?: Span;
+  span?: GanttSpan;
   group?: { key: string; label: string; count: number };
 }
 
@@ -134,6 +144,7 @@ const DEFAULT_COLUMNS: Array<
   { id: "progress", width: 62, visible: true },
   { id: "deps", width: 96, visible: false },
 ];
+const DEFAULT_COLUMN_IDS = new Set(DEFAULT_COLUMNS.map((column) => column.id));
 
 const fill = (template: string, params: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (match, key: string) =>
@@ -179,9 +190,9 @@ const isoWeek = (value: string) => {
 
 /**
  * Planning surface: rows of tasks on a time axis, with dependency arrows, pointer and
- * keyboard changes. It reads `tasks` and never shortens, extends or links a task by
- * itself: every change is announced with an event and the application that owns the
- * data decides. The rule of the application arrives through `restrict`.
+ * keyboard changes. A change is applied to its own copy of `tasks` and reported in
+ * the `task-change` or `dependency-add` event. The rule that decides whether a
+ * change is allowed belongs to the application, through `restrict`.
  */
 export class BolleGantt extends BolleElement {
   static properties = {
@@ -199,13 +210,19 @@ export class BolleGantt extends BolleElement {
     emptyLabel: { attribute: "empty-label" },
     restrict: { attribute: false },
     labels: { attribute: false },
+    barRenderer: { attribute: false },
+    groupLabel: { attribute: false },
+    contentStyles: { attribute: false },
+    loadingRenderer: { attribute: false },
+    errorRenderer: { attribute: false },
+    emptyRenderer: { attribute: false },
     selected: {},
-    drag: { state: true, attribute: false },
-    windowStart: { state: true, attribute: false },
-    windowEnd: { state: true, attribute: false },
+    drag: { state: true },
+    windowStart: { state: true },
+    windowEnd: { state: true },
     _announcement: { state: true },
-    _layout: { state: true, attribute: false },
-    _collapsed: { state: true, attribute: false },
+    _layout: { state: true },
+    _collapsed: { state: true },
   };
   static styles = [commonStyles, ganttStyles];
 
@@ -221,9 +238,9 @@ export class BolleGantt extends BolleElement {
   /** Shows the approved plan under every bar. */
   baseline = false;
   /** Lets the reader move and resize with pointer or keyboard. */
-  editable = true;
+  editable = false;
   /** Shows the connector that creates a dependency. */
-  linkable = true;
+  linkable = false;
   loading = false;
   /** Text shown instead of the chart when it cannot be loaded. */
   error = "";
@@ -235,7 +252,20 @@ export class BolleGantt extends BolleElement {
   restrict?: (request: GanttChangeRequest) => string | undefined;
   /** Replaces the built-in texts. */
   labels: Partial<GanttLabels> = {};
-  /** Id of the task drawn as selected. */
+  /** Content of a bar, replacing the label the component puts inside it. */
+  barRenderer?: GanttBarRenderer;
+  /** Label of a group row; the key itself when omitted. */
+  groupLabel?: (key: string) => string;
+  /**
+   * CSS for the markup returned by a column `render` and by `barRenderer`. Those
+   * functions run inside the chart shadow root, where the page stylesheet does
+   * not reach; pass their rules here as a string.
+   */
+  contentStyles = "";
+  loadingRenderer?: GanttRenderer;
+  errorRenderer?: GanttRenderer;
+  emptyRenderer?: GanttRenderer;
+  /** Id of the task drawn as selected; the chart updates it on click. */
   selected = "";
 
   declare drag: Drag | undefined;
@@ -394,7 +424,9 @@ export class BolleGantt extends BolleElement {
           : column.id === "name" && width < 1000
             ? 210
             : column.width,
-      visible: preset.includes(column.id),
+      // The preset chooses among the built-in columns; one the application
+      // declares keeps the visibility it asked for.
+      visible: preset.includes(column.id) || !DEFAULT_COLUMN_IDS.has(column.id),
     }));
     if (JSON.stringify(next) !== JSON.stringify(this._layout))
       this._layout = next;
@@ -503,7 +535,7 @@ export class BolleGantt extends BolleElement {
     return this.rowCache;
   }
 
-  private rollup(tasks: GanttTask[]): Span {
+  private rollup(tasks: GanttTask[]): GanttSpan {
     const start = tasks.reduce(
       (min, task) => (task.start < min ? task.start : min),
       tasks[0].start,
@@ -558,7 +590,11 @@ export class BolleGantt extends BolleElement {
         id,
         depth: 0,
         kind: "group",
-        group: { key: name, label: name, count: list.length },
+        group: {
+          key: name,
+          label: this.groupLabel ? this.groupLabel(name) : name,
+          count: list.length,
+        },
       });
       if (this._collapsed.includes(id)) continue;
       for (const task of [...list].sort((a, b) =>
@@ -733,6 +769,13 @@ export class BolleGantt extends BolleElement {
     return walk(to);
   }
 
+  /** New task array with the change applied to the task the reader moved. */
+  private moved(task: GanttTask, start: string, end: string): GanttTask[] {
+    return this.tasks.map((item) =>
+      item.id === task.id ? { ...item, start, end } : item,
+    );
+  }
+
   private request(task: GanttTask, start: string, end: string) {
     if (end < start) {
       this.announce(this.text.endBeforeStart);
@@ -755,6 +798,7 @@ export class BolleGantt extends BolleElement {
       });
       return false;
     }
+    this.tasks = this.moved(task, start, end);
     this.emit<GanttChangeDetail>("task-change", { task, start, end });
     this.announce(
       fill(this.text.moved, {
@@ -794,6 +838,11 @@ export class BolleGantt extends BolleElement {
       });
       return false;
     }
+    this.tasks = this.tasks.map((item) =>
+      item.id === task.id
+        ? { ...item, deps: [...(item.deps ?? []), predecessor.id] }
+        : item,
+    );
     this.emit<GanttDependencyDetail>("dependency-add", { task, predecessor });
     this.announce(
       fill(this.text.dependencyAdded, {
@@ -804,10 +853,16 @@ export class BolleGantt extends BolleElement {
     return true;
   }
 
+  /** Applies the choice, then reports it: the chart does not wait for the application. */
+  private select(task: GanttTask) {
+    if (this.selected !== task.id) this.selected = task.id;
+    this.emit<GanttTaskDetail>("task-select", { task });
+  }
+
   private onKey(event: KeyboardEvent, task: GanttTask) {
     if (event.key === "Enter") {
       event.preventDefault();
-      this.selected = task.id;
+      this.select(task);
       this.emit<GanttTaskDetail>("task-open", { task });
       return;
     }
@@ -836,7 +891,7 @@ export class BolleGantt extends BolleElement {
     } catch {
       /* A pointer without capture still tracks through the listeners below. */
     }
-    this.selected = task.id;
+    this.select(task);
     this.dragPointer = { x: event.clientX, y: event.clientY };
     this.drag = {
       kind,
@@ -1048,7 +1103,7 @@ export class BolleGantt extends BolleElement {
       <div class="head-row">${secondary}</div>`;
   }
 
-  private taskLabel(task: GanttTask, span: Span) {
+  private taskLabel(task: GanttTask, span: GanttSpan) {
     return fill(this.text.taskLabel, {
       code: task.code ?? "",
       name: task.name,
@@ -1088,7 +1143,9 @@ export class BolleGantt extends BolleElement {
         style=${`inset-inline-start:${left}px`}
         @pointerdown=${(event: PointerEvent) => this.startDrag(event, task!, "move")}
         @keydown=${(event: KeyboardEvent) => this.onKey(event, task!)}
-      ></div>`;
+      >
+        ${this.barRenderer ? this.barRenderer(task!, this, span) : nothing}
+      </div>`;
     }
     const dragging = active && this.drag?.kind !== "link";
     return html`<div
@@ -1102,7 +1159,13 @@ export class BolleGantt extends BolleElement {
         @keydown=${(event: KeyboardEvent) => this.onKey(event, task!)}
       >
         <span class="fill" style=${`inline-size:${span.progress}%`}></span>
-        ${width > 90 ? html`<span class="bar-label">${task!.name}</span>` : nothing}
+        ${
+          this.barRenderer
+            ? this.barRenderer(task!, this, span)
+            : width > 90
+              ? html`<span class="bar-label">${task!.name}</span>`
+              : nothing
+        }
         <span
           class="handle start"
           @pointerdown=${(event: PointerEvent) => this.startDrag(event, task!, "resize-start")}
@@ -1132,8 +1195,9 @@ export class BolleGantt extends BolleElement {
     id: string,
     task: GanttTask,
     column: GanttColumn,
-    span?: Span,
+    span?: GanttSpan,
   ) {
+    if (column.render) return html`<div>${column.render(task, this)}</div>`;
     if (column.value) return html`<div>${column.value(task)}</div>`;
     const days = diffDays(task.start, task.end) + 1;
     if (id === "code")
@@ -1260,6 +1324,7 @@ export class BolleGantt extends BolleElement {
     return html`<div
       class="row ${row.kind} ${collapsed ? "collapsed" : ""} ${this.selected === task?.id ? "selected" : ""}"
       style=${`inset-block-start:${index * this.rowHeight}px`}
+      @click=${() => task && this.select(task)}
       @dblclick=${() => task && this.emit<GanttTaskDetail>("task-open", { task })}
     >
       <div class="cell" style=${`--columns:${this.template}`}>${cells}</div>
@@ -1362,23 +1427,43 @@ export class BolleGantt extends BolleElement {
 
   private renderState() {
     if (this.loading)
-      return html`<div class="state">
-        <bolle-loading-indicator
-          label=${this.text.loading}
-        ></bolle-loading-indicator>
-        <p>${this.text.loading}</p>
-      </div>`;
-    if (this.error)
-      return html`<div class="state" role="alert">
-        <span class="state-icon">${alertIcon()}</span>
-        <p>${this.error || this.text.error}</p>
-        <bolle-button variant="tonal" @click=${() => this.emit("retry", {})}
-          >${refreshIcon()} ${this.text.retry}</bolle-button
+      return html`<div class="state" part="loading">
+        <slot name="loading"
+          >${
+            this.loadingRenderer
+              ? this.loadingRenderer(this)
+              : html`<bolle-loading-indicator
+                    label=${this.text.loading}
+                  ></bolle-loading-indicator>
+                  <p>${this.text.loading}</p>`
+          }</slot
         >
       </div>`;
-    return html`<div class="state">
-      <span class="state-icon">${databaseOffIcon()}</span>
-      <p>${this.emptyLabel || this.text.empty}</p>
+    if (this.error)
+      return html`<div class="state" part="error" role="alert">
+        <slot name="error"
+          >${
+            this.errorRenderer
+              ? this.errorRenderer(this)
+              : html`<span class="state-icon">${alertIcon()}</span>
+                  <p>${this.error || this.text.error}</p>
+                  <bolle-button
+                    variant="tonal"
+                    @click=${() => this.emit("retry", {})}
+                    >${refreshIcon()} ${this.text.retry}</bolle-button
+                  >`
+          }</slot
+        >
+      </div>`;
+    return html`<div class="state" part="empty">
+      <slot name="empty"
+        >${
+          this.emptyRenderer
+            ? this.emptyRenderer(this)
+            : html`<span class="state-icon">${databaseOffIcon()}</span>
+                <p>${this.emptyLabel || this.text.empty}</p>`
+        }</slot
+      >
     </div>`;
   }
 
@@ -1462,6 +1547,13 @@ export class BolleGantt extends BolleElement {
         </div>
       </div>
 
+      ${
+        this.contentStyles
+          ? html`<style>
+              ${unsafeCSS(this.contentStyles)}
+            </style>`
+          : nothing
+      }
       ${this.renderNote()}
       <bolle-menu
         menu-label=${text.columns}

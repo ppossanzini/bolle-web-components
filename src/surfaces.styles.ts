@@ -329,17 +329,12 @@ export const surfaceStyles = css`
     padding: 0;
     margin: 0;
   }
-  .list-item > span[aria-hidden="true"],
-  .list-item > slot[part="list-leading"] > span[aria-hidden="true"] {
+  .list-item > span[aria-hidden="true"] {
     display: inline-grid;
     place-items: center;
     inline-size: var(--md-comp-list-icon-size, 24px);
     block-size: var(--md-comp-list-icon-size, 24px);
     font-size: var(--md-comp-list-icon-size, 24px);
-  }
-  .list-item > slot[part="list-leading"],
-  .list-item > slot[part="list-trailing"] {
-    display: contents;
   }
   .list-item {
     display: flex;

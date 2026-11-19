@@ -10,7 +10,23 @@ const locales = ["en", "fr", "zh"];
 
 // A double-quoted JS string literal, allowing escaped characters.
 const literal = String.raw`"((?:[^"\\]|\\.)*)"`;
-const call = new RegExp(String.raw`\b(?:l|m|lh)\(\s*${literal}`, "g");
+// A call site may pass the Italian key with either quote style.
+const callDouble = new RegExp(String.raw`\b(?:l|m|lh)\(\s*${literal}`, "g");
+const callSingle = /\b(?:l|m|lh)\(\s*'((?:[^'\\]|\\.)*)'/g;
+// Recipe titles and descriptions reach l() through a variable, so they are read
+// from their own fields instead of from a call.
+// A recipe declares its own title and description with six spaces of indentation;
+// the same words inside a code sample belong to the sample, not to the page.
+const recipeField = new RegExp(
+  String.raw`^ {6}(?:title|description):\s*${literal}`,
+  "gm",
+);
+// The anatomy guides reach l() through a variable too: intro and purpose are
+// read from their own fields.
+const anatomyField = new RegExp(
+  String.raw`\b(?:intro|purpose):\s*${literal}`,
+  "g",
+);
 
 const unescape = (text) => JSON.parse(`"${text}"`);
 
@@ -18,7 +34,15 @@ const keys = new Set();
 for (const file of readdirSync(siteDir)) {
   if (!file.endsWith(".ts") || file === "i18n.ts") continue;
   const source = readFileSync(join(siteDir, file), "utf8");
-  for (const match of source.matchAll(call)) keys.add(unescape(match[1]));
+  for (const match of source.matchAll(callDouble)) keys.add(unescape(match[1]));
+  for (const match of source.matchAll(callSingle))
+    keys.add(match[1].replace(/\\'/g, "'").replace(/\\\\/g, "\\"));
+  if (file === "recipes.ts")
+    for (const match of source.matchAll(recipeField))
+      keys.add(unescape(match[1]));
+  if (file === "docs-app.ts")
+    for (const match of source.matchAll(anatomyField))
+      keys.add(unescape(match[1]));
 }
 
 const dictionary = (locale) => {

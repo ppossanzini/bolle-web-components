@@ -213,6 +213,7 @@ export class BolleList extends BolleElement {
     value: { attribute: false },
     expanded: { attribute: false },
     labels: { attribute: false },
+    itemRenderer: { attribute: false },
   };
   static styles = [commonStyles, surfaceStyles];
   items: BolleItem[] = [];
@@ -223,6 +224,8 @@ export class BolleList extends BolleElement {
   value: string | string[] = "";
   expanded: string[] = [];
   labels: Partial<ListLabels> = {};
+  /** Row content, replacing icon, label, supporting text and badge. */
+  itemRenderer?: (item: BolleItem, list: BolleList) => unknown;
   private get text(): ListLabels {
     return listLabels(document.documentElement.lang, this.labels);
   }
@@ -264,14 +267,28 @@ export class BolleList extends BolleElement {
     });
   }
   private content(item: BolleItem) {
-    return html`<slot name=${`leading-${item.id}`} part="list-leading"
-        >${item.icon ? html`<span class="icon" part="list-icon" aria-hidden="true">${item.icon}</span>` : nothing}</slot
-      ><span part="list-text" class="list-text"
-        ><span part="list-label">${item.label}</span
-        >${item.supportingText ? html`<span class="support" part="list-supporting-text">${item.supportingText}</span>` : nothing}</span
-      ><slot name=${`trailing-${item.id}`} part="list-trailing"
-        >${item.badge ? html`<span class="list-badge" part="list-badge">${item.badge}</span>` : nothing}</slot
-      >`;
+    if (this.itemRenderer) return this.itemRenderer(item, this);
+    return html`${
+        item.icon
+          ? html`<span class="icon" part="list-icon" aria-hidden="true"
+              >${item.icon}</span
+            >`
+          : nothing
+      }<span part="list-text" class="list-text"
+        ><span part="list-label">${item.label}</span>${
+          item.supportingText
+            ? html`<span class="support" part="list-supporting-text"
+                >${item.supportingText}</span
+              >`
+            : nothing
+        }</span
+      >${
+        item.badge
+          ? html`<span class="list-badge" part="list-badge"
+              >${item.badge}</span
+            >`
+          : nothing
+      }`;
   }
   private listRole() {
     return this.selection === "single" ? "listbox" : nothing;

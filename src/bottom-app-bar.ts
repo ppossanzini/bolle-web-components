@@ -25,7 +25,7 @@ export class BolleBottomAppBar extends BolleElement {
   variant: "standard" | "floating" = "standard";
   align: "start" | "center" = "start";
   /** Line along the top edge, which separates the bar from the content. */
-  divider = true;
+  divider = false;
   sticky = false;
   /** The FAB in `fab` hangs over the top edge instead of sitting inside the bar. */
   dock = false;
@@ -36,7 +36,10 @@ export class BolleBottomAppBar extends BolleElement {
         "button,a,bolle-button,bolle-icon-button,bolle-floating-action-button",
       ),
     )
-      .map((host) => host.shadowRoot?.querySelector<HTMLElement>(".button") ?? host)
+      .map(
+        (host) =>
+          host.shadowRoot?.querySelector<HTMLElement>(".button") ?? host,
+      )
       .filter((control) => !(control as HTMLButtonElement).disabled);
   }
 

@@ -27,9 +27,20 @@ const slotNames = (block) => {
   for (const match of block.matchAll(/<slot\b[^>]*>/g)) {
     const literal = /\bname="([^"]+)"/.exec(match[0])?.[1];
     const template = /\bname=\$\{`([^`]+)`\}/.exec(match[0])?.[1];
-    names.add(
-      literal ?? template?.replace(/\$\{[^}]+\}/g, "{id}") ?? "default",
-    );
+    let name = literal ?? template ?? "default";
+    name = name
+      .replace("${this.rowId(row)}", "{rowId}")
+      .replace("${rowId}", "{rowId}")
+      .replace("${column.key}", "{columnKey}")
+      .replace("${columnKey}", "{columnKey}")
+      .replace("${name}", "{groupName}")
+      .replace("${lane}", "{lane}")
+      .replace("${card.id}", "{cardId}")
+      .replace("${item.id}", "{itemId}")
+      .replace("${id}", "{id}");
+    if (/^(cell-|detail-|row-)/.test(name))
+      name = name.replace("{id}", "{rowId}");
+    names.add(name);
   }
   return [...names];
 };

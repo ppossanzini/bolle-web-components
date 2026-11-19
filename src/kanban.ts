@@ -96,8 +96,9 @@ interface Drag {
 
 /**
  * Board of columns and cards the application owns: the component renders the
- * columns, moves the cards by drag or by keyboard and reports every request in an
- * event. It never reorders the cards or applies a transition rule itself.
+ * columns, moves the cards by drag or by keyboard, applies the move to its own
+ * copy of `cards` and reports it in the `card-move` event. The rule that decides
+ * whether a move is allowed belongs to the application, through `restrict`.
  */
 export class BolleKanban extends BolleElement {
   static properties = {
@@ -121,9 +122,18 @@ export class BolleKanban extends BolleElement {
     error: {},
     emptyLabel: { attribute: "empty-label" },
     labels: { attribute: false },
+    columnMinWidth: { attribute: "column-min-width", type: Number },
+    columnMaxWidth: { attribute: "column-max-width", type: Number },
+    columnGap: { attribute: "column-gap", type: Number },
+    cardGap: { attribute: "card-gap", type: Number },
+    columnRenderer: { attribute: false },
+    laneRenderer: { attribute: false },
+    loadingRenderer: { attribute: false },
+    errorRenderer: { attribute: false },
+    emptyRenderer: { attribute: false },
     // Drag and composer state: the board re-renders on every pointer move.
-    drag: { state: true, attribute: false },
-    composing: { state: true, attribute: false },
+    drag: { state: true },
+    composing: { state: true },
     _announcement: { state: true },
   };
   static styles = [commonStyles, kanbanStyles];
@@ -139,9 +149,9 @@ export class BolleKanban extends BolleElement {
   laneLabel?: (key: string) => string;
   /** The reader can fold a column into a vertical strip. */
   collapsible = false;
-  /** Ids of the folded columns, owned by the application. */
+  /** Ids of the folded columns; the board updates it when a column is folded. */
   collapsed: string[] = [];
-  movable = true;
+  movable = false;
   /** Offers a quick add at the foot of every column. */
   addable = false;
   /**
@@ -166,6 +176,15 @@ export class BolleKanban extends BolleElement {
   emptyLabel = "";
   /** Replaces the built-in texts. */
   labels: Partial<KanbanLabels> = {};
+  columnMinWidth = 260;
+  columnMaxWidth = 360;
+  columnGap = 16;
+  cardGap = 8;
+  columnRenderer?: (column: KanbanColumn, board: BolleKanban) => unknown;
+  laneRenderer?: (lane: string, board: BolleKanban) => unknown;
+  loadingRenderer?: (board: BolleKanban) => unknown;
+  errorRenderer?: (error: string, board: BolleKanban) => unknown;
+  emptyRenderer?: (board: BolleKanban) => unknown;
 
   /** Internal: the drag in progress, rendered by the board. */
   declare drag: Drag | undefined;
@@ -252,6 +271,7 @@ export class BolleKanban extends BolleElement {
       });
       return;
     }
+    this.cards = this.moved(detail);
     this.emit<KanbanMoveDetail>("card-move", detail);
     const column = this.columnOf(detail.column)!;
     const overrun =
@@ -269,6 +289,38 @@ export class BolleKanban extends BolleElement {
             column: column.label,
             index: detail.index + 1,
           }),
+    );
+  }
+
+  /** New card array with the moved card at the requested place. */
+  private moved(detail: KanbanMoveDetail): KanbanCard[] {
+    const lane = this.lanes ? detail.lane : (detail.card.lane ?? "");
+    const card: KanbanCard = { ...detail.card, column: detail.column, lane };
+    const rest = this.cards.filter((item) => item.id !== card.id);
+    const group = rest
+      .map((item, index) => ({ item, index }))
+      .filter(
+        ({ item }) =>
+          item.column === card.column &&
+          this.laneOf(item) === this.laneOf(card),
+      );
+    const next = [...rest];
+    if (detail.index < group.length)
+      next.splice(group[detail.index].index, 0, card);
+    else if (group.length) next.splice(group.at(-1)!.index + 1, 0, card);
+    else next.push(card);
+    return next;
+  }
+
+  private setCollapsed(column: KanbanColumn, collapsed: boolean) {
+    this.collapsed = collapsed
+      ? [...new Set([...this.collapsed, column.id])]
+      : this.collapsed.filter((id) => id !== column.id);
+    this.emit<KanbanCollapseDetail>("column-collapse", { column, collapsed });
+    this.announce(
+      fill(collapsed ? this.text.collapsed : this.text.expanded, {
+        label: column.label,
+      }),
     );
   }
 
@@ -509,13 +561,7 @@ export class BolleKanban extends BolleElement {
     if (id === "__collapse") {
       const column = context.kind === "column" ? context.column : undefined;
       if (!column) return;
-      const collapsed = !this.collapsed.includes(column.id);
-      this.emit<KanbanCollapseDetail>("column-collapse", { column, collapsed });
-      this.announce(
-        fill(collapsed ? this.text.collapsed : this.text.expanded, {
-          label: column.label,
-        }),
-      );
+      this.setCollapsed(column, !this.collapsed.includes(column.id));
       return;
     }
     if (context.kind === "card") {
@@ -547,21 +593,23 @@ export class BolleKanban extends BolleElement {
 
   private renderCard(card: KanbanCard) {
     const dragging = this.drag?.card.id === card.id;
-    return html`<li>
+    return html`<li part="card-row">
       <bolle-card
         class="card ${dragging ? "dragging" : ""} ${
           this.selected === card.id ? "selected" : ""
         }"
+        part="card"
         variant="outlined"
         tail="none"
         data-card=${card.id}
         @click=${() => this.emit<KanbanCardDetail>("card-open", { card })}
       >
-        <div class="card-head">
+        <div class="card-head" part="card-header">
           ${
             this.movable
               ? html`<button
                   class="grip"
+                  part="card-grip"
                   aria-label=${fill(this.text.moveCard, { title: card.title })}
                   @pointerdown=${(event: PointerEvent) => this.startDrag(event, card)}
                   @keydown=${(event: KeyboardEvent) => this.keyMove(event, card)}
@@ -588,14 +636,16 @@ export class BolleKanban extends BolleElement {
         ${
           this.card
             ? html`<div class="card-body">${this.card(card, this)}</div>`
-            : html`<p class="card-title" dir="auto">${card.title}</p>
+            : html`<div class="card-body">
+                <p class="card-title" dir="auto">${card.title}</p>
                 ${
                   card.subtitle
                     ? html`<p class="card-subtitle" dir="auto">
                         ${card.subtitle}
                       </p>`
                     : nothing
-                }`
+                }
+              </div>`
         }
       </bolle-card>
     </li>`;
@@ -650,14 +700,14 @@ export class BolleKanban extends BolleElement {
       this.drag && this.drag.lane === lane && this.drag.column === column.id;
     const overWip = column.wip ? cards.length > column.wip : false;
     if (folded)
-      return html`<section class="column collapsed" data-column=${column.id}>
+      return html`<section
+        class="column collapsed"
+        part="column column-collapsed"
+        data-column=${column.id}
+      >
         <button
           class="collapse-strip"
-          @click=${() =>
-            this.emit<KanbanCollapseDetail>("column-collapse", {
-              column,
-              collapsed: false,
-            })}
+          @click=${() => this.setCollapsed(column, false)}
           aria-label=${fill(this.text.expandColumn, { label: column.label })}
         >
           ${sidebarExpandIcon()}
@@ -667,22 +717,24 @@ export class BolleKanban extends BolleElement {
       </section>`;
     return html`<section
       class="column ${over ? (this.drag!.refused ? "refused" : "over") : ""}"
+      part="column"
       data-column=${column.id}
       data-lane=${lane}
       aria-label=${column.label}
     >
-      <header class="column-head">
-        <h2>${column.label}</h2>
-        <span
-          class="count ${overWip ? "over" : ""}"
-          title=${
-            column.wip
-              ? fill(this.text.wipLimit, { count: column.wip })
-              : nothing
-          }
-        >
-          ${cards.length}${column.wip ? ` / ${column.wip}` : ""}
-        </span>
+      <header class="column-head" part="column-header">
+        ${
+          this.columnRenderer
+            ? this.columnRenderer(column, this)
+            : html`<h2 part="column-title">${column.label}</h2>
+                <span
+                  class="count ${overWip ? "over" : ""}"
+                  part="column-count"
+                  title=${column.wip ? fill(this.text.wipLimit, { count: column.wip }) : nothing}
+                >
+                  ${cards.length}${column.wip ? ` / ${column.wip}` : ""}
+                </span>`
+        }
         <span class="spacer"></span>
         ${
           this.addable
@@ -765,35 +817,59 @@ export class BolleKanban extends BolleElement {
 
   private renderState() {
     if (this.loading)
-      return html`<div class="state">
-        <bolle-loading-indicator
-          label=${this.text.loading}
-        ></bolle-loading-indicator>
-        <p>${this.text.loading}</p>
+      return html`<div class="state" part="loading">
+        <slot name="loading">
+          ${
+            this.loadingRenderer
+              ? this.loadingRenderer(this)
+              : html`
+                  <bolle-loading-indicator
+                    label=${this.text.loading}
+                  ></bolle-loading-indicator>
+                  <p>${this.text.loading}</p>
+                `
+          }
+        </slot>
       </div>`;
     if (this.error)
-      return html`<div class="state">
-        <bolle-empty-state
-          tone="error"
-          role="alert"
-          .icon=${alertIcon()}
-          .title=${this.text.error}
-          .text=${this.error}
-        >
-          <bolle-button
-            slot="actions"
-            variant="filled"
-            @click=${() => this.emit("retry", {})}
-            >${this.text.retry}</bolle-button
-          >
-        </bolle-empty-state>
+      return html`<div class="state" part="error">
+        <slot name="error">
+          ${
+            this.errorRenderer
+              ? this.errorRenderer(this.error, this)
+              : html`
+                  <bolle-empty-state
+                    tone="error"
+                    role="alert"
+                    .icon=${alertIcon()}
+                    .title=${this.text.error}
+                    .text=${this.error}
+                  >
+                    <bolle-button
+                      slot="actions"
+                      variant="filled"
+                      @click=${() => this.emit("retry", {})}
+                      >${this.text.retry}</bolle-button
+                    >
+                  </bolle-empty-state>
+                `
+          }
+        </slot>
       </div>`;
-    return html`<div class="state">
-      <bolle-empty-state
-        .icon=${databaseOffIcon()}
-        .title=${this.emptyLabel || this.text.empty}
-      >
-      </bolle-empty-state>
+    return html`<div class="state" part="empty">
+      <slot name="empty">
+        ${
+          this.emptyRenderer
+            ? this.emptyRenderer(this)
+            : html`
+                <bolle-empty-state
+                  .icon=${databaseOffIcon()}
+                  .title=${this.emptyLabel || this.text.empty}
+                >
+                </bolle-empty-state>
+              `
+        }
+      </slot>
     </div>`;
   }
 
@@ -801,8 +877,10 @@ export class BolleKanban extends BolleElement {
     const state = this.loading || this.error || !this.cards.length;
     return html`<div
       class="board"
+      part="board"
       role="group"
       aria-label=${this.label || nothing}
+      style=${`--kanban-column-min-width:${Math.max(1, this.columnMinWidth)}px;--kanban-column-max-width:${Math.max(this.columnMinWidth, this.columnMaxWidth)}px;--kanban-column-gap:${Math.max(0, this.columnGap)}px;--kanban-card-gap:${Math.max(0, this.cardGap)}px`}
     >
       ${
         this.contentStyles
@@ -816,14 +894,22 @@ export class BolleKanban extends BolleElement {
           ? this.renderState()
           : this.laneKeys.map((lane) => {
               const label = this.laneText(lane);
-              return html`<section class="lane" aria-label=${label || nothing}>
+              return html`<section
+                class="lane"
+                part="lane"
+                aria-label=${label || nothing}
+              >
                 ${
                   this.lanes && label
-                    ? html`<header class="lane-head">
-                        <h2>${label}</h2>
-                        <span class="count"
-                          >${this.cards.filter((card) => this.laneOf(card) === lane).length}</span
-                        >
+                    ? html`<header class="lane-head" part="lane-header">
+                        ${
+                          this.laneRenderer
+                            ? this.laneRenderer(lane, this)
+                            : html`<h2>${label}</h2>
+                                <span class="count"
+                                  >${this.cards.filter((card) => this.laneOf(card) === lane).length}</span
+                                >`
+                        }
                       </header>`
                     : nothing
                 }

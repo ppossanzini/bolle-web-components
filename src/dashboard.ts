@@ -17,6 +17,8 @@ export interface DashboardLayoutDetail {
 }
 
 export const DASHBOARD_COLUMNS = 12;
+export const DASHBOARD_COMPACT_COLUMNS = 4;
+export const DASHBOARD_MEDIUM_COLUMNS = 8;
 
 interface DashboardDrag {
   widget: BolleWidget;
@@ -44,6 +46,10 @@ export class BolleWidget extends BolleElement {
     removable: { type: Boolean, reflect: true },
     menuLabel: { attribute: "menu-label" },
     labels: { attribute: false },
+    movable: { type: Boolean, reflect: true },
+    resizable: { type: Boolean, reflect: true },
+    loading: { type: Boolean, reflect: true },
+    error: {},
     _dragging: { state: true },
     _resizing: { state: true },
   };
@@ -54,7 +60,11 @@ export class BolleWidget extends BolleElement {
   subtitle = "";
   span = DASHBOARD_COLUMNS;
   minSpan = 2;
-  removable = true;
+  removable = false;
+  movable = false;
+  resizable = false;
+  loading = false;
+  error = "";
   menuLabel = "";
   labels: Partial<ShellLabels> = {};
   private _dragging = false;
@@ -102,28 +112,38 @@ export class BolleWidget extends BolleElement {
   protected render() {
     return html`<article
       class="tile ${this._dragging ? "dragging" : ""} ${this._resizing ? "resizing" : ""}"
+      part="tile"
       aria-labelledby=${`h-${this.id}`}
     >
-      <header class="tile-head">
+      <header class="tile-head" part="header">
         <button
           class="tile-grip"
+          part="grip"
+          ?disabled=${!this.movable}
           aria-label=${this.text.moveWidget.replace("{title}", this.title)}
           @pointerdown=${(event: PointerEvent) => {
             if (event.button !== 0) return;
+            if (!this.movable) return;
             event.preventDefault();
             this.request("widget-grip", event);
           }}
-          @keydown=${(event: KeyboardEvent) => this.request("widget-key", event)}
+          @keydown=${(event: KeyboardEvent) => {
+            if (this.movable) this.request("widget-key", event);
+          }}
         >
           ${columnGripIcon()}
         </button>
-        ${this.icon ? html`<span class="tile-icon" aria-hidden="true">${this.icon}</span>` : nothing}
-        <div class="tile-titles">
-          <h3 id=${`h-${this.id}`}>${this.title}</h3>
-          ${this.subtitle ? html`<p>${this.subtitle}</p>` : nothing}
+        <slot name="icon" part="icon"
+          >${this.icon ? html`<span class="tile-icon" aria-hidden="true">${this.icon}</span>` : nothing}</slot
+        >
+        <div class="tile-titles" part="titles">
+          <slot name="header" part="header-custom">
+            <h3 id=${`h-${this.id}`} part="title">${this.title}</h3>
+            ${this.subtitle ? html`<p part="subtitle">${this.subtitle}</p>` : nothing}
+          </slot>
         </div>
-        <div class="tile-actions">
-          <slot name="actions"></slot>
+        <div class="tile-actions" part="actions">
+          <slot name="actions" part="actions-slot"></slot>
           <bolle-icon-button
             variant="standard"
             size="xs"
@@ -134,9 +154,26 @@ export class BolleWidget extends BolleElement {
           >
         </div>
       </header>
-      <div class="tile-body"><slot></slot></div>
+      <div class="tile-body" part="body">
+        <slot name="loading" part="loading"
+          >${
+            this.loading
+              ? html`<bolle-loading-indicator
+                  label=""
+                ></bolle-loading-indicator>`
+              : nothing
+          }</slot
+        >
+        <slot name="error" part="error"
+          >${this.error ? html`<div role="alert">${this.error}</div>` : nothing}</slot
+        >
+        <slot name="body" part="body-content"><slot></slot></slot>
+      </div>
+      <slot name="footer" part="footer"></slot>
       <span
         class="tile-resize"
+        part="resize-handle"
+        aria-disabled=${String(!this.resizable)}
         role="separator"
         tabindex="0"
         aria-orientation="vertical"
@@ -146,11 +183,14 @@ export class BolleWidget extends BolleElement {
         aria-valuenow=${this.span}
         @pointerdown=${(event: PointerEvent) => {
           if (event.button !== 0) return;
+          if (!this.resizable) return;
           event.preventDefault();
           event.stopPropagation();
           this.request("widget-resize-start", event);
         }}
-        @keydown=${(event: KeyboardEvent) => this.request("widget-key", event)}
+        @keydown=${(event: KeyboardEvent) => {
+          if (this.resizable) this.request("widget-key", event);
+        }}
       ></span>
     </article>`;
   }
@@ -167,19 +207,26 @@ export class BolleDashboard extends BolleElement {
     density: { reflect: true },
     columns: { type: Number },
     labels: { attribute: false },
+    compactColumns: { attribute: "compact-columns", type: Number },
+    mediumColumns: { attribute: "medium-columns", type: Number },
     _drag: { state: true },
     _announcement: { state: true },
+    _effectiveColumns: { state: true },
   };
   static styles = [commonStyles, dashboardStyles];
 
   label = "";
   density: "comfortable" | "compact" = "comfortable";
   columns = DASHBOARD_COLUMNS;
+  compactColumns = DASHBOARD_COMPACT_COLUMNS;
+  mediumColumns = DASHBOARD_MEDIUM_COLUMNS;
   labels: Partial<ShellLabels> = {};
+  private _effectiveColumns = DASHBOARD_COLUMNS;
   private _announcement = "";
   private _drag?: DashboardDrag;
   private placeholder?: HTMLElement;
   private menuWidget?: BolleWidget;
+  private observer?: ResizeObserver;
 
   private get text(): ShellLabels {
     return shellLabels(document.documentElement.lang, this.labels);
@@ -195,6 +242,9 @@ export class BolleDashboard extends BolleElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.observer = new ResizeObserver(() => this.refresh());
+    this.observer.observe(this);
+    this.refresh();
     this.addEventListener("widget-grip", this.onGrip as EventListener);
     this.addEventListener(
       "widget-resize-start",
@@ -206,6 +256,7 @@ export class BolleDashboard extends BolleElement {
   }
 
   disconnectedCallback() {
+    this.observer?.disconnect();
     this.removeEventListener("widget-grip", this.onGrip as EventListener);
     this.removeEventListener(
       "widget-resize-start",
@@ -218,18 +269,47 @@ export class BolleDashboard extends BolleElement {
   }
 
   protected updated(changed: PropertyValues<this>) {
-    if (changed.has("columns") || changed.has("density")) this.refresh();
+    if (
+      changed.has("columns") ||
+      changed.has("compactColumns") ||
+      changed.has("mediumColumns") ||
+      changed.has("density")
+    )
+      this.refresh();
+  }
+
+  private normalizedColumns() {
+    const compact = Math.max(1, Math.round(this.compactColumns));
+    const medium = Math.max(compact, Math.round(this.mediumColumns));
+    const full = Math.max(medium, Math.round(this.columns));
+    return { compact, medium, full };
+  }
+
+  private get effectiveColumns() {
+    return this._effectiveColumns || this.normalizedColumns().full;
   }
 
   /** Keeps every tile inside the grid and publishes its width. */
   private refresh() {
+    const width = this.clientWidth;
+    const limits = this.normalizedColumns();
+    const effective =
+      width < 600
+        ? limits.compact
+        : width < 840
+          ? limits.compact
+          : width < 1200
+            ? limits.medium
+            : limits.full;
+    if (effective !== this._effectiveColumns)
+      this._effectiveColumns = effective;
     for (const widget of this.widgets) {
       const span = Math.min(
-        this.columns,
+        effective,
         Math.max(widget.minSpan, Math.round(widget.span)),
       );
       widget.style.setProperty("--tile-span", String(span));
-      widget.style.setProperty("--tile-columns", String(this.columns));
+      widget.style.setProperty("--tile-columns", String(effective));
       widget.style.gridColumn = `span ${span}`;
     }
   }
@@ -260,6 +340,7 @@ export class BolleDashboard extends BolleElement {
     event: CustomEvent<{ event: PointerEvent; widget: BolleWidget }>,
   ) => {
     const widget = event.detail.widget;
+    if (!widget.movable) return;
     if (!this.widgets.includes(widget)) return;
     const pointer = event.detail.event;
     const grip = pointer.currentTarget as HTMLElement;
@@ -365,7 +446,7 @@ export class BolleDashboard extends BolleElement {
 
   private spanOf(widget: BolleWidget) {
     return Math.min(
-      this.columns,
+      this.effectiveColumns,
       Math.max(widget.minSpan, Math.round(widget.span)),
     );
   }
@@ -450,12 +531,15 @@ export class BolleDashboard extends BolleElement {
     event: CustomEvent<{ event: PointerEvent; widget: BolleWidget }>,
   ) => {
     const widget = event.detail.widget;
+    if (!widget.resizable) return;
     const pointer = event.detail.event;
     const handle = pointer.currentTarget as HTMLElement;
     if (!this.clientWidth) return;
     const gap = Number.parseFloat(getComputedStyle(this).columnGap || "0") || 0;
     const column =
-      (this.clientWidth - gap * (this.columns - 1)) / this.columns + gap;
+      (this.clientWidth - gap * (this.effectiveColumns - 1)) /
+        this.effectiveColumns +
+      gap;
     const rtl = getComputedStyle(this).direction === "rtl";
     handle.setPointerCapture(pointer.pointerId);
     const state = {
@@ -471,7 +555,7 @@ export class BolleDashboard extends BolleElement {
         ((moveEvent.clientX - state.startX) * (rtl ? -1 : 1)) / column;
       state.span = Math.max(
         widget.minSpan,
-        Math.min(this.columns, Math.round(state.startSpan + delta)),
+        Math.min(this.effectiveColumns, Math.round(state.startSpan + delta)),
       );
       widget.style.setProperty("--tile-span", String(state.span));
       widget.style.gridColumn = `span ${state.span}`;
@@ -490,7 +574,10 @@ export class BolleDashboard extends BolleElement {
   };
 
   private setSpan(widget: BolleWidget, span: number) {
-    const value = Math.max(widget.minSpan, Math.min(this.columns, span));
+    const value = Math.max(
+      widget.minSpan,
+      Math.min(this.effectiveColumns, span),
+    );
     widget.span = value;
     this.announce(
       this.text.resized
@@ -547,7 +634,7 @@ export class BolleDashboard extends BolleElement {
       {
         group: true,
         label: this.text.width,
-        items: Array.from({ length: this.columns }, (_, i) => i + 1)
+        items: Array.from({ length: this.effectiveColumns }, (_, i) => i + 1)
           .filter((span) => span >= widget.minSpan)
           .map((span) => ({
             id: `span:${span}`,
@@ -628,7 +715,7 @@ export class BolleDashboard extends BolleElement {
     return html`<div class="dashboard density-${this.density}">
       <div
         class="dashboard-grid"
-        style=${`--dashboard-columns:${this.columns}`}
+        style=${`--dashboard-columns:${this.effectiveColumns}`}
         role="list"
         aria-label=${label}
       >

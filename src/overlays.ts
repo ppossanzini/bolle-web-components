@@ -25,7 +25,8 @@ export class BolleDialog extends BolleElement {
   open = false;
   label = "";
   variant = "basic";
-  modal = true;
+  /** Modal by default only for surfaces that open a blocking task; a plain dialog opens modeless. */
+  modal = false;
   closeLabel = "";
   private opener?: HTMLElement;
   get dialog() {
@@ -150,6 +151,7 @@ export class BolleSideSheet extends BolleDialog {
     detached: { type: Boolean, reflect: true },
   };
   variant = "modal";
+  modal = true;
   detached = false;
   connectedCallback() {
     super.connectedCallback();

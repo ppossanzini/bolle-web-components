@@ -64,7 +64,7 @@ const next = () => {
   seed = (seed + 0x6d2b79f5) % 4294967296;
   return ((seed * 16807) % 2147483647) / 2147483647;
 };
-const pick = <T,>(list: T[]) => list[Math.floor(next() * list.length)];
+const pick = <T>(list: T[]) => list[Math.floor(next() * list.length)];
 
 const parseISO = (value: string) => new Date(`${value}T00:00:00Z`);
 const iso = (date: Date) => date.toISOString().slice(0, 10);
@@ -75,10 +75,12 @@ const addDays = (value: string, days: number) => {
 };
 const diffDays = (from: string, to: string) =>
   Math.round((parseISO(to).getTime() - parseISO(from).getTime()) / 86_400_000);
-const isWeekend = (value: string) => [0, 6].includes(parseISO(value).getUTCDay());
+const isWeekend = (value: string) =>
+  [0, 6].includes(parseISO(value).getUTCDay());
 const workingDays = (from: string, to: string) => {
   let days = 0;
-  for (let day = from; day <= to; day = addDays(day, 1)) if (!isWeekend(day)) days += 1;
+  for (let day = from; day <= to; day = addDays(day, 1))
+    if (!isWeekend(day)) days += 1;
   return days;
 };
 const TODAY = iso(new Date());
@@ -103,7 +105,10 @@ function makeTasks(): GanttTask[] {
       progress: Math.round(next() * 100),
       hours: 0,
       deps: [],
-      baseline: { start: addDays(start, -Math.round(next() * 10)), end: addDays(start, total + 12) },
+      baseline: {
+        start: addDays(start, -Math.round(next() * 10)),
+        end: addDays(start, total + 12),
+      },
     };
     tasks.push(parent);
     let cursor = start;
@@ -112,7 +117,9 @@ function makeTasks(): GanttTask[] {
     for (let index = 0; index < count; index += 1) {
       const span = 2 + Math.round(next() * 12);
       const milestone = index === count - 1;
-      const taskStart = milestone ? cursor : addDays(cursor, Math.round(next() * 3));
+      const taskStart = milestone
+        ? cursor
+        : addDays(cursor, Math.round(next() * 3));
       const taskEnd = milestone ? taskStart : addDays(taskStart, span);
       const id = `${parentId}-${index + 1}`;
       tasks.push({
@@ -130,7 +137,10 @@ function makeTasks(): GanttTask[] {
         deps: previous && next() < 0.8 ? [previous] : [],
         baseline:
           next() < 0.55
-            ? { start: addDays(taskStart, -Math.round(next() * 8)), end: addDays(taskEnd, Math.round(next() * 10)) }
+            ? {
+                start: addDays(taskStart, -Math.round(next() * 8)),
+                end: addDays(taskEnd, Math.round(next() * 10)),
+              }
             : undefined,
       });
       previous = id;
@@ -141,11 +151,14 @@ function makeTasks(): GanttTask[] {
 }
 
 const dateLabel = (value: string) =>
-  new Intl.DateTimeFormat(LOCALES.find((item) => item.id === locale())?.tag ?? "en", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parseISO(value));
+  new Intl.DateTimeFormat(
+    LOCALES.find((item) => item.id === locale())?.tag ?? "en",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    },
+  ).format(parseISO(value));
 
 /** Documentation preview: the surface plus the state the application keeps. */
 export class BolleGanttDemo extends LitElement {
@@ -178,8 +191,6 @@ export class BolleGanttDemo extends LitElement {
     this.scale = "week";
     this.density = "comfortable";
     this.baseline = true;
-    this.editable = true;
-    this.linkable = true;
     this.groupBy = "";
     this.label = l(m("Pianificazione lavori"));
     this.selected = "";
@@ -195,14 +206,17 @@ export class BolleGanttDemo extends LitElement {
     const floor = planned < TODAY ? planned : TODAY;
     if (start < floor)
       return `${l(m("Non si sposta un'attività prima del"))} ${dateLabel(floor)}.`;
-    if (task.milestone && isWeekend(start)) return l(m("Una scadenza non cade di sabato o domenica."));
+    if (task.milestone && isWeekend(start))
+      return l(m("Una scadenza non cade di sabato o domenica."));
     return undefined;
   };
 
   private onChange = (event: Event) => {
     const detail = (event as CustomEvent<GanttChangeDetail>).detail;
     this.tasks = this.tasks.map((task) =>
-      task.id === detail.task.id ? { ...task, start: detail.start, end: detail.end } : task,
+      task.id === detail.task.id
+        ? { ...task, start: detail.start, end: detail.end }
+        : task,
     );
     this.requestUpdate();
   };
@@ -213,7 +227,9 @@ export class BolleGanttDemo extends LitElement {
   };
 
   private onDependency = (event: Event) => {
-    const detail = (event as CustomEvent<{ task: GanttTask; predecessor: GanttTask }>).detail;
+    const detail = (
+      event as CustomEvent<{ task: GanttTask; predecessor: GanttTask }>
+    ).detail;
     this.tasks = this.tasks.map((task) =>
       task.id === detail.task.id
         ? { ...task, deps: [...(task.deps ?? []), detail.predecessor.id] }
@@ -230,7 +246,11 @@ export class BolleGanttDemo extends LitElement {
   private report(message: string) {
     if (!message) return;
     this.dispatchEvent(
-      new CustomEvent("demo-report", { detail: message, bubbles: true, composed: true }),
+      new CustomEvent("demo-report", {
+        detail: message,
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 
@@ -244,7 +264,8 @@ export class BolleGanttDemo extends LitElement {
     const children = this.tasks.filter((item) => item.parent === task.id);
     let hours = 0;
     for (const child of children.length ? children : [task])
-      if (child.hours) hours += child.hours / Math.max(1, workingDays(child.start, child.end));
+      if (child.hours)
+        hours += child.hours / Math.max(1, workingDays(child.start, child.end));
     return html`<bolle-side-sheet
       label=${`${task.code ?? ""} ${task.name}`}
       close-label=${l(m("Chiudi il dettaglio"))}
@@ -254,45 +275,79 @@ export class BolleGanttDemo extends LitElement {
         <span class="gcode">${task.code ?? ""}</span>
         <h2>${task.name}</h2>
         <dl class="gfacts">
-          <div><dt>${l(m("Responsabile"))}</dt><dd>${task.resource ?? "—"}</dd></div>
-          <div><dt>${l(m("Fase"))}</dt><dd>${task.phase ?? "—"}</dd></div>
-          <div><dt>${l(m("Inizio"))}</dt><dd>${dateLabel(task.start)}</dd></div>
-          <div><dt>${l(m("Fine"))}</dt><dd>${dateLabel(task.end)}</dd></div>
+          <div>
+            <dt>${l(m("Responsabile"))}</dt>
+            <dd>${task.resource ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>${l(m("Fase"))}</dt>
+            <dd>${task.phase ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>${l(m("Inizio"))}</dt>
+            <dd>${dateLabel(task.start)}</dd>
+          </div>
+          <div>
+            <dt>${l(m("Fine"))}</dt>
+            <dd>${dateLabel(task.end)}</dd>
+          </div>
           <div>
             <dt>${l(m("Durata"))}</dt>
-            <dd>${task.milestone ? l(m("milestone")) : `${diffDays(task.start, task.end) + 1} ${l(m("giorni"))}`}</dd>
+            <dd>
+              ${task.milestone ? l(m("milestone")) : `${diffDays(task.start, task.end) + 1} ${l(m("giorni"))}`}
+            </dd>
           </div>
-          <div><dt>${l(m("Carico"))}</dt><dd>${hours ? `${hours.toFixed(1)} h/${l(m("giorno"))}` : "—"}</dd></div>
-          <div><dt>${l(m("Avanzamento"))}</dt><dd>${task.progress ?? 0}%</dd></div>
-          ${task.baseline
-            ? html`<div>
-                <dt>${l(m("Piano approvato"))}</dt>
-                <dd>${dateLabel(task.baseline.start)} → ${dateLabel(task.baseline.end)}</dd>
-              </div>`
-            : nothing}
+          <div>
+            <dt>${l(m("Carico"))}</dt>
+            <dd>${hours ? `${hours.toFixed(1)} h/${l(m("giorno"))}` : "—"}</dd>
+          </div>
+          <div>
+            <dt>${l(m("Avanzamento"))}</dt>
+            <dd>${task.progress ?? 0}%</dd>
+          </div>
+          ${
+            task.baseline
+              ? html`<div>
+                  <dt>${l(m("Piano approvato"))}</dt>
+                  <dd>
+                    ${dateLabel(task.baseline.start)} →
+                    ${dateLabel(task.baseline.end)}
+                  </dd>
+                </div>`
+              : nothing
+          }
           <div>
             <dt>${l(m("Predecessori"))}</dt>
             <dd class="gchips">
-              ${(task.deps ?? []).length
-                ? (task.deps ?? []).map((dep) => {
-                    const found = this.tasks.find((item) => item.id === dep);
-                    return html`<span class="gchip">${found?.code ?? dep}</span>`;
-                  })
-                : l(m("nessuno"))}
+              ${
+                (task.deps ?? []).length
+                  ? (task.deps ?? []).map((dep) => {
+                      const found = this.tasks.find((item) => item.id === dep);
+                      return html`<span class="gchip"
+                        >${found?.code ?? dep}</span
+                      >`;
+                    })
+                  : l(m("nessuno"))
+              }
             </dd>
           </div>
-          ${children.length
-            ? html`<div><dt>${l(m("Attività figlie"))}</dt><dd>${children.length}</dd></div>`
-            : nothing}
+          ${
+            children.length
+              ? html`<div>
+                  <dt>${l(m("Attività figlie"))}</dt>
+                  <dd>${children.length}</dd>
+                </div>`
+              : nothing
+          }
         </dl>
       </div>
     </bolle-side-sheet>`;
   }
 
   protected updated() {
-    const sheet = this.querySelector<HTMLElement & { show(): Promise<void>; open: boolean }>(
-      "bolle-side-sheet",
-    );
+    const sheet = this.querySelector<
+      HTMLElement & { show(): Promise<void>; open: boolean }
+    >("bolle-side-sheet");
     if (sheet && this.selected && !sheet.open) void sheet.show();
   }
 

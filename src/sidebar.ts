@@ -1,4 +1,10 @@
-import { html, nothing, type PropertyValues, type TemplateResult } from "lit";
+import {
+  html,
+  nothing,
+  unsafeCSS,
+  type PropertyValues,
+  type TemplateResult,
+} from "lit";
 import { BolleElement } from "./shared.js";
 import { commonStyles } from "./shared.styles.js";
 import { sidebarStyles } from "./sidebar.styles.js";
@@ -43,8 +49,6 @@ const KEY_STEP = 16;
 
 const normalize = (text: string) =>
   text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-const clampWidth = (value: number) =>
-  Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, Math.round(value)));
 const fill = (template: string, params: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (match, key: string) =>
     key in params ? String(params[key]) : match,
@@ -86,6 +90,13 @@ export class BolleSidebar extends BolleElement {
     variant: { reflect: true },
     search: { reflect: true },
     labels: { attribute: false },
+    minWidth: { attribute: "min-width", type: Number },
+    maxWidth: { attribute: "max-width", type: Number },
+    item: { attribute: false },
+    railItem: { attribute: false },
+    filter: { attribute: false },
+    empty: { attribute: false },
+    contentStyles: { attribute: false },
     _query: { state: true },
     _truncated: { state: true },
     _flyout: { state: true },
@@ -98,10 +109,28 @@ export class BolleSidebar extends BolleElement {
   expanded: string[] = [];
   collapsed = false;
   width = 360;
+  minWidth = SIDEBAR_MIN_WIDTH;
+  maxWidth = SIDEBAR_MAX_WIDTH;
   variant: "edge" | "card" = "edge";
   /** `field` is the text field, `contained` and `divided` use `bolle-search`, `none` hides the filter. */
   search: "field" | "contained" | "divided" | "none" = "field";
   labels: Partial<SidebarLabels> = {};
+  item?: (
+    item: SidebarItem,
+    context: { path: string; level: number; group: boolean },
+  ) => unknown;
+  railItem?: (
+    item: SidebarItem,
+    context: { active: boolean; current: boolean },
+  ) => unknown;
+  filter?: (query: string, sidebar: BolleSidebar) => unknown;
+  /**
+   * CSS for the markup returned by `item`, `railItem`, `filter` and `empty`.
+   * Those functions run inside the sidebar shadow root, where the page
+   * stylesheet does not reach; pass their rules here as a string.
+   */
+  contentStyles = "";
+  empty?: (query: string, sidebar: BolleSidebar) => unknown;
   private _query = "";
   private _truncated = new Set<string>();
   private _flyout = "";
@@ -187,10 +216,16 @@ export class BolleSidebar extends BolleElement {
   }
 
   private setWidth(width: number) {
-    const next = clampWidth(width);
+    const next = this.clampWidth(width);
     if (next === this.width) return;
     this.width = next;
     this.emit<SidebarResizeDetail>("resize", { width: next });
+  }
+
+  private clampWidth(value: number) {
+    const min = Math.max(1, this.minWidth);
+    const max = Math.max(min, this.maxWidth);
+    return Math.min(max, Math.max(min, Math.round(value)));
   }
 
   private matchesQuery(item: SidebarItem): boolean {
@@ -222,16 +257,23 @@ export class BolleSidebar extends BolleElement {
   }
 
   private rowContent(item: SidebarItem, path: string, group: boolean) {
+    if (this.item)
+      return this.item(item, { path, level: path.split("/").length, group });
     return html`${
         item.icon
-          ? html`<span class="icon" aria-hidden="true">${item.icon}</span>`
+          ? html`<span class="icon" part="item-icon" aria-hidden="true"
+              >${item.icon}</span
+            >`
           : nothing
-      }
-      <span class="label" data-path=${path}>${this.highlight(item.label)}</span>
-      ${item.count ? html`<span class="count">${item.count}</span>` : nothing}
-      ${
+      }<span class="label" part="item-label" data-path=${path}
+        >${this.highlight(item.label)}</span
+      >${
+        item.count
+          ? html`<span class="count" part="item-count">${item.count}</span>`
+          : nothing
+      }${
         group
-          ? html`<span class="chevron" aria-hidden="true"
+          ? html`<span class="chevron" part="item-chevron" aria-hidden="true"
               >${chevronDownIcon()}</span
             >`
           : nothing
@@ -259,13 +301,23 @@ export class BolleSidebar extends BolleElement {
             ${this.withTooltip(
               path,
               item.label,
-              html`<a
-                class="row level-${level}"
-                href=${item.href ?? "#"}
-                aria-current=${this.current === path ? "page" : nothing}
-                @click=${(event: Event) => this.navigate(event, path, item)}
-                >${this.rowContent(item, path, false)}</a
-              >`,
+              item.href
+                ? html`<a
+                    part="item"
+                    class="row level-${level}"
+                    href=${item.href}
+                    aria-current=${this.current === path ? "page" : nothing}
+                    @click=${(event: Event) => this.navigate(event, path, item)}
+                    >${this.rowContent(item, path, false)}</a
+                  >`
+                : html`<button
+                    part="item"
+                    class="row level-${level}"
+                    aria-current=${this.current === path ? "page" : nothing}
+                    @click=${(event: Event) => this.navigate(event, path, item)}
+                  >
+                    ${this.rowContent(item, path, false)}
+                  </button>`,
             )}
           </li>`;
         const open = filtering || this.expanded.includes(path);
@@ -275,6 +327,7 @@ export class BolleSidebar extends BolleElement {
             path,
             item.label,
             html`<button
+              part="item"
               class="row group level-${level} ${inCurrent && !open ? "in-current" : ""}"
               aria-expanded=${String(open)}
               aria-controls=${`branch-${path}`}
@@ -283,7 +336,12 @@ export class BolleSidebar extends BolleElement {
               ${this.rowContent(item, path, true)}
             </button>`,
           )}
-          <ul id=${`branch-${path}`} class="branch" ?hidden=${!open}>
+          <ul
+            id=${`branch-${path}`}
+            class="branch"
+            part="branch"
+            ?hidden=${!open}
+          >
             ${this.renderTree(item.children, [...parents, item.id], level + 1)}
           </ul>
         </li>`;
@@ -334,13 +392,13 @@ export class BolleSidebar extends BolleElement {
 
   private renderRail() {
     const top = this.current.split("/")[0];
-    return html`<ul class="rail">
+    return html`<ul class="rail" part="rail">
       ${this.items.map((item) => {
         const active = item.id === top;
-        const content = html`<span class="indicator">
+        const fallback = html`<span class="indicator" part="rail-indicator">
             ${
               item.icon
-                ? html`<span class="icon" aria-hidden="true"
+                ? html`<span class="icon" part="rail-icon" aria-hidden="true"
                     >${item.icon}</span
                   >`
                 : nothing
@@ -351,13 +409,20 @@ export class BolleSidebar extends BolleElement {
                 : nothing
             }
           </span>
-          <span class="rail-label">${item.label}</span>`;
+          <span class="rail-label" part="rail-label">${item.label}</span>`;
+        const content = this.railItem
+          ? this.railItem(item, {
+              active,
+              current: this.current === item.id,
+            })
+          : fallback;
         const name = item.count ? `${item.label}, ${item.count}` : item.label;
         return html`<li>
           ${
             item.children
               ? html`<button
                   class="rail-item ${active ? "active" : ""}"
+                  part="rail-item"
                   aria-haspopup="menu"
                   aria-expanded=${String(this._flyout === item.id)}
                   aria-label=${name}
@@ -365,15 +430,26 @@ export class BolleSidebar extends BolleElement {
                 >
                   ${content}
                 </button>`
-              : html`<a
-                  class="rail-item ${active ? "active" : ""}"
-                  href=${item.href ?? "#"}
-                  aria-current=${this.current === item.id ? "page" : nothing}
-                  aria-label=${name}
-                  @click=${(event: Event) => this.navigate(event, item.id, item)}
-                >
-                  ${content}
-                </a>`
+              : item.href
+                ? html`<a
+                    class="rail-item ${active ? "active" : ""}"
+                    part="rail-item"
+                    href=${item.href}
+                    aria-current=${this.current === item.id ? "page" : nothing}
+                    aria-label=${name}
+                    @click=${(event: Event) => this.navigate(event, item.id, item)}
+                  >
+                    ${content}
+                  </a>`
+                : html`<button
+                    class="rail-item ${active ? "active" : ""}"
+                    part="rail-item"
+                    aria-current=${this.current === item.id ? "page" : nothing}
+                    aria-label=${name}
+                    @click=${(event: Event) => this.navigate(event, item.id, item)}
+                  >
+                    ${content}
+                  </button>`
           }
         </li>`;
       })}
@@ -388,23 +464,27 @@ export class BolleSidebar extends BolleElement {
     const filter =
       this.search === "none"
         ? nothing
-        : html`<div class="filter">
-            ${
-              this.search === "contained" || this.search === "divided"
-                ? html`<bolle-search
-                    label=${this.text.filter}
-                    placeholder=${this.text.filter}
-                    appearance=${this.search}
-                    .value=${this._query}
-                    @value-input=${onInput}
-                  ></bolle-search>`
-                : html`<bolle-text-field
-                    label=${this.text.filter}
-                    type="search"
-                    .value=${this._query}
-                    @value-input=${onInput}
-                  ></bolle-text-field>`
-            }
+        : html`<div class="filter" part="filter">
+            <slot name="filter"
+              >${
+                this.filter
+                  ? this.filter(this._query, this)
+                  : this.search === "contained" || this.search === "divided"
+                    ? html`<bolle-search
+                        label=${this.text.filter}
+                        placeholder=${this.text.filter}
+                        appearance=${this.search}
+                        .value=${this._query}
+                        @value-input=${onInput}
+                      ></bolle-search>`
+                    : html`<bolle-text-field
+                        label=${this.text.filter}
+                        type="search"
+                        .value=${this._query}
+                        @value-input=${onInput}
+                      ></bolle-text-field>`
+              }</slot
+            >
           </div>`;
     return html`${filter}
       <p class="visually-hidden" role="status">
@@ -412,13 +492,25 @@ export class BolleSidebar extends BolleElement {
       </p>
       ${
         filtering && !found
-          ? html`<div class="empty">
-              <p>${fill(this.text.empty, { query: this._query.trim() })}</p>
-              <bolle-button variant="text" @click=${() => (this._query = "")}
-                >${this.text.clear}</bolle-button
+          ? html`<div class="empty" part="empty">
+              <slot name="empty"
+                >${
+                  this.empty
+                    ? this.empty(this._query.trim(), this)
+                    : html`
+                        <p>
+                          ${fill(this.text.empty, { query: this._query.trim() })}
+                        </p>
+                        <bolle-button
+                          variant="text"
+                          @click=${() => (this._query = "")}
+                          >${this.text.clear}</bolle-button
+                        >
+                      `
+                }</slot
               >
             </div>`
-          : html`<ul class="tree">
+          : html`<ul class="tree" part="tree">
               ${this.renderTree(this.items, [], 1)}
             </ul>`
       }`;
@@ -452,9 +544,9 @@ export class BolleSidebar extends BolleElement {
         : event.key === (rtl ? "ArrowRight" : "ArrowLeft")
           ? this.width - KEY_STEP
           : event.key === "Home"
-            ? SIDEBAR_MIN_WIDTH
+            ? this.minWidth
             : event.key === "End"
-              ? SIDEBAR_MAX_WIDTH
+              ? this.maxWidth
               : undefined;
     if (next === undefined) return;
     event.preventDefault();
@@ -462,46 +554,56 @@ export class BolleSidebar extends BolleElement {
   }
 
   protected render() {
-    const width = clampWidth(this.width);
-    return html`<nav
-      class="surface"
-      aria-label=${this.label || nothing}
-      style=${this.collapsed ? "" : `inline-size: ${width}px`}
-    >
-      <header class="header">
-        ${this.collapsed ? nothing : html`<div class="brand"><slot name="header"></slot></div>`}
-        <bolle-icon-button
-          variant="standard"
-          label=${this.collapsed ? this.text.expand : this.text.collapse}
-          @click=${() => this.setCollapsed(!this.collapsed)}
-          >${this.collapsed ? sidebarExpandIcon() : sidebarCollapseIcon()}</bolle-icon-button
-        >
-      </header>
-      <div class="body">
-        ${this.collapsed ? this.renderRail() : this.renderTreePanel()}
-      </div>
-      ${
-        this.collapsed
-          ? nothing
-          : html`<div
-              class="grip"
-              role="separator"
-              tabindex="0"
-              aria-orientation="vertical"
-              aria-label=${this.text.resize}
-              aria-valuemin=${SIDEBAR_MIN_WIDTH}
-              aria-valuemax=${SIDEBAR_MAX_WIDTH}
-              aria-valuenow=${width}
-              aria-valuetext=${`${width} px`}
-              @pointerdown=${this.startResize}
-              @keydown=${this.resizeWithKeys}
-            ></div>`
+    const width = this.clampWidth(this.width);
+    return html`${
+        this.contentStyles
+          ? html`<style>
+              ${unsafeCSS(this.contentStyles)}
+            </style>`
+          : nothing
       }
-      <bolle-menu
-        menu-label=${this.label}
-        @menu-select=${this.onFlyoutSelect}
-        @menu-close=${() => (this._flyout = "")}
-      ></bolle-menu>
-    </nav>`;
+      <nav
+        class="surface"
+        part="surface"
+        aria-label=${this.label || nothing}
+        style=${this.collapsed ? "" : `inline-size: ${width}px`}
+      >
+        <header class="header" part="header">
+          ${this.collapsed ? nothing : html`<div class="brand" part="brand"><slot name="header"></slot></div>`}
+          <bolle-icon-button
+            variant="standard"
+            label=${this.collapsed ? this.text.expand : this.text.collapse}
+            @click=${() => this.setCollapsed(!this.collapsed)}
+            >${this.collapsed ? sidebarExpandIcon() : sidebarCollapseIcon()}</bolle-icon-button
+          >
+        </header>
+        <div class="body" part="body">
+          ${this.collapsed ? this.renderRail() : this.renderTreePanel()}
+        </div>
+        <slot name="footer" part="footer"></slot>
+        ${
+          this.collapsed
+            ? nothing
+            : html`<div
+                class="grip"
+                part="resize-handle"
+                role="separator"
+                tabindex="0"
+                aria-orientation="vertical"
+                aria-label=${this.text.resize}
+                aria-valuemin=${this.minWidth}
+                aria-valuemax=${this.maxWidth}
+                aria-valuenow=${width}
+                aria-valuetext=${`${width} px`}
+                @pointerdown=${this.startResize}
+                @keydown=${this.resizeWithKeys}
+              ></div>`
+        }
+        <bolle-menu
+          menu-label=${this.label}
+          @menu-select=${this.onFlyoutSelect}
+          @menu-close=${() => (this._flyout = "")}
+        ></bolle-menu>
+      </nav>`;
   }
 }

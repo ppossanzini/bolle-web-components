@@ -17,11 +17,11 @@ export const dashboardStyles = css`
   .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(var(--dashboard-columns, 12), minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--md-comp-dashboard-gap, 16px);
     align-items: start;
   }
   .density-compact .dashboard-grid {
-    gap: 12px;
+    gap: var(--md-comp-dashboard-gap-compact, 12px);
   }
 
   /* Tile --------------------------------------------------------------- */
@@ -30,7 +30,8 @@ export const dashboardStyles = css`
     display: flex;
     flex-direction: column;
     min-inline-size: 0;
-    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius) var(--bb-tail);
+    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius)
+      var(--bb-tail);
     background: var(--md-sys-color-surface-container-lowest);
     border: 1px solid var(--md-sys-color-outline-variant);
     box-shadow: var(--bb-float-1);
@@ -51,16 +52,16 @@ export const dashboardStyles = css`
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 14px 12px 8px 6px;
+    padding: var(--md-comp-dashboard-header-padding, 14px 12px 8px 6px);
   }
   .density-compact .tile-head {
-    padding-block: 10px 6px;
+    padding-block: var(--md-comp-dashboard-header-padding-compact, 10px 6px);
   }
   .tile-grip {
     display: inline-grid;
     place-items: center;
-    inline-size: 26px;
-    block-size: 28px;
+    inline-size: var(--md-comp-dashboard-grip-size, 48px);
+    block-size: var(--md-comp-dashboard-grip-size, 48px);
     flex: none;
     padding: 0;
     border: 0;
@@ -88,8 +89,8 @@ export const dashboardStyles = css`
   .tile-icon {
     display: inline-grid;
     place-items: center;
-    inline-size: 32px;
-    block-size: 32px;
+    inline-size: var(--md-comp-dashboard-icon-size, 32px);
+    block-size: var(--md-comp-dashboard-icon-size, 32px);
     flex: none;
     border-radius: 12px 12px 12px 4px;
     background: var(--md-sys-color-surface-container-high);
@@ -127,17 +128,17 @@ export const dashboardStyles = css`
   .tile-body {
     flex: 1;
     min-block-size: 0;
-    padding: 4px 18px 18px;
+    padding: var(--md-comp-dashboard-body-padding, 4px 18px 18px);
   }
   .density-compact .tile-body {
-    padding: 2px 14px 12px;
+    padding: var(--md-comp-dashboard-body-padding-compact, 2px 14px 12px);
   }
   .tile-resize {
     position: absolute;
     inset-block-end: 2px;
     inset-inline-end: 2px;
-    inline-size: 20px;
-    block-size: 20px;
+    inline-size: var(--md-comp-dashboard-resize-target, 48px);
+    block-size: var(--md-comp-dashboard-resize-target, 48px);
     cursor: nwse-resize;
     opacity: 0;
     touch-action: none;
@@ -170,7 +171,8 @@ export const dashboardStyles = css`
   /* Drag and drop ------------------------------------------------------ */
   /* The gap the tile will occupy, drawn where the grid will put it. */
   ::slotted(.bb-dashboard-placeholder) {
-    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius) var(--bb-tail);
+    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius)
+      var(--bb-tail);
     border: 2px dashed var(--md-sys-color-primary);
     background: color-mix(in srgb, var(--md-sys-color-primary) 7%, transparent);
   }
@@ -185,7 +187,8 @@ export const dashboardStyles = css`
   }
   .ghost {
     padding: 14px 12px 8px 6px;
-    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius) var(--bb-tail);
+    border-radius: var(--bb-radius) var(--bb-radius) var(--bb-radius)
+      var(--bb-tail);
     background: var(--md-sys-color-surface-container-lowest);
     border: 1px solid var(--md-sys-color-outline-variant);
     box-shadow: var(--bb-float-4);

@@ -18,6 +18,15 @@ import {
 } from "./catalog.js";
 import { buildHtml, buildReact, buildVue } from "./codegen.js";
 import {
+  RECIPES,
+  RECIPE_LANGS,
+  type Recipe,
+  type RecipeLang,
+} from "./recipes.js";
+import { PLAYGROUND_EXAMPLES } from "./playground-examples.js";
+import type { RecipePlayground } from "./recipe-playground.js";
+import "./recipe-playground.js";
+import {
   componentApi,
   componentSurface,
   componentSupport,
@@ -189,12 +198,1014 @@ const withParts = (translated: string, parts: Record<string, unknown>) =>
 const kebab = (name: string) =>
   name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
+interface AnatomySlotGuide {
+  name: string;
+  purpose: string;
+  example: string;
+}
+
+interface AnatomyPartGuide {
+  name: string;
+  purpose: string;
+}
+
+interface AnatomyGuide {
+  /** Where the content of the component goes. */
+  intro: string;
+  /** Complete markup, shown under the two lists. */
+  example: string;
+  /** Purposes that differ from the shared dictionary. */
+  slots?: AnatomySlotGuide[];
+  parts?: AnatomyPartGuide[];
+}
+
+/** Purpose and markup of a slot, shared by every component that exposes it. */
+const SLOT_PURPOSES: Record<string, { purpose: string; example: string }> = {
+  default: {
+    purpose: "Contenuto principale del componente.",
+    example: "<p>Contenuto</p>",
+  },
+  icon: {
+    purpose: "Icona che accompagna il contenuto.",
+    example: '<span slot="icon" aria-hidden="true">★</span>',
+  },
+  avatar: {
+    purpose: "Avatar mostrato accanto al testo.",
+    example:
+      '<bolle-avatar slot="avatar" name="Giulia Ferraro"></bolle-avatar>',
+  },
+  media: {
+    purpose: "Immagine o contenuto grafico della superficie.",
+    example: '<img slot="media" alt="" src="/foto.jpg" />',
+  },
+  supporting: {
+    purpose: "Testo di supporto sotto il contenuto principale.",
+    example: '<span slot="supporting">Aggiornato ieri</span>',
+  },
+  leading: {
+    purpose: "Contenuto prima del testo: icona o avatar.",
+    example: '<bolle-icon slot="leading">…</bolle-icon>',
+  },
+  trailing: {
+    purpose: "Contenuto dopo il testo: icona o valore.",
+    example: '<span slot="trailing">12</span>',
+  },
+  "trailing-icon": {
+    purpose: "Icona finale dell'elemento.",
+    example: '<span slot="trailing-icon" aria-hidden="true">★</span>',
+  },
+  actions: {
+    purpose: "Comandi in coda all'area o sotto il contenuto.",
+    example:
+      '<bolle-button slot="actions" variant="text">Annulla</bolle-button>',
+  },
+  action: {
+    purpose: "Comando associato al contenuto.",
+    example: '<bolle-button slot="action" variant="text">Apri</bolle-button>',
+  },
+  prefix: {
+    purpose: "Contenuto prima del campo di testo.",
+    example: '<span slot="prefix">€</span>',
+  },
+  suffix: {
+    purpose: "Contenuto dopo il campo di testo.",
+    example: '<span slot="suffix">,00</span>',
+  },
+  label: {
+    purpose: "Etichetta del controllo, collegata al campo.",
+    example: '<span slot="label">Importo</span>',
+  },
+  value: {
+    purpose: "Valore mostrato accanto all'etichetta.",
+    example: '<span slot="value">24</span>',
+  },
+  title: {
+    purpose: "Titolo principale della superficie.",
+    example: '<h2 slot="title">Commesse</h2>',
+  },
+  heading: {
+    purpose: "Titolo dell'area, letto come intestazione.",
+    example: '<h2 slot="heading">Commesse 2026</h2>',
+  },
+  header: {
+    purpose: "Area sopra il contenuto, fuori dal riquadro.",
+    example: '<h2 slot="header">Commesse 2026</h2>',
+  },
+  footer: {
+    purpose: "Area sotto il contenuto.",
+    example: '<p slot="footer">Totale: 12 commesse</p>',
+  },
+  content: {
+    purpose: "Contenuto centrale, quando il componente ne separa uno.",
+    example: "<p>Contenuto</p>",
+  },
+  body: {
+    purpose: "Corpo scorrevole della superficie.",
+    example: "<p>Contenuto del corpo</p>",
+  },
+  message: {
+    purpose: "Messaggio testuale della superficie.",
+    example: '<span slot="message">Commessa archiviata</span>',
+  },
+  status: {
+    purpose: "Area di stato dell'impalcatura.",
+    example: '<span slot="status">Connesso</span>',
+  },
+  dismiss: {
+    purpose: "Comando che chiude la superficie.",
+    example:
+      '<bolle-button slot="dismiss" variant="text">Chiudi</bolle-button>',
+  },
+  trigger: {
+    purpose: "Elemento che apre l'overlay.",
+    example: '<bolle-button slot="trigger">Apri</bolle-button>',
+  },
+  loading: {
+    purpose: "Sostituisce lo stato mostrato durante il caricamento.",
+    example: '<p slot="loading">Caricamento…</p>',
+  },
+  error: {
+    purpose:
+      "Sostituisce lo stato mostrato quando error contiene un messaggio.",
+    example: '<p slot="error" role="alert">Errore di caricamento</p>',
+  },
+  empty: {
+    purpose: "Sostituisce lo stato mostrato quando non ci sono dati.",
+    example: '<bolle-button slot="empty" variant="filled">Crea</bolle-button>',
+  },
+  "empty-state": {
+    purpose: "Contenuto dell'area vuota predefinita.",
+    example: '<bolle-button slot="empty-state">Crea</bolle-button>',
+  },
+  badge: {
+    purpose: "Segnalazione sovrapposta, come un conteggio.",
+    example: '<span slot="badge">3</span>',
+  },
+  fab: {
+    purpose: "Pulsante flottante agganciato all'angolo.",
+    example: '<bolle-button slot="fab" variant="fab">+</bolle-button>',
+  },
+  controls: {
+    purpose: "Comandi di avanzamento del contenuto.",
+    example:
+      '<bolle-button slot="controls" variant="text">Avanti</bolle-button>',
+  },
+  next: {
+    purpose: "Contenuto del comando che va avanti.",
+    example: '<span slot="next">Avanti</span>',
+  },
+  previous: {
+    purpose: "Contenuto del comando che torna indietro.",
+    example: '<span slot="previous">Indietro</span>',
+  },
+  results: {
+    purpose: "Area dei risultati della ricerca.",
+    example: '<bolle-list slot="results">…</bolle-list>',
+  },
+  filter: {
+    purpose: "Campo o comando che filtra il contenuto.",
+    example: '<bolle-search slot="filter" label="Filtra"></bolle-search>',
+  },
+  "end-label": {
+    purpose: "Etichetta del valore finale di un intervallo.",
+    example: '<span slot="end-label">18:00</span>',
+  },
+  bar: {
+    purpose: "Barra superiore dell'impalcatura.",
+    example: '<bolle-app-bar slot="bar" title="Commesse"></bolle-app-bar>',
+  },
+  "bottom-bar": {
+    purpose: "Barra inferiore dell'impalcatura.",
+    example: '<bolle-bottom-app-bar slot="bottom-bar"></bolle-bottom-app-bar>',
+  },
+  navigation: {
+    purpose: "Navigazione principale dell'impalcatura.",
+    example:
+      '<bolle-navigation-drawer slot="navigation">…</bolle-navigation-drawer>',
+  },
+  "navigation-compact": {
+    purpose: "Navigazione ridotta a icona.",
+    example:
+      '<bolle-navigation-rail slot="navigation-compact">…</bolle-navigation-rail>',
+  },
+  "supporting-actions": {
+    purpose: "Comandi del pannello di supporto.",
+    example: '<bolle-button slot="supporting-actions">Salva</bolle-button>',
+  },
+  "supporting-header": {
+    purpose: "Intestazione del pannello di supporto.",
+    example: '<h2 slot="supporting-header">Dettaglio</h2>',
+  },
+  "supporting-inline": {
+    purpose: "Supporto in linea, accanto al contenuto.",
+    example: '<p slot="supporting-inline">Dettaglio della riga</p>',
+  },
+  "content-{itemId}": {
+    purpose: "Contenuto del pannello della scheda con questo identificatore.",
+    example: '<div slot="note">Note della commessa</div>',
+  },
+  "supporting-modal": {
+    purpose: "Supporto sovrapposto al contenuto.",
+    example: '<p slot="supporting-modal">Dettaglio della riga</p>',
+  },
+};
+
+/**
+ * Purpose of a CSS part, shared by every component that exposes it. A part the
+ * component does not list here keeps the sentence built from its name.
+ */
+const PART_PURPOSES: Record<string, { purpose: string }> = {
+  surface: { purpose: "Superficie visibile della bolla o del pannello." },
+  label: { purpose: "Testo dell'etichetta." },
+  "label-text": { purpose: "Testo scritto dentro l'etichetta." },
+  icon: { purpose: "Icona del componente." },
+  "icon-on": { purpose: "Icona dello stato attivo." },
+  "icon-off": { purpose: "Icona dello stato inattivo." },
+  body: { purpose: "Corpo del componente, sotto l'intestazione." },
+  "body-content": { purpose: "Contenuto scorrevole del corpo." },
+  actions: { purpose: "Riga dei comandi." },
+  "actions-slot": { purpose: "Area che riceve i comandi esterni." },
+  "actions-cell": { purpose: "Cella dei comandi di riga." },
+  "supporting-text": { purpose: "Testo secondario sotto il contenuto." },
+  supporting: { purpose: "Area del testo di supporto." },
+  control: { purpose: "Controllo nativo che riceve il clic." },
+  trailing: { purpose: "Area finale dell'elemento." },
+  content: { purpose: "Contenuto del componente." },
+  counter: { purpose: "Conteggio mostrato accanto al testo." },
+  field: { purpose: "Riquadro del campo." },
+  "field-surface": {
+    purpose: "Superficie del campo, su cui si disegna il contorno.",
+  },
+  input: { purpose: "Area di scrittura." },
+  leading: { purpose: "Area iniziale dell'elemento." },
+  prefix: { purpose: "Contenuto prima del valore." },
+  suffix: { purpose: "Contenuto dopo il valore." },
+  loading: { purpose: "Riquadro dello stato di caricamento." },
+  empty: { purpose: "Riquadro dello stato vuoto." },
+  error: { purpose: "Riquadro dello stato di errore." },
+  trigger: { purpose: "Elemento che apre il menu o l'overlay." },
+  navigation: { purpose: "Contenitore della navigazione." },
+  button: { purpose: "Pulsante interno del componente." },
+  group: { purpose: "Gruppo che tiene insieme gli elementi." },
+  title: { purpose: "Titolo della superficie." },
+  titles: { purpose: "Blocco del titolo e del sottotitolo." },
+  subtitle: { purpose: "Sottotitolo della superficie." },
+  value: { purpose: "Valore numerico o testuale." },
+  indicator: { purpose: "Indicatore dello stato o della posizione." },
+  item: { purpose: "Singolo elemento dell'elenco." },
+  close: { purpose: "Comando che chiude la superficie." },
+  heading: { purpose: "Intestazione della superficie." },
+  dismiss: { purpose: "Comando che chiude senza confermare." },
+  header: { purpose: "Intestazione del componente." },
+  "header-custom": { purpose: "Intestazione fornita dall'applicazione." },
+  footer: { purpose: "Piè di pagina del componente." },
+  track: { purpose: "Binario su cui scorre l'indicatore." },
+  container: { purpose: "Contenitore interno del componente." },
+  badge: { purpose: "Segnalazione sovrapposta." },
+  "badge-label": { purpose: "Testo della segnalazione." },
+  rail: { purpose: "Barra stretta della navigazione." },
+  sheet: { purpose: "Pannello che entra dal bordo." },
+  status: { purpose: "Area di stato." },
+  "resize-handle": { purpose: "Maniglia che ridimensiona il pannello." },
+  bubble: { purpose: "Bolla visibile della superficie." },
+  list: { purpose: "Elenco interno del componente." },
+  card: { purpose: "Scheda interna del componente." },
+  divider: { purpose: "Linea di separazione." },
+  filter: { purpose: "Campo di filtro." },
+  menu: { purpose: "Menu dell'overlay." },
+  cancel: { purpose: "Comando di annullamento." },
+  confirm: { purpose: "Comando di conferma." },
+  dialog: { purpose: "Riquadro del dialogo." },
+  bottom: { purpose: "Area inferiore dell'impalcatura." },
+  shell: { purpose: "Contenitore dell'impalcatura." },
+  grip: { purpose: "Presa che avvia il trascinamento." },
+  tile: { purpose: "Riquadro del riquadro della dashboard." },
+  busy: { purpose: "Velo mostrato durante un aggiornamento." },
+  scroller: { purpose: "Area che riceve lo scorrimento." },
+  table: { purpose: "Contenitore esterno della tabella." },
+  row: { purpose: "Riga della tabella o dell'elenco." },
+  "row-content": { purpose: "Contenuto interno della riga." },
+  "row-selected": { purpose: "Riga scelta." },
+  "selection-cell": { purpose: "Cella della casella di selezione." },
+  "expand-cell": { purpose: "Cella del comando di apertura." },
+  "data-cell": { purpose: "Cella di dati." },
+  "detail": { purpose: "Riga del dettaglio aperto." },
+  "detail-cell": { purpose: "Cella che contiene il dettaglio." },
+  "detail-inner": { purpose: "Contenuto del dettaglio." },
+  "group-title": { purpose: "Titolo del gruppo." },
+  "group-count": { purpose: "Numero di righe del gruppo." },
+  "group-summary": { purpose: "Riepilogo del gruppo." },
+  "group-toggle": { purpose: "Comando che apre e chiude il gruppo." },
+  "group-chevron": { purpose: "Freccia del gruppo." },
+  "progress": { purpose: "Avanzamento dell'attività." },
+  circular: { purpose: "Indicatore circolare." },
+  linear: { purpose: "Indicatore lineare." },
+  stop: { purpose: "Comando che ferma l'operazione." },
+  wavy: { purpose: "Onda dell'indicatore." },
+  carousel: { purpose: "Area del carosello." },
+  items: { purpose: "Contenitore degli elementi." },
+  viewport: { purpose: "Finestra visibile del contenuto." },
+  handle: { purpose: "Presa del cursore." },
+  search: { purpose: "Campo di ricerca." },
+  "search-form": { purpose: "Modulo della ricerca." },
+  "search-results": { purpose: "Elenco dei risultati." },
+  suggestion: { purpose: "Singolo suggerimento." },
+  suggestions: { purpose: "Elenco dei suggerimenti." },
+  segment: { purpose: "Singolo segmento del controllo." },
+  segments: { purpose: "Traccia che tiene i segmenti." },
+  "segment-label": { purpose: "Testo del segmento." },
+  option: { purpose: "Singola voce dell'elenco." },
+  board: { purpose: "Superficie della board." },
+  column: { purpose: "Colonna della board." },
+  "column-title": { purpose: "Titolo della colonna." },
+  "column-count": { purpose: "Numero di schede della colonna." },
+  "column-header": { purpose: "Intestazione della colonna." },
+  "card-header": { purpose: "Intestazione della scheda." },
+  "card-row": { purpose: "Riga di dati della scheda." },
+  "card-grip": { purpose: "Presa che avvia il trascinamento della scheda." },
+  lane: { purpose: "Corsia della board." },
+  "lane-header": { purpose: "Intestazione della corsia." },
+  tab: { purpose: "Singola scheda della barra." },
+  tablist: { purpose: "Elenco delle schede." },
+  tabpanel: { purpose: "Pannello della scheda attiva." },
+  "tab-label": { purpose: "Testo della scheda." },
+  "tab-icon": { purpose: "Icona della scheda." },
+  "tab-badge": { purpose: "Segnalazione della scheda." },
+  snackbar: { purpose: "Superficie del messaggio." },
+  tooltip: { purpose: "Superficie del suggerimento." },
+  "fab-menu": { purpose: "Gruppo dei pulsanti flottanti." },
+  calendar: { purpose: "Area del calendario." },
+  "calendar-grid": { purpose: "Griglia dei giorni." },
+  "calendar-header": { purpose: "Intestazione del calendario." },
+  day: { purpose: "Singolo giorno." },
+  "day-control": { purpose: "Pulsante del giorno." },
+  weekday: { purpose: "Nome del giorno della settimana." },
+  dial: { purpose: "Quadrante dell'ora." },
+  "dial-option": { purpose: "Valore sul quadrante." },
+  hour: { purpose: "Campo delle ore." },
+  minute: { purpose: "Campo dei minuti." },
+  "period-control": { purpose: "Comando del periodo, mattina o pomeriggio." },
+  mode: { purpose: "Selettore della modalità." },
+  chevron: { purpose: "Freccia che indica l'apertura." },
+  placeholder: { purpose: "Testo mostrato quando il campo è vuoto." },
+  branch: { purpose: "Ramo dell'albero di navigazione." },
+  brand: { purpose: "Marchio in cima alla navigazione." },
+  tree: { purpose: "Albero della navigazione." },
+  bridge: { purpose: "Ponte che collega i due cursori." },
+  liquid: { purpose: "Goccia che segue il cursore." },
+  membrane: { purpose: "Membrana della superficie." },
+  range: { purpose: "Intervallo scelto." },
+  slider: { purpose: "Binario del cursore." },
+  thumb: { purpose: "Cursore." },
+  "thumb-lower": { purpose: "Cursore inferiore dell'intervallo." },
+  "thumb-upper": { purpose: "Cursore superiore dell'intervallo." },
+  steps: { purpose: "Elenco dei passi." },
+  step: { purpose: "Singolo passo." },
+  "step-dot": { purpose: "Punto del passo." },
+  "app-bar": { purpose: "Barra dell'applicazione." },
+  toolbar: { purpose: "Barra dei comandi." },
+  "toolbar-content": { purpose: "Contenuto della barra dei comandi." },
+  chip: { purpose: "Superficie della pastiglia." },
+  "chip-label": { purpose: "Testo della pastiglia." },
+  "chip-remove": { purpose: "Comando che toglie la pastiglia." },
+  "list-item": { purpose: "Singola riga dell'elenco." },
+  "list-item-row": { purpose: "Riga visibile dell'elemento." },
+  "list-label": { purpose: "Testo principale dell'elemento." },
+  "list-supporting-text": { purpose: "Testo secondario dell'elemento." },
+  "list-icon": { purpose: "Icona dell'elemento." },
+  "list-disclosure": { purpose: "Comando che apre il sottoelenco." },
+  "list-sublist": { purpose: "Sottoelenco dell'elemento." },
+  "list-badge": { purpose: "Segnalazione dell'elemento." },
+  "list-content": { purpose: "Contenuto dell'elenco." },
+  "navigation-bar": { purpose: "Barra di navigazione." },
+  "navigation-rail": { purpose: "Barra stretta di navigazione." },
+  destination: { purpose: "Destinazione della navigazione." },
+  "destination-item": { purpose: "Elemento della destinazione." },
+  destinations: { purpose: "Elenco delle destinazioni." },
+  "navigation-destination": { purpose: "Destinazione della barra." },
+  "navigation-icon": { purpose: "Icona della destinazione." },
+  "navigation-indicator": { purpose: "Indicatore della destinazione attiva." },
+  "navigation-label": { purpose: "Testo della destinazione." },
+  "rail-item": { purpose: "Elemento della barra stretta." },
+  "rail-icon": { purpose: "Icona dell'elemento stretto." },
+  "rail-indicator": { purpose: "Indicatore dell'elemento attivo." },
+  "rail-label": { purpose: "Testo dell'elemento stretto." },
+  "item-icon": { purpose: "Icona dell'elemento di navigazione." },
+  "item-label": { purpose: "Testo dell'elemento di navigazione." },
+  "item-count": { purpose: "Conteggio dell'elemento di navigazione." },
+  "item-chevron": { purpose: "Freccia dell'elemento di navigazione." },
+  action: { purpose: "Comando associato al contenuto." },
+  "app-bar-actions": {
+    purpose: "Comandi in coda all'area o sotto il contenuto.",
+  },
+  "app-bar-leading": { purpose: "Area iniziale dell'elemento." },
+  "app-bar-subtitle": { purpose: "Sottotitolo della superficie." },
+  "app-bar-title": { purpose: "Titolo della superficie." },
+  "app-bar-title-group": { purpose: "Blocco del titolo e del sottotitolo." },
+  bar: { purpose: "Barra dei comandi." },
+  "bottom-sheet": { purpose: "Pannello che entra dal bordo." },
+  "bubble-primary": {
+    purpose: "Superficie visibile della bolla o del pannello.",
+  },
+  "bubble-secondary": {
+    purpose: "Superficie visibile della bolla o del pannello.",
+  },
+  "bubble-tertiary": {
+    purpose: "Superficie visibile della bolla o del pannello.",
+  },
+  "bubble-value": { purpose: "Valore numerico o testuale." },
+  "calendar-month": { purpose: "Intestazione del calendario." },
+  "calendar-next": { purpose: "Contenuto del comando che va avanti." },
+  "calendar-previous": { purpose: "Contenuto del comando che torna indietro." },
+  "calendar-year": { purpose: "Intestazione del calendario." },
+  "card-content": { purpose: "Contenuto del componente." },
+  "card-link": { purpose: "Elemento che apre l'overlay." },
+  "card-media": { purpose: "Immagine o contenuto grafico della superficie." },
+  "chip-avatar": { purpose: "Avatar mostrato accanto al testo." },
+  "chip-content": { purpose: "Contenuto del componente." },
+  "chip-control": { purpose: "Controllo nativo che riceve il clic." },
+  "chip-icon": { purpose: "Icona del componente." },
+  "column-collapsed": { purpose: "Colonna della board." },
+  "column-grip": { purpose: "Presa che avvia il trascinamento." },
+  "column-resize": { purpose: "Maniglia che ridimensiona il pannello." },
+  "compact-grabber": { purpose: "Presa che avvia il trascinamento." },
+  controls: { purpose: "Comandi di avanzamento del contenuto." },
+  "data-cell-pinned": { purpose: "Cella di dati." },
+  "drag-handle": { purpose: "Presa che avvia il trascinamento." },
+  "empty-slot": { purpose: "Contenuto dell'area vuota predefinita." },
+  "end-field-surface": {
+    purpose: "Superficie del campo, su cui si disegna il contorno.",
+  },
+  "error-slot": { purpose: "Riquadro dello stato di errore." },
+  "filter-container": { purpose: "Campo di filtro." },
+  "footer-slot": { purpose: "Piè di pagina del componente." },
+  "group-inner": { purpose: "Gruppo che tiene insieme gli elementi." },
+  "group-label": { purpose: "Testo dell'etichetta." },
+  "header-cell": { purpose: "Cella di dati." },
+  "header-cell-pinned": { purpose: "Cella di dati." },
+  "header-content": { purpose: "Contenuto della barra dei comandi." },
+  "header-label": { purpose: "Testo dell'etichetta." },
+  "header-menu": { purpose: "Menu dell'overlay." },
+  "header-row": { purpose: "Riga della tabella o dell'elenco." },
+  "header-slot": { purpose: "Area sopra il contenuto, fuori dal riquadro." },
+  host: { purpose: "Contenitore interno del componente." },
+  "hour-input": { purpose: "Campo delle ore." },
+  "list-disclosure-icon": { purpose: "Icona che accompagna il contenuto." },
+  "list-row": { purpose: "Riga della tabella o dell'elenco." },
+  "list-text": { purpose: "Testo principale dell'elemento." },
+  "loading-slot": { purpose: "Riquadro dello stato di caricamento." },
+  "menu-trigger": { purpose: "Elemento che apre il menu o l'overlay." },
+  message: { purpose: "Messaggio testuale della superficie." },
+  "minute-input": { purpose: "Campo dei minuti." },
+  "month-control": { purpose: "Pulsante del giorno." },
+  "month-title": { purpose: "Intestazione del calendario." },
+  morph: { purpose: "Onda dell'indicatore." },
+  "navigation-compact": { purpose: "Navigazione ridotta a icona." },
+  "navigation-destination-item": { purpose: "Elemento della destinazione." },
+  next: { purpose: "Contenuto del comando che va avanti." },
+  period: { purpose: "Comando del periodo, mattina o pomeriggio." },
+  "period-option": { purpose: "Valore sul quadrante." },
+  previous: { purpose: "Contenuto del comando che torna indietro." },
+  primary: { purpose: "Superficie visibile della bolla o del pannello." },
+  "range-merged": { purpose: "Intervallo scelto." },
+  "scroll-button": { purpose: "Comandi di avanzamento del contenuto." },
+  "scroll-button-next": { purpose: "Contenuto del comando che va avanti." },
+  "scroll-button-previous": {
+    purpose: "Contenuto del comando che torna indietro.",
+  },
+  "scroll-icon": { purpose: "Icona del componente." },
+  "segment-control": { purpose: "Controllo nativo che riceve il clic." },
+  "segment-icon": { purpose: "Icona del componente." },
+  "side-sheet": { purpose: "Pannello che entra dal bordo." },
+  sort: { purpose: "Comando associato al contenuto." },
+  "sort-mark": { purpose: "Indicatore dello stato o della posizione." },
+  "submenu-indicator": { purpose: "Freccia che indica l'apertura." },
+  support: { purpose: "Area del testo di supporto." },
+  "supporting-body": { purpose: "Corpo scorrevole della superficie." },
+  "supporting-header": { purpose: "Intestazione del pannello di supporto." },
+  "supporting-sheet": { purpose: "Pannello che entra dal bordo." },
+  "supporting-title": { purpose: "Titolo della superficie." },
+  "tab-content": { purpose: "Pannello della scheda attiva." },
+  "tab-scroller": { purpose: "Area che riceve lo scorrimento." },
+  "table-grid": { purpose: "Contenitore esterno della tabella." },
+  "time-selectors": { purpose: "Modulo della ricerca." },
+  "title-group": { purpose: "Blocco del titolo e del sottotitolo." },
+  "trailing-icon": { purpose: "Icona finale dell'elemento." },
+  "trigger-icon": { purpose: "Icona del componente." },
+  "year-control": { purpose: "Pulsante del giorno." },
+};
+
+const ANATOMY_GUIDES: Record<string, AnatomyGuide> = {
+  "bolle-gantt": {
+    intro:
+      "Il contenuto delle righe non passa dagli slot: il componente chiama column.render per una cella e barRenderer per la barra, e groupLabel per il nome di un gruppo. Gli slot coprono gli stati, quando al posto delle righe non c'è nulla da mostrare.",
+    slots: [
+      {
+        name: "loading",
+        purpose: "Sostituisce lo stato mostrato mentre loading è attivo.",
+        example: '<p slot="loading">Caricamento del piano…</p>',
+      },
+      {
+        name: "error",
+        purpose:
+          "Sostituisce lo stato mostrato quando error contiene un messaggio.",
+        example: '<p slot="error" role="alert">Piano non raggiungibile</p>',
+      },
+      {
+        name: "empty",
+        purpose: "Sostituisce lo stato mostrato quando non ci sono attività.",
+        example:
+          '<bolle-button slot="empty" variant="filled">Aggiungi attività</bolle-button>',
+      },
+    ],
+    parts: [
+      { name: "loading", purpose: "Riquadro dello stato di caricamento." },
+      { name: "error", purpose: "Riquadro dello stato di errore." },
+      { name: "empty", purpose: "Riquadro dello stato vuoto." },
+    ],
+    example: `<bolle-gantt label="Piano di commessa" editable style="block-size: 420px">
+  <bolle-button slot="empty" variant="filled">Aggiungi attività</bolle-button>
+</bolle-gantt>`,
+  },
+  "bolle-button": {
+    intro:
+      "Il pulsante prende dallo slot predefinito il testo e dagli altri due l'icona iniziale e quella finale; la variante decide se il contenuto è testo, icona o entrambi.",
+    example: `<bolle-button variant="filled">
+  <span slot="icon" aria-hidden="true">★</span>
+  Salva la commessa
+</bolle-button>`,
+  },
+  "bolle-icon-button": {
+    intro:
+      "Il pulsante a icona prende dallo slot predefinito il simbolo e da icon la variante grafica; label resta obbligatoria perché è il nome letto dai lettori di schermo.",
+    example: `<bolle-icon-button label="Cerca">
+  <span slot="icon" aria-hidden="true">★</span>
+</bolle-icon-button>`,
+  },
+  "bolle-floating-action-button": {
+    intro:
+      "Il pulsante flottante prende dallo slot predefinito il testo, che con size regular resta nascosto, e da icon il simbolo; extended aggiunge l'etichetta accanto all'icona.",
+    example: `<bolle-floating-action-button label="Nuova commessa">
+  <span slot="icon" aria-hidden="true">+</span>
+</bolle-floating-action-button>`,
+  },
+  "bolle-extended-fab": {
+    intro:
+      "Il pulsante flottante esteso mostra icona e testo insieme: lo slot predefinito riceve il testo e lo slot icon il simbolo.",
+    example: `<bolle-extended-fab>
+  <span slot="icon" aria-hidden="true">+</span>
+  Nuova commessa
+</bolle-extended-fab>`,
+  },
+  "bolle-button-group": {
+    intro:
+      "Il gruppo tiene insieme pulsanti adiacenti e prende dallo slot predefinito i pulsanti da unire, nell'ordine in cui li scrivi.",
+    example: `<bolle-button-group variant="connected">
+  <bolle-button variant="outlined">Giorno</bolle-button>
+  <bolle-button variant="outlined">Settimana</bolle-button>
+</bolle-button-group>`,
+  },
+  "bolle-badge": {
+    intro:
+      "Il badge mostra un conteggio o una parola sopra un altro elemento e prende dallo slot label il testo, quando non vuoi passarlo come proprietà.",
+    example: `<bolle-badge label="12">
+  <bolle-icon-button label="Messaggi">…</bolle-icon-button>
+</bolle-badge>`,
+  },
+  "bolle-bottom-app-bar": {
+    intro:
+      "La barra inferiore tiene i comandi in linea e il pulsante flottante: lo slot predefinito riceve i comandi, gli altri slot l'elemento iniziale, quello finale e il pulsante flottante.",
+    example: `<bolle-bottom-app-bar>
+  <bolle-icon-button slot="leading" label="Menu">…</bolle-icon-button>
+  <bolle-icon-button label="Cerca">…</bolle-icon-button>
+  <bolle-button slot="fab" variant="fab" label="Nuovo">+</bolle-button>
+</bolle-bottom-app-bar>`,
+  },
+  "bolle-progress-indicator": {
+    intro:
+      "L'indicatore di avanzamento non ha slot: riceve value, min, max e label e disegna la forma lineare o circolare; con indeterminate segnala un'attesa senza valore.",
+    example: `<bolle-progress-indicator value="62" label="Avanzamento"></bolle-progress-indicator>`,
+  },
+  "bolle-loading-indicator": {
+    intro:
+      "L'indicatore di caricamento non ha slot: mostra un'animazione con la label accessibile che gli passi, e contained lo appoggia su una superficie.",
+    example: `<bolle-loading-indicator label="Caricamento delle commesse"></bolle-loading-indicator>`,
+  },
+  "bolle-snackbar": {
+    intro:
+      "Il messaggio si mostra con show() e prende dagli slot il testo, l'azione che lo accompagna e il comando che lo chiude; la proprietà message resta la scorciatoia per il solo testo.",
+    example: `<bolle-snackbar id="feedback" timeout="6000">
+  <span slot="message">Commessa archiviata</span>
+  <bolle-button slot="action" variant="text">Annulla</bolle-button>
+</bolle-snackbar>`,
+  },
+  "bolle-tooltip": {
+    intro:
+      "Il suggerimento si aggancia a un elemento con show(anchor) e prende dallo slot predefinito il contenuto; gli altri slot coprono etichetta, testo di supporto, comandi e il comando di chiusura delle varianti ricche.",
+    example: `<bolle-tooltip id="hint" text="Salva la commessa">
+  <bolle-icon-button label="Salva">…</bolle-icon-button>
+</bolle-tooltip>`,
+  },
+  "bolle-carousel": {
+    intro:
+      "Il carosello scorre gli elementi che riceve nello slot predefinito e prende dagli slot i comandi di avanzamento, lo stato letto dai lettori di schermo e i controlli aggiuntivi.",
+    example: `<bolle-carousel label="Schede">
+  <bolle-card>Prima scheda</bolle-card>
+  <bolle-card>Seconda scheda</bolle-card>
+</bolle-carousel>`,
+  },
+  "bolle-card": {
+    intro:
+      "La scheda prende dallo slot predefinito il contenuto e dagli altri slot l'immagine di testa e la riga di comandi: media occupa la larghezza, content resta la scorciatoia per il solo blocco interno.",
+    example: `<bolle-card variant="filled">
+  <img slot="media" alt="" src="/cantiere.jpg" />
+  <h3>Ristrutturazione scuola</h3>
+  <p>Consegna prevista a marzo 2027.</p>
+  <bolle-button slot="actions" variant="text">Apri</bolle-button>
+</bolle-card>`,
+  },
+  "bolle-dialog": {
+    intro:
+      "Il dialogo prende dallo slot predefinito il contenuto e dagli altri due il titolo letto come intestazione e la riga dei comandi; con modal blocca la pagina, con fullscreen la occupa.",
+    example: `<bolle-dialog label="Archivia commessa" modal>
+  <h2 slot="heading">Archiviare la commessa?</h2>
+  <p>La commessa esce dagli elenchi attivi.</p>
+  <bolle-button slot="actions" variant="text">Annulla</bolle-button>
+  <bolle-button slot="actions" variant="filled">Archivia</bolle-button>
+</bolle-dialog>`,
+  },
+  "bolle-bottom-sheet": {
+    intro:
+      "Il foglio dal basso prende dallo slot predefinito il contenuto, dallo slot heading il titolo e da actions i comandi; drag-handle mostra la presa che lo trascina.",
+    example: `<bolle-bottom-sheet label="Filtri" drag-handle>
+  <h2 slot="heading">Filtri</h2>
+  <p>Scegli lo stato delle commesse.</p>
+  <bolle-button slot="actions" variant="filled">Applica</bolle-button>
+</bolle-bottom-sheet>`,
+  },
+  "bolle-side-sheet": {
+    intro:
+      "Il foglio laterale prende dallo slot predefinito il contenuto, da heading il titolo e da actions i comandi; entra dal lato indicato da placement e modal lo rende bloccante.",
+    example: `<bolle-side-sheet label="Dettaglio commessa" placement="end">
+  <h2 slot="heading">C2026-1000</h2>
+  <p>Ristrutturazione scuola di Seriate.</p>
+  <bolle-button slot="actions" variant="filled">Apri scheda</bolle-button>
+</bolle-side-sheet>`,
+  },
+  "bolle-divider": {
+    intro:
+      "Il separatore non ha slot: disegna una linea fra due gruppi di contenuto, con inset per staccarla dai bordi e vertical per separare elementi affiancati.",
+    example: `<p>Committenti</p>
+<bolle-divider></bolle-divider>
+<p>Fornitori</p>`,
+  },
+  "bolle-app-bar": {
+    intro:
+      "La barra dell'applicazione prende dal titolo il testo principale e dagli slot i comandi iniziali e finali; lo slot predefinito sostituisce il titolo quando serve un'intestazione più ricca.",
+    example: `<bolle-app-bar title="Commesse">
+  <bolle-icon-button slot="leading" label="Menu">…</bolle-icon-button>
+  <bolle-icon-button slot="actions" label="Cerca">…</bolle-icon-button>
+</bolle-app-bar>`,
+  },
+  "bolle-toolbar": {
+    intro:
+      "La barra dei comandi dispone gli elementi che riceve nello slot predefinito, e con variabili può portare a capo i comandi in eccesso invece di comprimerli.",
+    example: `<bolle-toolbar label="Azioni sulle commesse">
+  <bolle-button variant="text">Esporta</bolle-button>
+  <bolle-button variant="text">Archivia</bolle-button>
+</bolle-toolbar>`,
+  },
+  "bolle-navigation-bar": {
+    intro:
+      "La barra di navigazione legge le destinazioni dalle proprietà, non dagli slot: ogni destinazione porta icona, testo e indicatore di attività.",
+    example: `<bolle-navigation-bar label="Sezioni" value="commesse"></bolle-navigation-bar>`,
+  },
+  "bolle-navigation-rail": {
+    intro:
+      "La barra stretta legge le destinazioni dalle proprietà: con expanded mostra anche i testi, altrimenti resta alle icone con il suggerimento.",
+    example: `<bolle-navigation-rail label="Sezioni" value="commesse"></bolle-navigation-rail>`,
+  },
+  "bolle-navigation-drawer": {
+    intro:
+      "Il pannello di navigazione prende dallo slot predefinito le voci, da heading il titolo e da actions i comandi in coda, e si apre in linea o sovrapposto alla pagina.",
+    example: `<bolle-navigation-drawer label="Sezioni" open>
+  <h2 slot="heading">Commesse</h2>
+  <a href="#/it/clienti">Clienti</a>
+  <a href="#/it/fornitori">Fornitori</a>
+  <span slot="actions">Versione 0.3.3</span>
+</bolle-navigation-drawer>`,
+  },
+  "bolle-tabs": {
+    intro:
+      "Le schede leggono le voci dalle proprietà e prendono dallo slot predefinito i pannelli: ogni pannello dichiara con slot il nome della scheda che lo apre.",
+    example: `<bolle-tabs label="Dettaglio" value="note">
+  <div slot="note">Note della commessa</div>
+  <div slot="documenti">Documenti allegati</div>
+</bolle-tabs>`,
+  },
+  "bolle-checkbox": {
+    intro:
+      "La casella prende dallo slot predefinito il testo dell'etichetta e si collega al campo con name, value e checked; indeterminate mostra lo stato misto.",
+    example: `<bolle-checkbox name="urgente">Segna come urgente</bolle-checkbox>`,
+  },
+  "bolle-switch": {
+    intro:
+      "L'interruttore prende dallo slot predefinito il testo dell'etichetta e cambia stato da sé, riportando il valore con l'evento change.",
+    example: `<bolle-switch name="notifiche" checked>Notifiche attive</bolle-switch>`,
+  },
+  "bolle-radio-button": {
+    intro:
+      "Il pulsante di opzione prende dallo slot predefinito il testo e si raggruppa per name: scegliere una voce toglie la scelta alle altre dello stesso gruppo.",
+    example: `<bolle-radio-button name="priorita" value="alta" checked>Alta</bolle-radio-button>
+<bolle-radio-button name="priorita" value="bassa">Bassa</bolle-radio-button>`,
+  },
+  "bolle-chip": {
+    intro:
+      "La pastiglia prende dallo slot predefinito il testo e dagli altri un'icona o un avatar; removable aggiunge il comando che la toglie.",
+    example: `<bolle-chip removable>
+  <bolle-avatar slot="avatar" name="Giulia Ferraro"></bolle-avatar>
+  Urgente
+</bolle-chip>`,
+  },
+  "bolle-list": {
+    intro:
+      "L'elenco prende dallo slot predefinito le righe, scritte come bolle-list-item, e le compone con icona, testo, supporto e coda; itemRenderer sostituisce l'intera riga.",
+    example: `<bolle-list label="Commesse">
+  <bolle-list-item>C2026-1000</bolle-list-item>
+  <bolle-list-item>C2026-1001</bolle-list-item>
+</bolle-list>`,
+  },
+  "bolle-segmented-buttons": {
+    intro:
+      "Il controllo a segmenti legge le voci dalle proprietà e non ha slot: label resta la legenda del gruppo, e con multiple la scelta ammette più segmenti.",
+    example: `<bolle-segmented-buttons id="vista" label="Vista"></bolle-segmented-buttons>
+
+<script type="module">
+  const vista = document.querySelector("#vista");
+  vista.items = [
+    { id: "elenco", label: "Elenco" },
+    { id: "griglia", label: "Griglia" },
+  ];
+  vista.value = "elenco";
+</script>`,
+  },
+  "bolle-slider": {
+    intro:
+      "Il cursore prende dagli slot l'icona alle due estremità, l'etichetta e il valore mostrato; con range mostra due cursori e riporta entrambi i valori.",
+    example: `<bolle-slider label="Avanzamento" value="40"></bolle-slider>`,
+  },
+  "bolle-steps": {
+    intro:
+      "I passi leggono le voci dalle proprietà e prendono dallo slot label il testo del passo corrente, quando il nome non basta.",
+    example: `<bolle-steps label="Avanzamento" value="1">
+  <span slot="label">Documenti</span>
+</bolle-steps>`,
+  },
+  "bolle-text-field": {
+    intro:
+      "Il campo di testo prende dallo slot predefinito nulla del contenuto scritto, che resta nell'input, e dagli altri slot l'icona iniziale, il prefisso, il suffisso, il comando finale e il testo di supporto.",
+    example: `<bolle-text-field label="Importo">
+  <span slot="prefix">€</span>
+  <span slot="suffix">,00</span>
+  <span slot="supporting">Importo al netto dell'IVA</span>
+</bolle-text-field>`,
+  },
+  "bolle-search": {
+    intro:
+      "La ricerca prende dagli slot il contenuto del campo e dei risultati: results riceve l'elenco che compare sotto la barra, il resto segue le regole del campo di testo.",
+    example: `<bolle-search label="Cerca commesse">
+  <bolle-list slot="results" label="Risultati"></bolle-list>
+</bolle-search>`,
+  },
+  "bolle-date-picker": {
+    intro:
+      "Il selettore di data prende dagli slot il titolo del pannello e il testo di supporto del campo; end-label nomina il valore finale quando selection-mode è range.",
+    example: `<bolle-date-picker label="Scadenza" selection-mode="range">
+  <span slot="end-label">Fine periodo</span>
+</bolle-date-picker>`,
+  },
+  "bolle-time-picker": {
+    intro:
+      "Il selettore di orario prende dagli slot il titolo del quadrante e il testo di supporto del campo; con format a ventiquattro ore sparisce il periodo.",
+    example: `<bolle-time-picker label="Consegna" format="24">
+  <span slot="title">Orario di consegna</span>
+</bolle-time-picker>`,
+  },
+  "bolle-menu": {
+    intro:
+      "Il menu si apre con show(anchor) e legge le voci dalle proprietà, non dagli slot: ogni voce porta testo, icona, scorciatoia e sotto-menu.",
+    example: `<bolle-button id="apri">Azioni</bolle-button>
+
+<script type="module">
+  const menu = document.querySelector("#azioni");
+  menu.items = [{ id: "esporta", label: "Esporta" }];
+  menu.show(document.querySelector("#apri"));
+</script>`,
+  },
+  "bolle-fab-menu": {
+    intro:
+      "Il menu dei pulsanti flottanti legge le azioni dalle proprietà e prende dallo slot icon il simbolo del pulsante che lo apre.",
+    example: `<bolle-fab-menu label="Azioni rapide">
+  <span slot="icon" aria-hidden="true">+</span>
+</bolle-fab-menu>`,
+  },
+  "bolle-split-button": {
+    intro:
+      "Il pulsante diviso separa l'azione principale dal menu: lo slot predefinito riceve il testo del pulsante, icon l'icona e il menu si apre dal comando a fianco.",
+    example: `<bolle-split-button label="Salva">
+  <span slot="icon" aria-hidden="true">★</span>
+</bolle-split-button>`,
+  },
+  "bolle-select": {
+    intro:
+      "La select avvolge un elemento select nativo: le opzioni restano nel markup, e lo slot supporting porta il testo che spiega la scelta.",
+    example: `<bolle-select label="Stato">
+  <select>
+    <option>In corso</option>
+    <option>Chiusa</option>
+  </select>
+  <span slot="supporting">Lo stato cambia l'ordine degli elenchi</span>
+</bolle-select>`,
+  },
+  "bolle-autocomplete": {
+    intro:
+      "Il campo con suggerimenti prende dagli slot gli stessi contenuti del campo di testo; l'elenco dei suggerimenti si apre da sé sopra il resto del contenuto.",
+    example: `<bolle-autocomplete label="Comune">
+  <span slot="supporting">Inizia a scrivere il nome del comune</span>
+</bolle-autocomplete>`,
+  },
+  "bolle-sidebar": {
+    intro:
+      "Il contenuto della navigazione non passa dagli slot: il componente legge items, groups e actions e chiama item e railItem per il contenuto di una voce. Gli slot coprono l'intestazione, il filtro, il piè di pagina e lo stato vuoto.",
+    example: `<bolle-sidebar label="Navigazione" collapsed-label="Espandi">
+  <bolle-search slot="filter" label="Filtra"></bolle-search>
+  <span slot="footer">Versione 0.3.3</span>
+</bolle-sidebar>`,
+  },
+  "bolle-app-shell": {
+    intro:
+      "L'impalcatura compone le superfici intorno al contenuto: la navigazione, la barra, quella inferiore e il pannello di supporto arrivano dagli slot, e il contenuto principale è lo slot predefinito.",
+    example: `<bolle-app-shell>
+  <bolle-navigation-drawer slot="navigation" label="Sezioni"></bolle-navigation-drawer>
+  <bolle-app-bar slot="bar" title="Commesse"></bolle-app-bar>
+  <main>Contenuto della pagina</main>
+  <bolle-bottom-app-bar slot="bottom-bar"></bolle-bottom-app-bar>
+</bolle-app-shell>`,
+  },
+  "bolle-dashboard": {
+    intro:
+      "La dashboard dispone i riquadri che le passi e non impone contenuti: ogni riquadro è un bolle-widget nello slot predefinito, con intestazione, corpo, comandi e maniglia di ridimensionamento già forniti dal widget.",
+    example: `<bolle-dashboard label="Panoramica">
+  <bolle-widget title="Lavori in ritardo" span="8">
+    <p>Quattro commesse oltre la scadenza.</p>
+  </bolle-widget>
+  <bolle-widget title="Avanzamento cantieri" span="4">
+    <bolle-progress-indicator value="62" label="Avanzamento"></bolle-progress-indicator>
+  </bolle-widget>
+</bolle-dashboard>`,
+  },
+  "bolle-kanban": {
+    intro:
+      "Il contenuto di una scheda non passa dagli slot: il componente legge columns e cards e chiama card per il contenuto della scheda. Gli slot coprono gli stati, quando al posto della board non c'è nulla da mostrare.",
+    example: `<bolle-kanban label="Cantieri" movable>
+  <bolle-button slot="empty" variant="filled">Crea la prima scheda</bolle-button>
+</bolle-kanban>`,
+  },
+  "bolle-avatar": {
+    intro:
+      "L'avatar mostra iniziali o un'immagine e prende dallo slot icon il simbolo che sostituisce le iniziali, per esempio quando l'immagine non è disponibile.",
+    example: `<bolle-avatar name="Giulia Ferraro">
+  <span slot="icon" aria-hidden="true">★</span>
+</bolle-avatar>`,
+  },
+  "bolle-avatar-group": {
+    intro:
+      "Il gruppo impila gli avatar che riceve e riassume i restanti in un conteggio: lo slot predefinito riceve i bolle-avatar, e l'ordine è quello in cui li scrivi.",
+    example: `<bolle-avatar-group label="Partecipanti" max="3">
+  <bolle-avatar name="Giulia Ferraro"></bolle-avatar>
+  <bolle-avatar name="Marco Bellini"></bolle-avatar>
+  <bolle-avatar name="Sara Colombo"></bolle-avatar>
+  <bolle-avatar name="Luca De Santis"></bolle-avatar>
+</bolle-avatar-group>`,
+  },
+  "bolle-breadcrumb": {
+    intro:
+      "Le briciole arrivano da items, non dagli slot: il componente disegna il percorso, separa le voci e rende l'ultima come pagina corrente.",
+    example: `<bolle-breadcrumb label="Percorso">
+  <a href="#/it/">Home</a>
+  <a href="#/it/commesse">Commesse</a>
+  <span aria-current="page">C2026-1000</span>
+</bolle-breadcrumb>`,
+  },
+  "bolle-empty-state": {
+    intro:
+      "Lo stato vuoto centra un'icona, un titolo e un testo, e prende dallo slot actions il comando che fa uscire dallo stato vuoto.",
+    example: `<bolle-empty-state title="Nessuna commessa" text="Non ci sono commesse per questo filtro.">
+  <bolle-button slot="actions" variant="filled">Crea commessa</bolle-button>
+</bolle-empty-state>`,
+  },
+  "bolle-pagination": {
+    intro:
+      "La paginazione non ha slot: mostra l'intervallo, le frecce e le pagine numerate, e si sposta alla pagina richiesta riportandola con page-change.",
+    example: `<bolle-pagination label="Pagine" page-size="10" total="248"></bolle-pagination>`,
+  },
+  "bolle-data-table": {
+    intro:
+      "Il contenuto delle celle non passa dagli slot: il componente chiama column.render, rowRenderer, detail e groupSummary. Gli slot coprono le aree esterne alla tabella.",
+    slots: [
+      {
+        name: "header",
+        purpose: "Aggiunge un'area sopra la tabella, fuori dal riquadro.",
+        example: '<h2 slot="header">Commesse 2026</h2>',
+      },
+      {
+        name: "loading",
+        purpose:
+          "Sostituisce lo stato mostrato durante il caricamento iniziale.",
+        example: '<p slot="loading">Caricamento delle commesse…</p>',
+      },
+      {
+        name: "error",
+        purpose:
+          "Sostituisce lo stato mostrato quando error contiene un messaggio.",
+        example: '<p slot="error" role="alert">Errore di caricamento</p>',
+      },
+      {
+        name: "empty",
+        purpose: "Aggiunge azioni dentro lo stato vuoto predefinito.",
+        example:
+          '<bolle-button slot="empty" variant="filled">Crea commessa</bolle-button>',
+      },
+      {
+        name: "empty-state",
+        purpose: "Sostituisce interamente lo stato vuoto.",
+        example: '<section slot="empty-state">Nessuna commessa</section>',
+      },
+      {
+        name: "footer",
+        purpose: "Sostituisce la paginazione predefinita.",
+        example: '<nav slot="footer" aria-label="Pagine">Pagina 1</nav>',
+      },
+    ],
+    parts: [
+      { name: "table", purpose: "Contenitore esterno della tabella." },
+      {
+        name: "scroller",
+        purpose: "Area che riceve lo scorrimento verticale e orizzontale.",
+      },
+      { name: "header", purpose: "Intestazione della tabella." },
+      { name: "header-cell", purpose: "Singola cella di intestazione." },
+      { name: "sort", purpose: "Pulsante che attiva l'ordinamento." },
+      {
+        name: "column-resize",
+        purpose: "Controllo separatore della larghezza colonna.",
+      },
+      { name: "row", purpose: "Riga dati." },
+      { name: "data-cell", purpose: "Cella dati." },
+      { name: "detail", purpose: "Area espansa sotto la riga." },
+      { name: "group", purpose: "Riga di raggruppamento." },
+      { name: "group-summary", purpose: "Area del riepilogo di gruppo." },
+      { name: "loading", purpose: "Stato di caricamento." },
+      { name: "error", purpose: "Stato di errore." },
+      { name: "empty", purpose: "Stato vuoto." },
+      { name: "footer", purpose: "Area della paginazione." },
+    ],
+    example: `const columns = [
+  {
+    key: "code",
+    label: "Codice",
+    render: (row) => html\`<strong>\${row.code}</strong>\`,
+  },
+  {
+    key: "amount",
+    label: "Importo",
+    align: "end",
+  },
+];
+
+const detail = (row) => html\`
+  <dl>
+    <dt>Cliente</dt>
+    <dd>\${row.client}</dd>
+  </dl>
+\`;
+
+html\`<bolle-data-table
+  .columns=\${columns}
+  .rows=\${rows}
+  .detail=\${detail}
+  expandable
+></bolle-data-table>\``,
+  },
+};
+
 export class DocsApp extends LitElement {
   static properties = {
     route: { state: true },
     states: { state: true },
     expanded: { state: true },
     codeTab: { state: true },
+    recipeLang: { state: true },
     dark: { state: true },
     rtl: { state: true },
     palettes: { state: true },
@@ -226,6 +1237,7 @@ export class DocsApp extends LitElement {
 
   declare route: string;
   declare codeTab: CodeTab;
+  declare recipeLang: RecipeLang;
   declare sideTab: SideTab;
   declare navFilter: string;
   declare activeSection: string;
@@ -277,6 +1289,7 @@ export class DocsApp extends LitElement {
     document.title = l("bolle · Interfacce con tensione superficiale");
     this.route = "home";
     this.codeTab = "html";
+    this.recipeLang = "html";
     this.sideTab = "params";
     this.navFilter = "";
     this.activeSection = "";
@@ -726,6 +1739,8 @@ export class DocsApp extends LitElement {
   };
 
   private onSideTab = (event: Event) => {
+    // Parameter controls inside the panels emit bubbling change events too.
+    if (event.target !== event.currentTarget) return;
     this.sideTab = (event as CustomEvent<{ value: string }>).detail
       .value as SideTab;
     this.quotes = this.sideTab === "sizes";
@@ -933,10 +1948,6 @@ export class DocsApp extends LitElement {
     const sheet = this.querySelector<BolleSideSheet>("#site-config");
     if (!sheet) return;
     await sheet.show(event.currentTarget as HTMLElement);
-    // The sheet keeps the scroll position of the previous visit, which lands on
-    // the token list and hides theme and parameters.
-    const dialog = sheet.shadowRoot?.querySelector<HTMLDialogElement>("dialog");
-    if (dialog) dialog.scrollTop = 0;
   };
 
   private closeDrawer = () => {
@@ -2049,13 +3060,18 @@ export class DocsApp extends LitElement {
       api: componentApi(entry.tag),
       surface: componentSurface(entry.tag),
       support: componentSupport(entry.tag),
+      recipes: RECIPES[entry.tag] ?? [],
+      dataContract: this.hasDataContract(entry.tag),
+      sortsAndPages: this.hasSortPaging(entry.tag),
     });
     void this.copy(markdown, l("Pagina copiata in Markdown"));
   }
 
   private renderComponentPage(entry: Entry, state: State): TemplateResult {
     const code = this.codeFor(entry, state);
-    const variants = this.variantControls(entry, state);
+    const variants =
+      entry.variants === false ? [] : this.variantControls(entry, state);
+    const recipes = RECIPES[entry.tag] ?? [];
     const api = componentApi(entry.tag);
     const surface = componentSurface(entry.tag);
     const support = componentSupport(entry.tag);
@@ -2066,6 +3082,12 @@ export class DocsApp extends LitElement {
       { id: "sec-preview", label: l("Anteprima") },
       ...(variants.length > 0
         ? [{ id: "sec-variants", label: l("Varianti") }]
+        : []),
+      ...(recipes.length > 0
+        ? [{ id: "sec-usage", label: l("Uso nel codice") }]
+        : []),
+      ...(this.hasDataContract(entry.tag)
+        ? [{ id: "sec-updates", label: l("Aggiornamento dei dati") }]
         : []),
       ...(api.length > 0 ? [{ id: "sec-api", label: "API" }] : []),
       ...(surface.slots.length || surface.parts.length
@@ -2128,10 +3150,24 @@ export class DocsApp extends LitElement {
 
         ${this.renderPlayground(entry, state, code)}
         ${variants.length > 0 ? this.renderVariants(entry, state, variants) : nothing}
+        ${recipes.length > 0 ? this.renderRecipes(recipes) : nothing}
+        ${this.hasDataContract(entry.tag) ? this.renderDataContract(entry.tag) : nothing}
+        ${
+          recipes.length > 0
+            ? html`<recipe-playground
+                id="recipe-playground"
+              ></recipe-playground>`
+            : nothing
+        }
         ${api.length > 0 ? this.renderApi(api) : nothing}
         ${
           surface.slots.length || surface.parts.length
-            ? this.renderAnatomy(entry.tag, surface.slots, surface.parts)
+            ? this.renderAnatomy(
+                entry.tag,
+                surface.slots,
+                surface.parts,
+                ANATOMY_GUIDES[entry.tag],
+              )
             : nothing
         }
         ${support ? this.renderSupport(support) : nothing}
@@ -2317,6 +3353,256 @@ export class DocsApp extends LitElement {
     </section>`;
   }
 
+  private renderRecipes(recipes: Recipe[]): TemplateResult {
+    return html`<section
+      id="sec-usage"
+      class="doc-section"
+      aria-labelledby="h-usage"
+    >
+      <h2 id="h-usage" tabindex="-1">${l("Uso nel codice")}</h2>
+      <p class="section-lead">
+        ${l(
+          "Il componente chiama le funzioni che gli passi: column.render per ogni cella, detail per la riga aperta, groupSummary per gruppo. Gli slot servono solo alle aree esterne, come intestazione, stati e piè di pagina.",
+        )}
+      </p>
+      <div class="recipe-switch">
+        <bolle-segmented-buttons
+          label=${l("Linguaggio degli esempi")}
+          .items=${RECIPE_LANGS}
+          .value=${this.recipeLang}
+          @change=${(event: Event) => {
+            if (event.target !== event.currentTarget) return;
+            this.recipeLang = (event as CustomEvent<{ value: string }>).detail
+              .value as RecipeLang;
+          }}
+        ></bolle-segmented-buttons>
+      </div>
+      <div class="recipes">
+        ${recipes.map((recipe) => {
+          const code = recipe.code[this.recipeLang] ?? recipe.code.html;
+          const example =
+            this.recipeLang === "html"
+              ? PLAYGROUND_EXAMPLES[recipe.title]
+              : undefined;
+          return html`<article class="recipe">
+            <h3>${l(recipe.title)}</h3>
+            <p>${l(recipe.description)}</p>
+            <div class="recipe-code">
+              <div class="recipe-bar">
+                <span class="recipe-lang"
+                  >${
+                    RECIPE_LANGS.find((item) => item.id === this.recipeLang)
+                      ?.label
+                  }</span
+                >
+                <span class="recipe-bar-actions">
+                  ${
+                    example
+                      ? html`<bolle-button
+                          variant="text"
+                          size="xs"
+                          @click=${() =>
+                            this.querySelector<RecipePlayground>(
+                              "#recipe-playground",
+                            )?.show(example)}
+                          >${l("Apri nel playground")}</bolle-button
+                        >`
+                      : nothing
+                  }
+                  <bolle-button
+                    variant="text"
+                    size="xs"
+                    @click=${() => this.copy(code)}
+                    ><span slot="icon" aria-hidden="true">${ti("copy")}</span
+                    >${l("Copia")}</bolle-button
+                  >
+                </span>
+              </div>
+              <pre class="code-block"><code>${code}</code></pre>
+            </div>
+          </article>`;
+        })}
+      </div>
+    </section>`;
+  }
+
+  /** Components that take an array and expose refresh() declare this contract. */
+  private hasDataContract(tag: string): boolean {
+    const ctor = customElements.get(tag) as
+      (CustomElementConstructor & { prototype: object }) | undefined;
+    return Boolean(ctor && "refresh" in ctor.prototype);
+  }
+
+  /** Components that sort and page their own rows through the two handlers. */
+  private hasSortPaging(tag: string): boolean {
+    const ctor = customElements.get(tag) as
+      | (CustomElementConstructor & { properties?: Record<string, unknown> })
+      | undefined;
+    const properties = ctor?.properties;
+    return Boolean(
+      properties && "sortHandler" in properties && "pageHandler" in properties,
+    );
+  }
+
+  private renderSortPaging(): TemplateResult {
+    return html`<h3>${l("Ordinamento e paginazione")}</h3>
+      <p class="section-lead">
+        ${l(
+          "La tabella ordina e pagina le righe che riceve: un clic sull'intestazione va prima crescente e poi decrescente, e page-size da solo accende il pager. Selezione, apertura riga, raggruppamento e cambi di colonna li applica lei, e gli eventi li riportano. sortHandler, pageHandler e columnHandler servono solo quando i dati stanno altrove: ricevono la richiesta e la tabella ridisegna quando la promessa è risolta.",
+        )}
+      </p>
+      <div class="table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th scope="col">${l("Operazione")}</th>
+              <th scope="col">${l("Risultato")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">
+                <code>table.rows = tutteLeRighe</code>
+              </th>
+              <td>
+                ${l(
+                  "Ordina e pagina da sola: l'applicazione non taglia né riordina nulla.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>table.sortHandler = (richiesta) =&gt; …</code>
+              </th>
+              <td>
+                ${l(
+                  "Riceve l'ordine richiesto e la tabella ridisegna dopo la promessa.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>table.pageHandler = (richiesta) =&gt; …</code>
+              </th>
+              <td>
+                ${l(
+                  "Riceve pagina e dimensione e la tabella ridisegna dopo la promessa.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><code>table.sort = [{ key, dir }]</code></th>
+              <td>${l("Fissa l'ordine iniziale, con l'icona già accesa.")}</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>table.selected = [id]</code></th>
+              <td>
+                ${l(
+                  "La tabella applica selezione, apertura riga, raggruppamento e cambi di colonna da sé: gli eventi li riportano soltanto.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>table.columnHandler = (elenco) =&gt; …</code>
+              </th>
+              <td>
+                ${l(
+                  "Riceve l'elenco delle colonne dopo ogni modifica, per conservarlo altrove.",
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  private renderDataContract(tag: string): TemplateResult {
+    return html`<section
+      id="sec-updates"
+      class="doc-section"
+      aria-labelledby="h-updates"
+    >
+      <h2 id="h-updates" tabindex="-1">${l("Aggiornamento dei dati")}</h2>
+      <p class="section-lead">
+        ${l(
+          "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti. La tabella riporta i casi misurati.",
+        )}
+      </p>
+      <div class="table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th scope="col">${l("Operazione")}</th>
+              <th scope="col">${l("Risultato")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><code>table.rows = altroArray</code></th>
+              <td>${l("Ridisegna: il riferimento è nuovo.")}</td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>rows.sort(); table.rows = rows</code>
+              </th>
+              <td>
+                ${l(
+                  "Non ridisegna: l'array è lo stesso oggetto e il confronto è per riferimento.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><code>rows.sort(); table.refresh()</code></th>
+              <td>${l("Ridisegna con i dati mutati.")}</td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>computed(() => rows.toSorted(…))</code>
+              </th>
+              <td>
+                ${l(
+                  "Vue assegna una nuova proprietà a ogni cambio, quindi ridisegna.",
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <code>useMemo(() => rows.toSorted(…))</code>
+              </th>
+              <td>
+                ${l(
+                  "React assegna una nuova proprietà a ogni cambio, quindi ridisegna.",
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="anatomy-grid">
+        <div>
+          <h3>${l("JavaScript, mutazione sul posto")}</h3>
+          <pre
+            class="code-block"
+          ><code>rows.sort((a, b) => a.code.localeCompare(b.code));
+table.refresh();</code></pre>
+        </div>
+        <div>
+          <h3>${l("Vue, stato derivato")}</h3>
+          <pre
+            class="code-block"
+          ><code>const sorted = computed(() => sort.value.length ? rows.toSorted(compare) : rows);</code></pre>
+        </div>
+      </div>
+      <p class="anatomy-intro">
+        ${l(
+          "La proprietà è un array dell'applicazione: il componente lo legge e non lo modifica. Il riferimento resta l'unico segnale di cambiamento, tranne la chiamata esplicita a refresh().",
+        )}
+      </p>
+      ${this.hasSortPaging(tag) ? this.renderSortPaging() : nothing}
+    </section>`;
+  }
+
   private renderVariants(
     entry: Entry,
     state: State,
@@ -2404,8 +3690,29 @@ export class DocsApp extends LitElement {
     tag: string,
     slots: string[],
     parts: string[],
+    guide?: AnatomyGuide,
   ): TemplateResult {
-    const examplePart = parts[0];
+    const slotGuide = new Map(
+      (guide?.slots ?? []).map((item) => [item.name, item]),
+    );
+    const partGuide = new Map(
+      (guide?.parts ?? []).map((item) => [item.name, item]),
+    );
+    // The detected names lead; a name only the guide knows stays visible after them.
+    const publicSlots = [
+      ...slots,
+      ...(guide?.slots ?? [])
+        .map((item) => item.name)
+        .filter((name) => !slots.includes(name)),
+    ];
+    const publicParts = [
+      ...parts,
+      ...(guide?.parts ?? [])
+        .map((item) => item.name)
+        .filter((name) => !parts.includes(name)),
+    ];
+    const examplePart =
+      publicParts.find((part) => partGuide.has(part)) ?? publicParts[0];
     return html`<section
       id="sec-anatomy"
       class="doc-section"
@@ -2417,36 +3724,90 @@ export class DocsApp extends LitElement {
           "Slot e CSS part sono un contratto di composizione. Le parti interne senza elenco restano private al componente.",
         )}
       </p>
+      ${guide ? html`<p class="anatomy-intro">${l(guide.intro)}</p>` : nothing}
       <div class="anatomy-grid">
         ${
-          slots.length
-            ? html`<div>
-                <h3>Slot</h3>
-                <ul class="anatomy-list">
-                  ${slots.map((slot) => html`<li><code>${slot}</code></li>`)}
-                </ul>
-                <pre class="code-block"><code>${
-                  slots[0] === "default"
-                    ? `<${tag}>…</${tag}>`
-                    : `<${tag}>\n  <span slot="${slots[0]}">…</span>\n</${tag}>`
-                }</code></pre>
+          publicSlots.length
+            ? html`<div class="anatomy-column">
+                <h3>${l("Slot")}</h3>
+                <div class="anatomy-items">
+                  ${publicSlots.map((slot) => {
+                    const item = slotGuide.get(slot) ?? SLOT_PURPOSES[slot];
+                    const resolved = slot
+                      .replace("{rowId}", "job-1")
+                      .replace("{columnKey}", "code")
+                      .replace("{groupName}", "Bergamo")
+                      .replace("{lane}", "todo")
+                      .replace("{cardId}", "card-1")
+                      .replace("{itemId}", "item-1")
+                      .replace("{id}", "item-1");
+                    return html`<article class="anatomy-item">
+                      <code class="anatomy-name">${slot}</code>
+                      ${
+                        item
+                          ? html`<p>${l(item.purpose)}</p>`
+                          : html`<p>
+                              ${l(
+                                "Slot pubblico da usare per il contenuto indicato dal nome.",
+                              )}
+                            </p>`
+                      }
+                      <pre
+                        class="code-inline"
+                      ><code>${item?.example ?? `<span slot="${resolved}">Contenuto</span>`}</code></pre>
+                    </article>`;
+                  })}
+                </div>
+                ${
+                  guide
+                    ? nothing
+                    : html`<pre class="code-block"><code>${
+                        publicSlots[0] === "default"
+                          ? `<${tag}>Contenuto</${tag}>`
+                          : `<${tag}>\n  <span slot="${publicSlots[0].replace("{id}", "item-1")}">Contenuto</span>\n</${tag}>`
+                      }</code></pre>`
+                }
               </div>`
             : nothing
         }
         ${
-          parts.length
-            ? html`<div>
-                <h3>CSS part</h3>
-                <ul class="anatomy-list">
-                  ${parts.map((part) => html`<li><code>${part}</code></li>`)}
-                </ul>
+          publicParts.length
+            ? html`<div class="anatomy-column">
+                <h3>${l("CSS part")}</h3>
+                <div class="anatomy-items">
+                  ${publicParts.map(
+                    (part) =>
+                      html`<article class="anatomy-item">
+                        <code class="anatomy-name">${part}</code>
+                        ${
+                          partGuide.has(part)
+                            ? html`<p>${l(partGuide.get(part)!.purpose)}</p>`
+                            : PART_PURPOSES[part]
+                              ? html`<p>${l(PART_PURPOSES[part].purpose)}</p>`
+                              : html`<p>
+                                  ${l(
+                                    "Parte pubblica dello stile del componente.",
+                                  )}
+                                </p>`
+                        }
+                      </article>`,
+                  )}
+                </div>
                 <pre class="code-block"><code>${tag}::part(${examplePart}) {
-  /* public override */
+  /* Sovrascrittura pubblica */
 }</code></pre>
               </div>`
             : nothing
         }
       </div>
+      ${
+        guide?.example
+          ? html`<div class="anatomy-example">
+              <h3>${l("Esempio completo")}</h3>
+              <pre class="code-block"><code>${guide.example}</code></pre>
+            </div>`
+          : nothing
+      }
     </section>`;
   }
 
@@ -2752,11 +4113,10 @@ export class DocsApp extends LitElement {
           ]}
           .value=${this.asideTab}
           @change=${(event: Event) => {
+            // Controls inside the panels emit bubbling change events too.
+            if (event.target !== event.currentTarget) return;
             this.asideTab = (event as CustomEvent<{ value: string }>).detail
               .value as "colors" | "shape";
-            this.scrollToSection(
-              this.asideTab === "colors" ? "tk-primary" : "tk-shape",
-            );
           }}
         >
           <div slot="colors">${this.renderColorGenerator()}</div>

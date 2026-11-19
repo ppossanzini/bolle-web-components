@@ -30,6 +30,10 @@ export const kanbanStyles = css`
     /* The gutters stay reserved: toggling them re-triggers the overflow and loops the layout. */
     scrollbar-gutter: stable;
     padding: var(--bb-kanban-padding, 0);
+    --kanban-column-min-width: var(--bb-kanban-column-min-width, 260px);
+    --kanban-column-max-width: var(--bb-kanban-column-max-width, 360px);
+    --kanban-column-gap: var(--bb-kanban-column-gap, 16px);
+    --kanban-card-gap: var(--bb-kanban-card-gap, 8px);
   }
   .lane {
     display: flex;
@@ -58,7 +62,7 @@ export const kanbanStyles = css`
   .columns {
     display: flex;
     flex: 1 1 auto;
-    gap: var(--bb-kanban-column-gap, 16px);
+    gap: var(--kanban-column-gap);
     align-items: stretch;
     min-block-size: var(--bb-kanban-column-min-height, 200px);
     overflow-x: auto;
@@ -74,12 +78,15 @@ export const kanbanStyles = css`
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
-    min-inline-size: var(--bb-kanban-column-min-width, 260px);
-    max-inline-size: var(--bb-kanban-column-max-width, 360px);
+    min-inline-size: var(--kanban-column-min-width);
+    max-inline-size: var(--kanban-column-max-width);
     min-block-size: 0;
     padding: 8px;
     border-radius: var(--bb-kanban-column-radius, 20px 20px 20px 6px);
-    background: var(--bb-kanban-column-surface, var(--md-sys-color-surface-container-low));
+    background: var(
+      --bb-kanban-column-surface,
+      var(--md-sys-color-surface-container-low)
+    );
     border: 1px solid transparent;
     transition:
       border-color var(--md-sys-motion-duration-short3, 150ms),
@@ -151,7 +158,10 @@ export const kanbanStyles = css`
     padding: 16px 10px;
     border: 0;
     border-radius: var(--bb-kanban-column-radius, 20px 20px 20px 6px);
-    background: var(--bb-kanban-column-surface, var(--md-sys-color-surface-container-low));
+    background: var(
+      --bb-kanban-column-surface,
+      var(--md-sys-color-surface-container-low)
+    );
     color: inherit;
     font: var(--md-sys-typescale-title-small-font);
     cursor: pointer;
@@ -166,7 +176,7 @@ export const kanbanStyles = css`
     grid-template-columns: minmax(0, 1fr);
     flex: 1 1 auto;
     align-content: start;
-    gap: var(--bb-kanban-card-gap, 8px);
+    gap: var(--kanban-card-gap);
     margin: 0;
     padding: 0 4px 4px 0;
     list-style: none;
@@ -213,8 +223,8 @@ export const kanbanStyles = css`
   .grip {
     display: inline-grid;
     place-items: center;
-    inline-size: 22px;
-    block-size: 22px;
+    inline-size: var(--bb-kanban-grip-target, 48px);
+    block-size: var(--bb-kanban-grip-target, 48px);
     padding: 0;
     border: 0;
     border-radius: 6px;
@@ -352,7 +362,11 @@ export const kanbanStyles = css`
   .list::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 9999px;
-    background: color-mix(in srgb, var(--md-sys-color-on-surface) 26%, transparent)
+    background: color-mix(
+        in srgb,
+        var(--md-sys-color-on-surface) 26%,
+        transparent
+      )
       padding-box;
   }
 `;

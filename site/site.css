@@ -150,6 +150,7 @@ bolle-docs {
   inset-block-start: calc(var(--site-bar-height) + 16px);
   max-block-size: calc(100vh - var(--site-bar-height) - 32px);
   overflow: auto;
+  overscroll-behavior: contain;
   /* Room for the focus film ring, which the scroll container would clip. */
   padding: 8px 10px 8px 8px;
 }
@@ -262,10 +263,10 @@ bolle-docs {
   padding: 40px 32px;
   border-radius: 22px;
   /* Faint bolle dots, so the stage reads as a surface without a border. */
-  background-color: var(--md-sys-color-surface-container-low);
+  background-color: var(--md-sys-color-surface-container-lowest);
   background-image: radial-gradient(
-    color-mix(in srgb, var(--md-sys-color-primary) 14%, transparent) 1.2px,
-    transparent 1.6px
+    color-mix(in srgb, var(--md-sys-color-primary) 6%, transparent) 1px,
+    transparent 1.4px
   );
   background-size: 20px 20px;
   overflow: auto;
@@ -716,10 +717,10 @@ demo-data-table {
   margin-block-end: 14px;
   padding: 16px;
   border-radius: 20px 20px 20px 6px;
-  background-color: var(--md-sys-color-surface-container);
+  background-color: var(--md-sys-color-surface-container-lowest);
   background-image: radial-gradient(
-    color-mix(in srgb, var(--md-sys-color-primary) 14%, transparent) 1.2px,
-    transparent 1.6px
+    color-mix(in srgb, var(--md-sys-color-primary) 6%, transparent) 1px,
+    transparent 1.4px
   );
   background-size: 20px 20px;
   overflow: hidden;
@@ -1823,30 +1824,226 @@ docs-select bolle-button {
   letter-spacing: var(--md-sys-typescale-body-medium-tracking);
 }
 
-.anatomy-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-  gap: 20px;
+/* Code recipes: one example per documented behaviour, with its own copy button. */
+.recipe-switch {
+  display: flex;
+  justify-content: flex-start;
 }
 
-.anatomy-grid > div {
+.recipes {
+  display: grid;
+  gap: 24px;
+}
+
+.recipe {
+  display: grid;
+  gap: 8px;
   min-inline-size: 0;
 }
 
-.anatomy-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
+.recipe > h3 {
+  margin: 0;
 }
 
-.anatomy-list code {
+.recipe > p {
+  max-inline-size: 72ch;
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.recipe-code {
+  position: relative;
+  min-inline-size: 0;
+}
+
+/* Recipe bar: language on the start side, actions on the end side, above the code. */
+.recipe-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 8px;
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.recipe-lang {
+  font: var(--md-sys-typescale-label-small-font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.recipe-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.recipe-code .code-block {
+  max-block-size: 460px;
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+/* Full-screen developer editor: no breathing room, code and preview side by side. */
+#recipe-playground bolle-dialog[open]::part(dialog) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+  padding: 0;
+}
+
+#recipe-playground bolle-dialog::part(heading) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px 6px 16px;
+  margin: 0;
+  font: var(--md-sys-typescale-title-small-font);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.pg-title {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#recipe-playground bolle-dialog::part(content) {
+  display: grid;
+  min-block-size: 0;
+  padding: 0;
+}
+
+#recipe-playground bolle-dialog::part(actions) {
+  margin: 0;
+  padding: 6px 12px;
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.pg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1px;
+  block-size: 100%;
+  min-block-size: 0;
+  background: var(--md-sys-color-outline-variant);
+}
+
+.pg-editor {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1px;
+  min-block-size: 0;
+  background: var(--md-sys-color-surface);
+}
+
+.pg-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+}
+
+.pg-code {
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  margin: 0;
+  padding: 12px 16px;
+  border: 0;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font-family: var(--md-ref-typeface-code);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  tab-size: 2;
+  resize: none;
+}
+
+.pg-code:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.pg-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.pg-preview {
+  min-inline-size: 0;
+  min-block-size: 0;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.pg-frame {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .pg {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.anatomy-intro {
+  max-inline-size: 72ch;
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.anatomy-column {
+  min-inline-size: 0;
+}
+
+.anatomy-items {
+  display: grid;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+.anatomy-item {
+  min-inline-size: 0;
+  padding: 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px 12px 12px 4px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.anatomy-item p {
+  margin: 8px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.45;
+}
+
+.anatomy-name {
   display: inline-block;
+  max-inline-size: 100%;
   padding: 4px 8px;
   border-radius: var(--md-sys-shape-corner-extra-small);
   background: var(--md-sys-color-surface-container-high);
+  overflow-wrap: anywhere;
+}
+
+.anatomy-item .code-inline {
+  margin-block-start: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.anatomy-example {
+  min-inline-size: 0;
 }
 
 .api-table th,
@@ -2095,9 +2292,13 @@ docs-select bolle-button {
 }
 
 @media (max-width: 860px) {
-  .shell,
   .nav-panel {
     display: none;
+  }
+
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 16px;
   }
 
   .nav-toggle {
@@ -2197,7 +2398,7 @@ docs-select bolle-button {
 }
 
 .playground .preview-surface {
-  background-color: var(--md-sys-color-surface-container);
+  background-color: var(--md-sys-color-surface-container-lowest);
 }
 
 .pager {
@@ -2260,6 +2461,34 @@ docs-select bolle-button {
 
   .topbar-actions {
     margin-inline-start: auto;
+    min-inline-size: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar-inner {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .topbar-inner > a {
+    flex: 0 0 auto;
+  }
+
+  .topbar-inner .bb-wordmark {
+    display: none;
+  }
+
+  .topbar-actions {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .topbar-actions docs-select,
+  .topbar-actions bolle-icon-button {
+    flex: 0 0 auto;
   }
 }
 
@@ -2407,6 +2636,7 @@ docs-select bolle-button {
   gap: 12px;
   max-block-size: calc(100vh - var(--site-bar-height) - 24px);
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 12px;
   border-radius: var(--site-panel-shape);
   background: var(--md-sys-color-surface-container-low);

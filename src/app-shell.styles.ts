@@ -33,7 +33,12 @@ export const appShellStyles = css`
   }
   :host([data-form="expanded"]) .body:has(.supporting),
   :host([data-form="medium"]) .body:has(.supporting) {
-    grid-template-columns: auto minmax(0, 1fr) minmax(280px, 340px);
+    grid-template-columns:
+      auto minmax(0, 1fr)
+      minmax(
+        var(--md-comp-app-shell-supporting-min-width, 280px),
+        var(--md-comp-app-shell-supporting-width, 340px)
+      );
   }
   :host([data-form="expanded"]) .body:has(.navigation),
   :host([data-form="medium"]) .body:has(.navigation) {
@@ -41,7 +46,12 @@ export const appShellStyles = css`
   }
   :host([data-form="expanded"]) .body:has(.navigation):has(.supporting),
   :host([data-form="medium"]) .body:has(.navigation):has(.supporting) {
-    grid-template-columns: auto minmax(0, 1fr) minmax(280px, 340px);
+    grid-template-columns:
+      auto minmax(0, 1fr)
+      minmax(
+        var(--md-comp-app-shell-supporting-min-width, 280px),
+        var(--md-comp-app-shell-supporting-width, 340px)
+      );
   }
   .navigation {
     min-inline-size: 0;
@@ -69,8 +79,11 @@ export const appShellStyles = css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding: 16px 12px 8px 20px;
+    gap: var(--md-comp-app-shell-supporting-header-gap, 8px);
+    padding: var(
+      --md-comp-app-shell-supporting-header-padding,
+      16px 12px 8px 20px
+    );
   }
   .supporting-title {
     font: var(--md-sys-typescale-title-medium-font);
@@ -80,10 +93,10 @@ export const appShellStyles = css`
     flex: 1;
     min-block-size: 0;
     overflow: auto;
-    padding: 4px 20px 24px;
+    padding: var(--md-comp-app-shell-supporting-body-padding, 4px 20px 24px);
   }
   .status {
-    min-block-size: 32px;
+    min-block-size: var(--md-comp-app-shell-status-height, 32px);
     border-block-start: 1px solid var(--md-sys-color-outline-variant);
     background: var(--md-sys-color-surface-container-low);
     color: var(--md-sys-color-on-surface-variant);
@@ -92,9 +105,9 @@ export const appShellStyles = css`
   .status ::slotted(*) {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 20px;
-    min-block-size: 32px;
+    gap: var(--md-comp-app-shell-status-gap, 8px);
+    padding: var(--md-comp-app-shell-status-padding, 4px 20px);
+    min-block-size: var(--md-comp-app-shell-status-height, 32px);
     box-sizing: border-box;
   }
   .bottom {

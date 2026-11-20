@@ -586,7 +586,6 @@ const messages: Record<string, string> = {
     "Primary and container stay very close to the seed, even when saturated.",
   "Primary resta il colore scelto; il testo sopra diventa il tono più leggibile.":
     "Primary stays the chosen color; the text on it becomes the most readable tone.",
-  "Primary su Surface": "Primary on Surface",
   "Principale": "Main",
   "Proprietà": "Property",
   "Proprietà pubbliche lette dalla classe registrata. Array e oggetti si assegnano come proprietà JavaScript; gli attributi booleani valgono per presenza, quindi {example} resta disabilitato.":
@@ -731,7 +730,6 @@ const messages: Record<string, string> = {
     "Sample text to judge typeface, line height and color on a real surface.",
   "Testo di supporto": "Supporting text",
   "Testo e controlli": "Text and controls",
-  "Testo su Primary": "Text on Primary",
   "Testo · {font} · {size}px": "Text · {font} · {size}px",
   "Tinte (Material)": "Tinted (Material)",
   "Tinte ruotate e giocose per tutti gli accenti.":
@@ -758,8 +756,8 @@ const messages: Record<string, string> = {
   "Tutti i componenti di M3. Con più aria dentro.":
     "Every M3 component. With more air inside.",
   "Tutti i componenti →": "All components →",
-  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.":
-    "A subtle conic gradient derived from the seed color: the four hues rotate around its hue, so the film follows the dynamic theme. Use it sparingly: focus ring, selected state, FAB. One iridescent surface per screen, never as a background.",
+  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus dei bottoni e del FAB, stato selezionato. I chip restano sul solo contorno pieno, perché a quella dimensione l'anello cade fuori dal controllo e si legge come un difetto. Una sola superficie iridescente per schermata, mai come sfondo.":
+    "A soft conic gradient derived from the seed colour: the four hues rotate around its hue, so the film follows the dynamic theme. Use it sparingly: focus ring on buttons and the FAB, selected state. Chips keep the solid outline only, because at that size the ring falls outside the control and reads as a defect. One iridescent surface per screen, never as a background.",
   "Un'iridescenza che deriva dal tuo colore seed e compare solo dove conta: focus, selezione, l'azione principale.":
     "An iridescence derived from your seed color that appears only where it matters: focus, selection, the main action.",
   "Una dialog che galleggia": "A floating dialog",
@@ -1627,6 +1625,33 @@ const messages: Record<string, string> = {
     "value says how much is done against max, label is the name read by screen readers. variant circular switches to the ring, indeterminate reports a wait without a value.",
   "variant fullscreen occupa la finestra e serve per un compito lungo, come un editor: la superficie perde gli angoli e i comandi restano in fondo.":
     "variant fullscreen fills the window and serves a long task, like an editor: the surface loses the corners and the commands stay at the bottom.",
+  " · fissato": " · fixed",
+  ", fissato": ", fixed",
+  "Colori fissati": "Fixed colors",
+  "Fissa questo colore": "Fix this color",
+  "La generazione lo mantiene e ricalcola gli altri ruoli attorno a lui.":
+    "Generation keeps it and recalculates the other roles around it.",
+  "Nessun colore fissato: la generazione segue il seme. Apri un colore della tavolozza e attiva «Fissa questo colore» per imporlo e lasciare che il resto si adatti.":
+    "No fixed color: generation follows the seed. Open a palette color and turn on “Fix this color” to impose it and let the rest adapt.",
+  "Sblocca tutti": "Unfix all",
+  "Sblocca {role}": "Unfix {role}",
+  "Testo su {role}": "Text on {role}",
+  "I colori Bolle (Accent e On accent) non derivano dal seme: la generazione li lascia come sono e adatta solo il testo sopra l'accento. Film, ombre e scrollbar si ricalcolano da soli dal primario e dalla superficie.":
+    "Bolle colours (Accent and On accent) are not derived from the seed: generation leaves them as they are and only adapts the text on the accent. Film, shadows and scrollbars recalculate on their own from the primary and the surface.",
+  "{role} su Surface": "{role} on surface",
+  "Commessa salvata": "Job saved",
+  "Le modifiche sono state registrate e condivise con il team.":
+    "The changes are recorded and shared with the team.",
+  "Scadenza vicina": "Deadline approaching",
+  "Restano due giorni per consegnare il collaudo.":
+    "Two days left to deliver the inspection.",
+  "Sincronizzazione non riuscita": "Synchronisation failed",
+  "La connessione è caduta: i dati restano in coda.":
+    "The connection dropped: the data stays queued.",
+  "Stati": "States",
+  "Azione critica": "Critical action",
+  "In attesa": "Pending",
+  "Approvata": "Approved",
 };
 
 export default messages;

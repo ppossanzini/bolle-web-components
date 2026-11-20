@@ -578,7 +578,6 @@ const messages: Record<string, string> = {
     "Primary 和容器色始终非常接近种子色，即使种子色很饱和。",
   "Primary resta il colore scelto; il testo sopra diventa il tono più leggibile.":
     "Primary 保持所选颜色；其上的文字采用最易读的色调。",
-  "Primary su Surface": "Surface 上的 Primary",
   "Principale": "主要",
   "Proprietà": "属性",
   "Proprietà pubbliche lette dalla classe registrata. Array e oggetti si assegnano come proprietà JavaScript; gli attributi booleani valgono per presenza, quindi {example} resta disabilitato.":
@@ -720,7 +719,6 @@ const messages: Record<string, string> = {
     "示例文字，用于在真实表面上评估字体、行高和颜色。",
   "Testo di supporto": "辅助文字",
   "Testo e controlli": "正文与控件",
-  "Testo su Primary": "Primary 上的文字",
   "Testo · {font} · {size}px": "正文 · {font} · {size}px",
   "Tinte (Material)": "色调（Material）",
   "Tinte ruotate e giocose per tutti gli accenti.":
@@ -744,8 +742,8 @@ const messages: Record<string, string> = {
   "Tutti i componenti di M3. Con più aria dentro.":
     "M3 的全部组件，多了些空气感。",
   "Tutti i componenti →": "所有组件 →",
-  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.":
-    "由种子色派生的柔和锥形渐变：四种色调围绕其色相旋转，因此虹彩薄膜会跟随动态主题。用得克制：焦点环、选中状态、FAB。每屏只有一个虹彩表面，绝不用作背景。",
+  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus dei bottoni e del FAB, stato selezionato. I chip restano sul solo contorno pieno, perché a quella dimensione l'anello cade fuori dal controllo e si legge come un difetto. Una sola superficie iridescente per schermata, mai come sfondo.":
+    "由种子色生成的柔和锥形渐变：四种色调围绕其色相旋转，因此胶片效果会跟随动态主题。适度使用：按钮和 FAB 的焦点环、选中状态。Chip 只保留实线轮廓，因为在该尺寸下外环会落在控件之外，看起来像缺陷。每个屏幕最多一处虹彩表面，绝不作为背景。",
   "Un'iridescenza che deriva dal tuo colore seed e compare solo dove conta: focus, selezione, l'azione principale.":
     "一层源自你种子色的虹彩，只出现在关键之处：焦点、选中、主要操作。",
   "Una dialog che galleggia": "会漂浮的 Dialog",
@@ -1578,6 +1576,32 @@ const messages: Record<string, string> = {
     "value 表示相对 max 的完成量，label 是屏幕阅读器读取的名称。variant circular 切换为圆环，indeterminate 表示无数值的等待。",
   "variant fullscreen occupa la finestra e serve per un compito lungo, come un editor: la superficie perde gli angoli e i comandi restano in fondo.":
     "variant fullscreen 占满窗口，适合编辑器等长任务：面板去掉圆角，命令保留在底部。",
+  " · fissato": " · 已固定",
+  ", fissato": "，已固定",
+  "Colori fissati": "已固定的颜色",
+  "Fissa questo colore": "固定此颜色",
+  "La generazione lo mantiene e ricalcola gli altri ruoli attorno a lui.":
+    "生成时会保留该颜色，并围绕它重新计算其他角色。",
+  "Nessun colore fissato: la generazione segue il seme. Apri un colore della tavolozza e attiva «Fissa questo colore» per imporlo e lasciare che il resto si adatti.":
+    "没有已固定的颜色：生成会跟随种子色。打开调色板中的一个颜色并启用“固定此颜色”，即可强制使用它并让其余颜色随之调整。",
+  "Sblocca tutti": "全部取消固定",
+  "Sblocca {role}": "取消固定 {role}",
+  "Testo su {role}": "文本与 {role} 的对比",
+  "I colori Bolle (Accent e On accent) non derivano dal seme: la generazione li lascia come sono e adatta solo il testo sopra l'accento. Film, ombre e scrollbar si ricalcolano da soli dal primario e dalla superficie.":
+    "Bolle 颜色（强调色与强调色上的文字）不来自种子色：生成时会保持它们不变，只调整强调色之上的文字。胶片、阴影和滚动条会根据主色与表面色自动重新计算。",
+  "{role} su Surface": "Surface 上的 {role}",
+  "Commessa salvata": "任务已保存",
+  "Le modifiche sono state registrate e condivise con il team.":
+    "修改已记录并与团队共享。",
+  "Scadenza vicina": "临近截止",
+  "Restano due giorni per consegnare il collaudo.": "距离交付验收还剩两天。",
+  "Sincronizzazione non riuscita": "同步失败",
+  "La connessione è caduta: i dati restano in coda.":
+    "连接中断：数据仍在队列中。",
+  "Stati": "状态",
+  "Azione critica": "关键操作",
+  "In attesa": "待处理",
+  "Approvata": "已批准",
 };
 
 export default messages;

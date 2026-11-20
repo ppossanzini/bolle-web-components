@@ -2,7 +2,7 @@
 
 # React · 完整使用示例
 
-本指南涵盖组件库的全部 36 个组件，并为每个组件提供一个 React 示例。属性、slot、事件和方法的参考与 Vue 指南相同：[vue.md](./vue.md)。本文介绍 React 特有的规则和代码。
+本指南涵盖组件库的全部 51 个组件，并为每个组件提供一个 React 示例。属性、slot、事件和方法的参考与 Vue 指南相同：[vue.md](./vue.md)。本文介绍 React 特有的规则和代码。
 
 推荐的基线版本是 React 19。在 React 18 中，只需改变非字符串属性和布尔属性的传递方式，示例同样可以运行（见下文）。
 
@@ -74,7 +74,8 @@ export function useBolleProps<T extends HTMLElement>(
     const node = ref.current;
     if (!node) return;
     for (const [key, value] of Object.entries(props)) {
-      if (key in node) (node as unknown as Record<string, unknown>)[key] = value;
+      if (key in node)
+        (node as unknown as Record<string, unknown>)[key] = value;
     }
   });
 }
@@ -100,13 +101,17 @@ const snackbar = useRef<BolleSnackbar | null>(null);
 ```tsx
 const [email, setEmail] = useState("");
 const field = useRef<BolleTextField | null>(null);
-useBolleEvent(field, "value-input", ({ value }: { value: string }) => setEmail(value));
+useBolleEvent(field, "value-input", ({ value }: { value: string }) =>
+  setEmail(value),
+);
 
-<bolle-text-field ref={field} label="Email" value={email} />
+<bolle-text-field ref={field} label="Email" value={email} />;
 
 const terms = useRef<BolleCheckbox | null>(null);
-useBolleEvent(terms, "change", ({ checked }: { checked: boolean }) => setAccepted(checked));
-<bolle-checkbox ref={terms} label="Accetto" checked={accepted} />
+useBolleEvent(terms, "change", ({ checked }: { checked: boolean }) =>
+  setAccepted(checked),
+);
+<bolle-checkbox ref={terms} label="Accetto" checked={accepted} />;
 ```
 
 checkbox、switch、radio 和 filter chip 的事件是 `change`，携带 `checked` 或 `selected`；text field、search、slider、segmented buttons、date picker 和 time picker 的事件是 `value-input`/`change`，携带 `value`。即使事件名为 `change`，它也不是 React 的原生事件：必须用 `useBolleEvent` 绑定。
@@ -221,135 +226,88 @@ declare module "react" {
 
 从这里开始，每个示例都默认已经引入了 React（类型使用 `import * as React from "react"`，另外还有 `useRef`、`useState` 和辅助函数）。
 
-## 操作（Actions）
+### 状态由组件应用与钩子
+
+组件自行应用读者的改动，并用事件报告：排序、页码、选择、行展开、分组、列、卡片或任务的移动。无需在监听中回写状态；监听仅用于了解发生了什么变化。
+
+当数据位于服务器时，组件把工作交给钩子：数据表格的 `sortHandler`、`pageHandler` 与 `columnHandler`，看板与甘特图的 `restrict`。钩子接收请求，组件在 Promise 完成后重绘。在 React 中它们是属性而非特性，因此通过 ref 或 prop 赋值：`table.sortHandler = …`。
+
+<!-- catalogue -->
+
+## 组件目录
+
+每个组件列出属性、JavaScript 属性、插槽与公开事件；示例取自站点文档的第一条配方，已按该框架编写。
 
 ### bolle-button
 
-```tsx
-export function ButtonExamples() {
-  const [expanded, setExpanded] = useState(false);
-  const [submitted, setSubmitted] = useState("");
-  const toggle = useRef<BolleButton | null>(null);
-  useBolleEvent(toggle, "change", ({ selected }: { selected: boolean }) =>
-    setExpanded(selected),
-  );
+属性: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · 插槽: `default`, `icon`, `trailing-icon` · 事件: `change`
 
-  const variants = ["filled", "tonal", "filled-tonal", "outlined", "elevated", "text", "standard"] as const;
-  const sizes = ["xs", "small", "medium", "large", "xl"] as const;
+**带图标的按钮** — 变体决定形状：filled 用于主要操作，tonal 用于次要操作，outlined 与 text 用于其他。默认插槽提供文本，icon 提供起始图标，trailing-icon 提供末尾图标。
 
+```jsx
+export function Azioni() {
   return (
-    <div>
-      {variants.map((variant) => (
-        <bolle-button key={variant} variant={variant}>{variant}</bolle-button>
-      ))}
-      {sizes.map((size) => (
-        <bolle-button key={size} size={size} variant="tonal">{size}</bolle-button>
-      ))}
-
-      <bolle-button variant="outlined" shape="square">Quadrato</bolle-button>
-
-      <bolle-button variant="filled">
-        <svg slot="icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M11 5h2v14h-2zM5 11h14v2H5z" />
-        </svg>
-        Nuovo
+    <>
+      <bolle-button variant="filled">Salva la commessa</bolle-button>
+      <bolle-button variant="outlined">
+        <span slot="icon" aria-hidden="true">
+          ★
+        </span>
+        Archivia
       </bolle-button>
-
-      <bolle-button
-        ref={toggle}
-        toggle
-        haspopup="menu"
-        selected={expanded}
-        expanded={expanded}
-        controls="pannello"
-      >
-        {expanded ? "Chiudi" : "Apri"}
+      <bolle-button variant="text" href="#/commesse">
+        Tutte le commesse
       </bolle-button>
-
-      <bolle-button href="https://example.com" target="_blank" variant="text">
-        Documentazione
-      </bolle-button>
-
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          setSubmitted(String(new FormData(event.currentTarget).get("azione")));
-        }}
-      >
-        <bolle-button type="submit" name="azione" value="salva">Salva</bolle-button>
-        <bolle-button type="reset" variant="outlined">Reimposta</bolle-button>
-      </form>
-
-      <bolle-button label="Aggiungi" disabled>Disabilitato</bolle-button>
-      <output>{submitted}</output>
-    </div>
+    </>
   );
 }
 ```
 
+更多配方: 保持按下的按钮
+
 ### bolle-icon-button
 
-```tsx
-export function IconButtonExamples() {
-  const [pinned, setPinned] = useState(false);
-  const pin = useRef<BolleIconButton | null>(null);
-  useBolleEvent(pin, "change", ({ selected }: { selected: boolean }) =>
-    setPinned(selected),
-  );
+属性: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · 插槽: `default`, `icon`, `trailing-icon` · 事件: `change`
 
+**图标按钮** — label 必需，因为按钮只显示符号，它是屏幕阅读器读取的名称。variant standard 使图标无背景，filled 将其放在面板上。
+
+```jsx
+export function Comandi() {
   return (
-    <div>
-      {(["xs", "small", "medium", "large", "xl"] as const).map((size) => (
-        <bolle-icon-button key={size} size={size} label={`Azione ${size}`}>
-          <svg slot="icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" />
-          </svg>
-        </bolle-icon-button>
-      ))}
-
-      <bolle-icon-button width="narrow" label="Ristretto">★</bolle-icon-button>
-      <bolle-icon-button width="wide" label="Largo">★</bolle-icon-button>
-      <bolle-icon-button variant="tonal" shape="square" label="Quadrato">★</bolle-icon-button>
-
-      <bolle-icon-button ref={pin} toggle selected={pinned} label="Fissa in alto">
-        📌
+    <>
+      <bolle-icon-button label="Cerca">
+        <span slot="icon" aria-hidden="true">
+          ★
+        </span>
       </bolle-icon-button>
-
-      <bolle-icon-button haspopup="menu" expanded controls="menu-azioni" label="Altre azioni">
-        ⋯
+      <bolle-icon-button variant="filled" label="Aggiungi">
+        <span slot="icon" aria-hidden="true">
+          +
+        </span>
       </bolle-icon-button>
-    </div>
+    </>
   );
 }
 ```
 
 ### bolle-floating-action-button
 
-```tsx
-const colors = [
-  "primary-container",
-  "secondary-container",
-  "tertiary-container",
-  "primary",
-  "secondary",
-  "tertiary",
-  "surface",
-] as const;
+属性: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · 插槽: `default`, `icon`, `trailing-icon` · 事件: `change`
 
-export function FabExamples() {
+**浮动按钮** — 浮动按钮固定在容器角落，仅显示符号：label 是可访问名称，必须声明。size regular 保持圆形，extended 增加文本。
+
+```jsx
+export function NuovaCommessa() {
   return (
-    <div>
-      {colors.map((color) => (
-        <bolle-floating-action-button key={color} color={color} label={`Crea (${color})`}>
-          ＋
-        </bolle-floating-action-button>
-      ))}
-
-      <bolle-floating-action-button size="small" label="Crea piccolo">＋</bolle-floating-action-button>
-      <bolle-floating-action-button size="medium" color="tertiary" label="Crea medio">＋</bolle-floating-action-button>
-      <bolle-floating-action-button size="large" color="secondary" label="Crea grande">＋</bolle-floating-action-button>
-      <bolle-floating-action-button href="https://example.com" label="Apri collegamento">↗</bolle-floating-action-button>
-      <bolle-floating-action-button label="Crea disabilitato" disabled>＋</bolle-floating-action-button>
+    <div style={{ position: "relative", blockSize: 320 }}>
+      <bolle-floating-action-button
+        label="Nuova commessa"
+        style={{ position: "absolute", insetBlockEnd: 16, insetInlineEnd: 16 }}
+      >
+        <span slot="icon" aria-hidden="true">
+          +
+        </span>
+      </bolle-floating-action-button>
     </div>
   );
 }
@@ -357,1534 +315,1329 @@ export function FabExamples() {
 
 ### bolle-extended-fab
 
-```tsx
-export function ExtendedFabExamples() {
+属性: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · 插槽: `default`, `icon`, `trailing-icon` · 事件: `change`
+
+**扩展浮动按钮** — 扩展形式同时显示图标与文本：icon 插槽提供符号，默认插槽提供文本。它仍是页面主要操作的按钮。
+
+```jsx
+export function NuovaCommessa() {
   return (
-    <div>
-      <bolle-extended-fab label="Nuovo documento" size="small" color="primary-container">
-        Nuovo documento
-      </bolle-extended-fab>
-      <bolle-extended-fab label="Condividi" size="medium" color="tertiary">
-        Condividi
-      </bolle-extended-fab>
-      <bolle-extended-fab label="Crea presentazione" size="large" color="secondary">
-        <span slot="icon" aria-hidden="true">＋</span>
-        Crea presentazione
-      </bolle-extended-fab>
-    </div>
+    <bolle-extended-fab>
+      <span slot="icon" aria-hidden="true">
+        +
+      </span>
+      Nuova commessa
+    </bolle-extended-fab>
   );
 }
 ```
 
 ### bolle-button-group
 
-```tsx
-export function ButtonGroupExamples() {
-  const [alignment, setAlignment] = useState("left");
-  const [formats, setFormats] = useState<string[]>(["bold"]);
-  const alignmentGroup = useRef<BolleButtonGroup | null>(null);
-  const formatGroup = useRef<BolleButtonGroup | null>(null);
+属性: `label`, `required`, `selection`, `shape`, `size`, `variant` · 插槽: `default` · 事件: `selection-change`
 
-  useBolleEvent(alignmentGroup, "selection-change", ({ values }: { values: string[] }) =>
-    setAlignment(values[0] ?? "left"),
-  );
-  useBolleEvent(formatGroup, "selection-change", ({ values }: { values: string[] }) =>
-    setFormats(values),
-  );
+**相连按钮** — 分组连接相邻按钮：variant connected 去掉间距并共边，selection single 使分组成为单选并通过 change 返回值。
+
+```jsx
+import { useState } from "react";
+
+export function Vista() {
+  const [vista, setVista] = useState("elenco");
 
   return (
-    <div>
-      <bolle-button-group
-        ref={alignmentGroup}
-        label="Allineamento"
-        variant="connected"
-        selection="single"
-        required
-        size="small"
-        shape="round"
+    <bolle-button-group
+      variant="connected"
+      selection="single"
+      label="Vista"
+      onChange={(event) => setVista(event.detail.value)}
+    >
+      <bolle-button
+        variant="outlined"
+        value="elenco"
+        selected={vista === "elenco"}
       >
-        {["left", "center", "right"].map((value) => (
-          <bolle-button key={value} value={value} selected={alignment === value}>
-            {value}
-          </bolle-button>
-        ))}
-      </bolle-button-group>
-
-      <bolle-button-group
-        ref={formatGroup}
-        label="Formato"
-        variant="connected"
-        selection="multiple"
-        size="small"
+        Elenco
+      </bolle-button>
+      <bolle-button
+        variant="outlined"
+        value="griglia"
+        selected={vista === "griglia"}
       >
-        {["bold", "italic", "underline"].map((value) => (
-          <bolle-button key={value} value={value} selected={formats.includes(value)}>
-            {value}
-          </bolle-button>
-        ))}
-      </bolle-button-group>
-
-      <bolle-button-group label="Gruppo semplice" variant="standard" selection="none" size="large">
-        <bolle-button variant="outlined">A</bolle-button>
-        <bolle-button variant="outlined">B</bolle-button>
-      </bolle-button-group>
-    </div>
+        Griglia
+      </bolle-button>
+    </bolle-button-group>
   );
 }
 ```
-
-## 通信（Communication）
 
 ### bolle-badge
 
-```tsx
-export function BadgeExamples() {
-  return (
-    <div>
-      <span className="badge-anchor">
-        <bolle-icon-button label="Notifiche">🔔</bolle-icon-button>
-        <bolle-badge
-          value="12"
-          style={{ position: "absolute", insetBlockStart: -4, insetInlineEnd: -4 }}
-        />
-      </span>
+属性: `label`, `max`, `small`, `value` · 插槽: `label` · 事件: -
 
-      <bolle-badge value={1200} max={999} label="Messaggi non letti" />
-      <bolle-badge value="Nuovo" label="Novità" />
-      <bolle-badge value="" label="Aggiornamento disponibile" small />
-      <bolle-badge value="7" />
-    </div>
+**元素上的标记** — 徽章在包含它的元素上方显示 value，超过 max 的数字显示为“999+”。small 去掉文本只留圆点，用于无数值的标记。
+
+```jsx
+export function Segnalazioni() {
+  return (
+    <>
+      <bolle-badge value="12">
+        <bolle-icon-button label="Messaggi">
+          <span slot="icon" aria-hidden="true">
+            ★
+          </span>
+        </bolle-icon-button>
+      </bolle-badge>
+      <bolle-badge value="1200" max={99}>
+        <bolle-avatar name="Giulia Ferraro" />
+      </bolle-badge>
+    </>
   );
 }
 ```
 
+### bolle-bottom-app-bar
+
+属性: `align`, `divider`, `dock`, `label`, `sticky`, `variant` · 插槽: `default`, `fab`, `leading`, `trailing` · 事件: -
+
+**带浮动按钮的底部栏** — 底部栏容纳行内命令与浮动按钮：默认插槽接收命令，leading 与 trailing 提供两侧元素，fab 提供嵌入缺口中的按钮。dock 将按钮放入栏内。
+
+```jsx
+export function BarraInferiore() {
+  return (
+    <bolle-bottom-app-bar dock>
+      <bolle-icon-button slot="leading" label="Menu">
+        <span slot="icon" aria-hidden="true">
+          ★
+        </span>
+      </bolle-icon-button>
+      <bolle-icon-button label="Cerca">
+        <span slot="icon" aria-hidden="true">
+          +
+        </span>
+      </bolle-icon-button>
+      <bolle-floating-action-button slot="fab" label="Nuova commessa">
+        <span slot="icon" aria-hidden="true">
+          +
+        </span>
+      </bolle-floating-action-button>
+    </bolle-bottom-app-bar>
+  );
+}
+```
+
+### bolle-avatar
+
+属性: `alt`, `color`, `initials`, `label`, `name`, `shape`, `size`, `src`, `status` · 插槽: `badge`, `icon` · 事件: -
+
+**带头像图片或首字母的 avatar** — src 显示图片，缺失或加载失败时组件回退到由 name 推导的首字母。initials 可手动指定，status 增加在线圆点，size 改变尺寸。
+
+```jsx
+const persone = [
+  { src: "/giulia.jpg", name: "Giulia Ferraro", status: "online" },
+  { name: "Marco Bellini", size: "lg" },
+  { initials: "GF", color: "tertiary" },
+];
+
+export function Persone() {
+  return (
+    <>
+      {persone.map((persona) => (
+        <bolle-avatar key={persona.name ?? persona.initials} {...persona} />
+      ))}
+    </>
+  );
+}
+```
+
+更多配方: 用图标代替首字母的头像
+
+### bolle-breadcrumb
+
+属性: `label`, `max-items`, `separator` · JavaScript 属性: `items`, `labels` · 插槽: - · 事件: `breadcrumb-select`
+
+**面包屑路径** — items 声明路径条目：组件在条目之间放置分隔符，并将最后一项标记为当前页面。separator 选择符号，max-items 将中间条目收纳在一个命令后。
+
+```jsx
+import { useEffect, useRef } from "react";
+
+const items = [
+  { label: "Home", href: "#/it/" },
+  { label: "Commesse", href: "#/it/commesse" },
+  { label: "C2026-1000" },
+];
+
+export function Percorso() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const percorso = ref.current;
+    if (!percorso) return;
+    percorso.items = items;
+  }, []);
+
+  return <bolle-breadcrumb ref={ref} label="Percorso" />;
+}
+```
+
+### bolle-avatar-group
+
+属性: `interactive`, `label`, `max`, `overlap`, `size`, `total` · JavaScript 属性: `labels` · 插槽: `default` · 事件: `avatar-group-select`
+
+**头像组** — 分组堆叠接收的 avatar，并用带计数的气泡汇总其余：max 决定显示多少个，total 在未全部传入时说明总数。
+
+```jsx
+export function Partecipanti({ persone }) {
+  return (
+    <bolle-avatar-group label="Partecipanti" max={3} total={8}>
+      {persone.map((persona) => (
+        <bolle-avatar key={persona.name} name={persona.name} />
+      ))}
+    </bolle-avatar-group>
+  );
+}
+```
+
+更多配方: 可交互的计数气泡
+
+### bolle-empty-state
+
+属性: `align`, `role`, `text`, `title`, `tone` · JavaScript 属性: `icon` · 插槽: `actions`, `icon` · 事件: -
+
+**带命令的空状态** — 空状态居中显示图标、标题和文本；actions 插槽提供离开空状态的命令。tone error 将其着色为加载错误。
+
+```jsx
+export function Stati() {
+  return (
+    <>
+      <bolle-empty-state
+        title="Nessuna commessa"
+        text="Non ci sono commesse per questo filtro."
+      >
+        <bolle-button slot="actions" variant="filled">
+          Crea commessa
+        </bolle-button>
+      </bolle-empty-state>
+      <bolle-empty-state
+        tone="error"
+        title="Piano non raggiungibile"
+        text="Riprova fra qualche istante."
+      >
+        <bolle-button slot="actions" variant="tonal">
+          Riprova
+        </bolle-button>
+      </bolle-empty-state>
+    </>
+  );
+}
+```
+
+更多配方: 自定义图标与对齐
+
+### bolle-pagination
+
+属性: `form`, `label`, `page`, `page-size`, `range`, `total` · JavaScript 属性: `labels`, `pageSizes` · 插槽: - · 事件: `page-change`
+
+**基于现有数据的分页** — page-size 启用分页器，total 说明行的总数：组件自行移动到所需页码并通过 page-change 报告，应用据此切分显示的数据。
+
+```jsx
+import { useEffect, useRef } from "react";
+
+export function Pager({ total }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const pager = ref.current;
+    if (!pager) return;
+    pager.total = total;
+    const onPage = (event) => console.log("Pagina", event.detail.page);
+    pager.addEventListener("page-change", onPage);
+    return () => pager.removeEventListener("page-change", onPage);
+  }, [total]);
+
+  return <bolle-pagination ref={ref} label="Pagine" page-size={10} />;
+}
+```
+
+更多配方: 选择每页行数与紧凑形式
+
 ### bolle-progress-indicator
 
-```tsx
-export function ProgressExamples() {
+属性: `indeterminate`, `label`, `max`, `value`, `variant`, `wavy` · 插槽: - · 事件: -
+
+**线性与环形进度** — value 表示相对 max 的完成量，label 是屏幕阅读器读取的名称。variant circular 切换为圆环，indeterminate 表示无数值的等待。
+
+```jsx
+export function Avanzamenti() {
   return (
-    <div>
-      <bolle-progress-indicator label="Download" value={65} />
-      <bolle-progress-indicator label="Connessione" indeterminate />
-      <bolle-progress-indicator label="Avanzamento pratica" value={35} max={50} />
-      <bolle-progress-indicator wavy label="Avanzamento ondulato" value={60} />
-      <bolle-progress-indicator wavy indeterminate label="Attesa ondulata" />
-      <bolle-progress-indicator variant="circular" label="Caricamento file" value={65} />
-      <bolle-progress-indicator variant="circular" indeterminate label="Attesa circolare" />
-    </div>
+    <>
+      <bolle-progress-indicator value={62} label="Avanzamento cantieri" />
+      <bolle-progress-indicator
+        value={30}
+        variant="circular"
+        label="Avanzamento"
+      />
+      <bolle-progress-indicator indeterminate label="Caricamento" />
+    </>
   );
 }
 ```
 
 ### bolle-loading-indicator
 
-```tsx
-export function LoadingExamples() {
+插槽: - · 事件: -
+
+**加载指示器** — 指示器显示操作等待：label 是屏幕阅读器读取的名称，必须声明。variant contained 在覆盖瓦片时将其放在面板上。
+
+```jsx
+export function Attese() {
   return (
-    <div>
-      <bolle-loading-indicator label="Caricamento" />
-      <bolle-loading-indicator variant="contained" label="Caricamento allegati" />
-    </div>
+    <>
+      <bolle-loading-indicator label="Caricamento delle commesse" />
+      <bolle-loading-indicator variant="contained" label="Aggiornamento" />
+    </>
   );
 }
 ```
 
 ### bolle-snackbar
 
-```tsx
-export function SnackbarExamples() {
-  const snackbar = useRef<BolleSnackbar | null>(null);
-  const [log, setLog] = useState("");
+属性: `action-label`, `close-label`, `duration`, `message`, `open`, `tail` · 插槽: `action`, `dismiss`, `message` · 事件: `action`, `closed`, `queued`
 
-  useBolleEvent(snackbar, "closed", ({ reason }: { reason: string }) =>
-    setLog(`chiuso: ${reason}`),
-  );
-  useBolleEvent(snackbar, "action", () => setLog("azione: annulla"));
-  useBolleEvent(snackbar, "queued", ({ pending }: { pending: number }) =>
-    setLog(`in coda: ${pending}`),
-  );
+**带操作的消息** — show() 打开消息，duration 自动关闭：message 插槽提供文本，action 提供附带操作，dismiss 提供关闭命令。message 仍是仅传文本的简写。
+
+```jsx
+import { useRef } from "react";
+
+export function Archivia({ ripristina }) {
+  const feedback = useRef(null);
 
   return (
-    <div>
-      <bolle-snackbar
-        ref={snackbar}
-        message="Documento eliminato"
-        actionLabel="Annulla"
-        closeLabel="Chiudi"
-        duration={6000}
-      />
-
-      <bolle-button variant="tonal" onClick={() => snackbar.current?.show("Documento salvato")}>
-        Mostra
+    <>
+      <bolle-button variant="filled" onClick={() => feedback.current?.show()}>
+        Archivia
       </bolle-button>
-      <bolle-button
-        variant="outlined"
-        onClick={() => {
-          snackbar.current?.show("Primo");
-          snackbar.current?.show("Secondo");
-          snackbar.current?.show("Terzo");
-        }}
-      >
-        Accoda tre messaggi
-      </bolle-button>
-      <bolle-button variant="text" onClick={() => snackbar.current?.close("manuale")}>
-        Chiudi
-      </bolle-button>
-      <output>{log}</output>
-    </div>
+      <bolle-snackbar ref={feedback} duration={6000}>
+        <span slot="message">Commessa archiviata</span>
+        <bolle-button slot="action" variant="text" onClick={ripristina}>
+          Annulla
+        </bolle-button>
+      </bolle-snackbar>
+    </>
   );
 }
 ```
 
 ### bolle-tooltip
 
-```tsx
-export function TooltipExamples() {
-  const tip = useRef<BolleTooltip | null>(null);
+属性: `label`, `persistent`, `supporting-text`, `tail`, `variant` · JavaScript 属性: `labels` · 插槽: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · 事件: -
+
+**命令上的提示** — 提示气泡通过 show(anchor) 附着到元素，指针离开或按下 Esc 时自行关闭。label 是简短文本，supporting-text 增加详情行。
+
+```jsx
+import { useRef } from "react";
+
+export function Salva() {
+  const hint = useRef(null);
+  const salva = useRef(null);
 
   return (
-    <div>
-      <bolle-tooltip label="Conserva una copia del documento">
-        <bolle-button variant="tonal">Salva una copia</bolle-button>
-      </bolle-tooltip>
-
-      <bolle-tooltip
-        ref={tip}
-        variant="rich"
-        persistent
-        label="Spazio personale"
-        supportingText="La copia resta nel tuo spazio e resta aperta finché non la chiudi."
+    <>
+      <bolle-icon-button
+        ref={salva}
+        label="Salva"
+        onPointerEnter={() => hint.current?.show(salva.current)}
+        onPointerLeave={() => hint.current?.close()}
       >
-        <bolle-button variant="outlined">Dettagli</bolle-button>
-        <p slot="content">Puoi riaprire la copia dalla sezione Documenti.</p>
-        <bolle-button slot="actions" variant="text">Apri Documenti</bolle-button>
-      </bolle-tooltip>
-
-      <bolle-button variant="text" onClick={() => tip.current?.show()}>Mostra tooltip ricco</bolle-button>
-      <bolle-button variant="text" onClick={() => tip.current?.hide()}>Nascondi</bolle-button>
-    </div>
+        <span slot="icon" aria-hidden="true">
+          ★
+        </span>
+      </bolle-icon-button>
+      <bolle-tooltip
+        ref={hint}
+        label="Salva la commessa"
+        supporting-text="Scorciatoia: Ctrl e S"
+      />
+    </>
   );
 }
 ```
 
 ### bolle-carousel
 
-```tsx
-export function CarouselExamples() {
-  const [current, setCurrent] = useState(0);
-  const carousel = useRef<BolleCarousel | null>(null);
-  useBolleEvent(carousel, "change", ({ index }: { index: number }) =>
-    setCurrent(index),
-  );
+属性: `index`, `label`, `next-label`, `previous-label`, `variant` · 插槽: `controls`, `default`, `next`, `previous`, `status` · 事件: `change`
 
-  const variants = [
-    "hero",
-    "multi-browse",
-    "uncontained",
-    "uncontained-multi-aspect-ratio",
-    "center-aligned-hero",
-    "full-screen",
-  ] as const;
+**卡片轮播** — 轮播在默认插槽中滚动元素并显示前进后退命令：index 表示当前可见项，选择变化通过 change 返回。滚动按步进行，支持触摸与键盘。
 
+```jsx
+export function Schede() {
   return (
-    <div>
-      <bolle-carousel
-        ref={carousel}
-        variant="hero"
-        label="Documenti recenti"
-        previousLabel="Precedente"
-        nextLabel="Successivo"
-        index={current}
-      >
-        <article><h3>Posta</h3><p>Messaggi ricevuti</p></article>
-        <article><h3>Archivio</h3><p>Documenti salvati</p></article>
-        <article><h3>Impostazioni</h3><p>Preferenze personali</p></article>
-      </bolle-carousel>
-
-      {variants.map((variant) => (
-        <bolle-carousel
-          key={variant}
-          variant={variant}
-          label={`Carousel ${variant}`}
-          previousLabel="Precedente"
-          nextLabel="Successivo"
-        >
-          <article>A · {variant}</article>
-          <article>B · {variant}</article>
-          <article>C · {variant}</article>
-        </bolle-carousel>
-      ))}
-
-      <bolle-button variant="outlined" onClick={() => carousel.current?.goTo(0)}>
-        Prima slide
-      </bolle-button>
-      <bolle-button variant="outlined" onClick={() => carousel.current?.goTo(2)}>
-        Ultima slide
-      </bolle-button>
-      <output>{current + 1}</output>
-    </div>
+    <bolle-carousel label="Schede">
+      <bolle-card>Prima scheda</bolle-card>
+      <bolle-card>Seconda scheda</bolle-card>
+      <bolle-card>Terza scheda</bolle-card>
+    </bolle-carousel>
   );
 }
 ```
-
-## 容器（Containment）
 
 ### bolle-card
 
-```tsx
-export function CardExamples() {
-  return (
-    <div>
-      {(["filled", "elevated", "outlined"] as const).map((variant) => (
-        <bolle-card key={variant} variant={variant} label={`Scheda ${variant}`}>
-          <h3>Documento</h3>
-          <p>Contenuto indipendente con un'azione interna.</p>
-          <bolle-button variant="text">Apri</bolle-button>
-        </bolle-card>
-      ))}
+属性: `href`, `label`, `orientation`, `tail`, `variant` · 插槽: `content`, `default`, `media` · 事件: -
 
-      <bolle-card orientation="horizontal" href="https://example.com" label="Rapporto annuale">
-        <img slot="media" src="/cover.jpg" alt="Copertina del rapporto" />
-        <h3>Rapporto annuale</h3>
-        <p>Riepilogo delle attività dell'anno.</p>
-      </bolle-card>
-    </div>
+**带图片与命令的卡片** — 卡片从默认插槽取得内容，media 提供占满宽度的顶部图片，actions 提供命令行。href 使整张卡片成为链接。
+
+```jsx
+export function Scheda() {
+  return (
+    <bolle-card variant="filled">
+      <img slot="media" alt="" src="/cantiere.jpg" />
+      <h3>Ristrutturazione scuola</h3>
+      <p>Consegna prevista a marzo 2027.</p>
+      <bolle-button slot="actions" variant="text">
+        Apri
+      </bolle-button>
+    </bolle-card>
   );
 }
 ```
+
+更多配方: 作为链接的横向卡片
 
 ### bolle-dialog
 
-```tsx
-export function DialogExamples() {
-  const confirm = useRef<BolleDialog | null>(null);
-  const fullscreen = useRef<BolleDialog | null>(null);
-  const nonModal = useRef<BolleDialog | null>(null);
-  const proposal = useRef<BolleDialog | null>(null);
-  const [proposalOpen, setProposalOpen] = useState(false);
-  const [dirty] = useState(true);
-  const [result, setResult] = useState("");
+属性: `close-label`, `label`, `modal`, `open`, `variant` · 插槽: `actions`, `default`, `heading` · 事件: `before-close`, `closed`
 
-  useBolleEvent(confirm, "before-close", (_detail, event) => {
-    if (dirty) event.preventDefault();
-  });
-  useBolleEvent(confirm, "closed", ({ returnValue }: { returnValue?: string }) =>
-    setResult(returnValue ?? ""),
-  );
-  useBolleEvent(proposal, "closed", ({ returnValue }: { returnValue?: string }) => {
-    setProposalOpen(false);
-    setResult(returnValue ?? "");
-  });
+**确认对话框** — open 打开对话框，modal 使其阻塞：焦点保持在内部直到关闭，关闭通过 closed 返回。heading 提供作为标题的文本，actions 提供命令行。
+
+```jsx
+import { useState } from "react";
+
+export function Archivia() {
+  const [aperto, setAperto] = useState(false);
 
   return (
-    <div>
-      <bolle-button variant="filled" onClick={() => confirm.current?.show()}>
-        Elimina
+    <>
+      <bolle-button variant="filled" onClick={() => setAperto(true)}>
+        Archivia
       </bolle-button>
       <bolle-dialog
-        ref={confirm}
-        label="Eliminare il documento?"
-        variant="basic"
+        label="Archivia commessa"
         modal
-        closeLabel="Annulla"
+        open={aperto}
+        onClosed={() => setAperto(false)}
       >
-        <p>L'operazione non può essere annullata.</p>
-        <bolle-button slot="actions" variant="text" onClick={() => confirm.current?.close("elimina")}>
-          Elimina
+        <h2 slot="heading">Archiviare la commessa?</h2>
+        <p>La commessa esce dagli elenchi attivi e resta consultabile.</p>
+        <bolle-button
+          slot="actions"
+          variant="text"
+          onClick={() => setAperto(false)}
+        >
+          Annulla
+        </bolle-button>
+        <bolle-button slot="actions" variant="filled">
+          Archivia
         </bolle-button>
       </bolle-dialog>
-
-      <bolle-button variant="outlined" onClick={() => fullscreen.current?.show()}>
-        Apri a schermo intero
-      </bolle-button>
-      <bolle-dialog ref={fullscreen} variant="full-screen" label="Editor" closeLabel="Chiudi">
-        <p>Contenuto a schermo intero.</p>
-        <bolle-button slot="actions" onClick={() => fullscreen.current?.close("salvato")}>
-          Salva
-        </bolle-button>
-      </bolle-dialog>
-
-      <bolle-button variant="text" onClick={() => nonModal.current?.show()}>
-        Dialog non modale
-      </bolle-button>
-      <bolle-dialog ref={nonModal} modal={false} label="Nota" closeLabel="Chiudi">
-        <p>Questo dialog non blocca il resto della pagina.</p>
-      </bolle-dialog>
-
-      <bolle-button variant="tonal" onClick={() => setProposalOpen(true)}>
-        Dialog dichiarativo
-      </bolle-button>
-      <bolle-dialog
-        ref={proposal}
-        open={proposalOpen}
-        label="Proposta"
-        closeLabel="Chiudi"
-      >
-        <p>Controllato dalla proprietà open.</p>
-      </bolle-dialog>
-      <output>{result}</output>
-    </div>
+    </>
   );
 }
 ```
 
+更多配方: 全屏对话框
+
 ### bolle-bottom-sheet
 
-```tsx
-export function BottomSheetExamples() {
-  const sheet = useRef<BolleBottomSheet | null>(null);
-  const [inlineOpen, setInlineOpen] = useState(true);
-  const [result, setResult] = useState("");
-  useBolleEvent(sheet, "closed", ({ returnValue }: { returnValue?: string }) =>
-    setResult(returnValue ?? ""),
-  );
+属性: `close-label`, `drag-handle`, `label`, `modal`, `open`, `variant` · 插槽: `actions`, `default`, `heading` · 事件: `before-close`, `closed`
+
+**底部面板** — 面板从底边进入并带上命令：drag-handle 显示拖动它的手柄，heading 提供标题，actions 提供末行。open 与 show() 打开它。
+
+```jsx
+import { useState } from "react";
+
+export function Filtri() {
+  const [aperto, setAperto] = useState(false);
 
   return (
-    <div>
-      <bolle-button variant="filled" onClick={() => sheet.current?.show()}>
-        Apri foglio modale
+    <>
+      <bolle-button variant="filled" onClick={() => setAperto(true)}>
+        Filtri
       </bolle-button>
-      <bolle-bottom-sheet ref={sheet} dragHandle label="Filtri" closeLabel="Chiudi">
-        <p>Scegli i filtri da applicare.</p>
-        <bolle-button slot="actions" onClick={() => sheet.current?.close("applica")}>
+      <bolle-bottom-sheet label="Filtri" drag-handle modal open={aperto}>
+        <h2 slot="heading">Filtri</h2>
+        <p>Scegli lo stato delle commesse.</p>
+        <bolle-button
+          slot="actions"
+          variant="text"
+          onClick={() => setAperto(false)}
+        >
+          Annulla
+        </bolle-button>
+        <bolle-button slot="actions" variant="filled">
           Applica
         </bolle-button>
       </bolle-bottom-sheet>
-
-      <bolle-bottom-sheet open={inlineOpen} variant="standard" dragHandle label="Filtri inline">
-        <p>Foglio standard ancorato in basso.</p>
-        <bolle-button variant="text" onClick={() => setInlineOpen(false)}>Chiudi</bolle-button>
-      </bolle-bottom-sheet>
-      <output>{result}</output>
-    </div>
+    </>
   );
 }
 ```
 
 ### bolle-side-sheet
 
-```tsx
-export function SideSheetExamples() {
-  const side = useRef<BolleSideSheet | null>(null);
-  const [standardOpen, setStandardOpen] = useState(true);
+属性: `close-label`, `detached`, `label`, `modal`, `open`, `variant` · 插槽: `actions`, `default`, `heading` · 事件: `before-close`, `closed`
+
+**侧边详情面板** — 面板从 placement 指定的一侧进入并保留内容可见：适合行详情，heading 提供标题，actions 提供尾随命令。
+
+```jsx
+import { useState } from "react";
+
+export function Dettaglio() {
+  const [aperto, setAperto] = useState(false);
 
   return (
-    <div>
-      <bolle-button variant="filled" onClick={() => side.current?.show()}>
-        Apri pannello
+    <>
+      <bolle-button variant="tonal" onClick={() => setAperto(true)}>
+        Dettaglio
       </bolle-button>
-      <bolle-side-sheet ref={side} label="Dettagli" detached closeLabel="Chiudi">
-        <p>Dettagli del documento selezionato.</p>
-        <bolle-button slot="actions" onClick={() => side.current?.close("salvato")}>
-          Salva
+      <bolle-side-sheet
+        label="Dettaglio commessa"
+        placement="end"
+        modal
+        open={aperto}
+      >
+        <h2 slot="heading">C2026-1000</h2>
+        <p>Ristrutturazione scuola di Seriate.</p>
+        <bolle-button slot="actions" variant="filled">
+          Apri scheda
         </bolle-button>
       </bolle-side-sheet>
-
-      <bolle-side-sheet
-        open={standardOpen}
-        variant="standard"
-        detached
-        label="Dettagli inline"
-      >
-        <p>Pannello standard sempre visibile accanto al contenuto.</p>
-        <bolle-button variant="text" onClick={() => setStandardOpen(false)}>Chiudi</bolle-button>
-      </bolle-side-sheet>
-    </div>
+    </>
   );
 }
 ```
 
 ### bolle-divider
 
-```tsx
-export function DividerExamples() {
-  return (
-    <div>
-      <bolle-divider />
-      <bolle-divider inset />
-      <bolle-divider variant="inset-start" />
-      <bolle-divider variant="inset-end" />
-      <bolle-divider decorative />
+属性: `decorative`, `inset`, `variant`, `vertical` · 插槽: - · 事件: -
 
-      <div style={{ display: "flex", blockSize: 120, alignItems: "center", gap: 8 }}>
-        <span>Prima</span>
-        <bolle-divider vertical />
-        <span>Dopo</span>
-      </div>
-      <div style={{ display: "flex", blockSize: 120, alignItems: "center", gap: 8 }}>
-        <span>Prima</span>
-        <bolle-divider vertical decorative />
-        <span>Dopo</span>
-      </div>
-    </div>
+**组之间的分隔线** — 分隔线没有内容：分隔两组元素，inset 使其与边缘分开，vertical 用于分隔并排命令。
+
+```jsx
+export function Separatori() {
+  return (
+    <>
+      <p>Committenti</p>
+      <bolle-divider inset />
+      <p>Fornitori</p>
+      <span>Esporta</span>
+      <bolle-divider vertical />
+      <span>Archivia</span>
+    </>
   );
 }
 ```
-
-## 导航（Navigation）
 
 ### bolle-app-bar
 
-```tsx
-export function AppBarExamples() {
-  const [scrolled, setScrolled] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const variants = ["small", "center-aligned", "medium", "medium-flexible", "large", "large-flexible"] as const;
+属性: `alignment`, `collapsed`, `label`, `scrolled`, `sticky`, `subtitle`, `variant` · 插槽: `actions`, `default`, `leading`, `title`, `trailing` · 事件: -
 
+**应用栏** — 栏承载标题与命令：title 提供主文本，subtitle 提供下方一行，leading 与 actions 插槽提供两侧命令。需要更丰富的头部时用默认插槽替换 title。
+
+```jsx
+export function Barra() {
   return (
-    <div>
-      <bolle-app-bar
-        label="Posta"
-        variant="small"
-        subtitle="12 non letti"
-        alignment="leading"
-        sticky
-        scrolled={scrolled}
-        collapsed={collapsed}
-      >
-        <bolle-icon-button slot="leading" label="Menu">☰</bolle-icon-button>
-        <bolle-icon-button slot="trailing" label="Cerca">🔍</bolle-icon-button>
-      </bolle-app-bar>
-
-      {variants.map((variant) => (
-        <bolle-app-bar
-          key={variant}
-          variant={variant}
-          label={`Posta ${variant}`}
-          subtitle="12 non letti"
-          collapsed={collapsed}
-        >
-          <bolle-icon-button slot="leading" label="Menu">☰</bolle-icon-button>
-        </bolle-app-bar>
-      ))}
-
-      <bolle-app-bar variant="search">
-        <bolle-search label="Cerca" placeholder="Cerca nella posta">
-          <span slot="leading" aria-hidden="true">🔍</span>
-        </bolle-search>
-      </bolle-app-bar>
-
-      <bolle-button variant="outlined" onClick={() => setScrolled((value) => !value)}>
-        Alterna scrolled
-      </bolle-button>
-      <bolle-button variant="outlined" onClick={() => setCollapsed((value) => !value)}>
-        Alterna collapsed
-      </bolle-button>
-    </div>
+    <bolle-app-bar title="Commesse" subtitle="12 attive" sticky>
+      <bolle-icon-button slot="leading" label="Menu">
+        <span slot="icon" aria-hidden="true">
+          ★
+        </span>
+      </bolle-icon-button>
+      <bolle-icon-button slot="actions" label="Cerca">
+        <span slot="icon" aria-hidden="true">
+          +
+        </span>
+      </bolle-icon-button>
+    </bolle-app-bar>
   );
 }
 ```
 
+更多配方: 滚动时收起的栏
+
 ### bolle-toolbar
 
-```tsx
-export function ToolbarExamples() {
+属性: `color`, `label`, `orientation`, `variant` · 插槽: `default` · 事件: -
+
+**命令栏** — 栏把默认插槽收到的元素排开：不同变体区分主要命令与辅助命令，栏将多余元素换行而非压缩。
+
+```jsx
+export function Comandi({ viste }) {
   return (
-    <div>
-      <bolle-toolbar label="Formato" variant="docked" orientation="horizontal" color="standard">
-        <bolle-icon-button label="Grassetto" toggle>B</bolle-icon-button>
-        <bolle-icon-button label="Corsivo" toggle>I</bolle-icon-button>
-        <bolle-icon-button label="Sottolineato" toggle>U</bolle-icon-button>
-        <bolle-divider vertical decorative />
-        <bolle-icon-button label="Allinea a sinistra">≡</bolle-icon-button>
-      </bolle-toolbar>
-
-      <bolle-toolbar label="Modifica" color="vibrant">
-        <bolle-icon-button label="Taglia" variant="standard">✂</bolle-icon-button>
-        <bolle-icon-button label="Copia" variant="standard">⧉</bolle-icon-button>
-        <bolle-icon-button label="Incolla" variant="standard">📋</bolle-icon-button>
-      </bolle-toolbar>
-
-      <bolle-toolbar label="Formato" variant="floating">
-        <bolle-icon-button label="Grassetto" toggle>B</bolle-icon-button>
-        <bolle-icon-button label="Corsivo" toggle>I</bolle-icon-button>
-      </bolle-toolbar>
-
-      <bolle-toolbar label="Allineamento" variant="floating" orientation="vertical">
-        <bolle-icon-button label="Su">↑</bolle-icon-button>
-        <bolle-icon-button label="Giù">↓</bolle-icon-button>
-      </bolle-toolbar>
-    </div>
+    <bolle-toolbar label="Azioni sulle commesse">
+      <bolle-segmented-buttons label="Vista" items={viste} />
+      <bolle-button variant="text">Esporta</bolle-button>
+      <bolle-button variant="text">Archivia</bolle-button>
+    </bolle-toolbar>
   );
 }
 ```
 
 ### bolle-navigation-bar
 
-```tsx
-const destinations: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
-];
+属性: `label`, `layout`, `value`, `variant` · JavaScript 属性: `items` · 插槽: - · 事件: `navigate`
 
-export function NavigationBarExamples() {
-  const [current, setCurrent] = useState("inbox");
-  const bar = useRef<BolleNavigationBar | null>(null);
-  const flexible = useRef<BolleNavigationBar | null>(null);
-  useBolleEvent(bar, "navigate", ({ id }: { id: string }) => setCurrent(id));
-  useBolleEvent(flexible, "navigate", ({ id }: { id: string }) => setCurrent(id));
+**导航栏** — items 声明带图标与文本的目标项，value 指定当前项：组件自行应用选择并通过 change 报告。超过五个目标项时宜改用侧边栏。
 
+```jsx
+export function Sezioni({ sezioni, sezione, onChange }) {
   return (
-    <div>
-      <bolle-navigation-bar
-        ref={bar}
-        label="Navigazione principale"
-        items={destinations}
-        value={current}
-        variant="standard"
-        layout="vertical"
-      />
-      <bolle-navigation-bar
-        ref={flexible}
-        label="Navigazione flessibile"
-        items={destinations}
-        value={current}
-        variant="flexible"
-        layout="horizontal"
-      />
-      <output>{current}</output>
-    </div>
+    <bolle-navigation-bar
+      label="Sezioni"
+      items={sezioni}
+      value={sezione}
+      onChange={onChange}
+    />
   );
 }
 ```
 
 ### bolle-navigation-rail
 
-```tsx
-// `destinations` è lo stesso array della sezione bolle-navigation-bar.
-export function NavigationRailExamples() {
-  const [current, setCurrent] = useState("inbox");
-  const rail = useRef<BolleNavigationRail | null>(null);
-  useBolleEvent(rail, "navigate", ({ id }: { id: string }) => setCurrent(id));
+属性: `expanded`, `label`, `layout`, `value`, `variant` · JavaScript 属性: `items` · 插槽: - · 事件: `navigate`
 
+**窄栏** — 窄栏显示目标项图标，使用 expanded 时同时显示文本。适用于空间有限但分区较多的场景，位于底部栏与侧面板之间。
+
+```jsx
+export function BarraStretta({ sezioni, sezione, onChange }) {
   return (
-    <div>
-      <bolle-navigation-rail
-        ref={rail}
-        label="Rail compresso"
-        items={destinations}
-        value={current}
-      />
-      <bolle-navigation-rail
-        expanded
-        variant="standard"
-        layout="vertical"
-        label="Rail espanso"
-        items={destinations}
-        value={current}
-      />
-    </div>
+    <bolle-navigation-rail
+      label="Sezioni"
+      expanded
+      items={sezioni}
+      value={sezione}
+      onChange={onChange}
+    />
   );
 }
 ```
 
 ### bolle-navigation-drawer
 
-```tsx
-// `destinations` è lo stesso array della sezione bolle-navigation-bar.
-export function NavigationDrawerExamples() {
-  const [current, setCurrent] = useState("inbox");
-  const [standardOpen, setStandardOpen] = useState(true);
-  const drawer = useRef<BolleNavigationDrawer | null>(null);
-  useBolleEvent(drawer, "navigate", ({ id }: { id: string }) => setCurrent(id));
+属性: `close-label`, `detached`, `label`, `modal`, `open`, `value`, `variant` · JavaScript 属性: `items` · 插槽: `actions`, `default`, `heading` · 事件: `before-close`, `closed`, `navigate`
 
+**导航面板** — 面板纵向展开条目，可内联在内容旁或覆盖页面：placement start 或 end 选择方向，modal 使其阻塞。
+
+```jsx
+export function Pannello({ sezioni, sezione, onChange }) {
   return (
-    <div>
-      <bolle-button variant="filled" onClick={() => drawer.current?.show()}>
-        Apri drawer
-      </bolle-button>
-      <bolle-navigation-drawer
-        ref={drawer}
-        label="Sezioni"
-        closeLabel="Chiudi"
-        items={destinations}
-        value={current}
-      >
-        <p>Contenuto aggiuntivo del drawer.</p>
-      </bolle-navigation-drawer>
-
-      <bolle-navigation-drawer
-        open={standardOpen}
-        variant="standard"
-        detached
-        label="Sezioni standard"
-        items={destinations}
-        value={current}
-      >
-        <bolle-button variant="text" onClick={() => setStandardOpen(false)}>Chiudi</bolle-button>
-      </bolle-navigation-drawer>
-    </div>
+    <bolle-navigation-drawer
+      label="Sezioni"
+      open
+      items={sezioni}
+      value={sezione}
+      onChange={onChange}
+    >
+      <h2 slot="heading">Commesse</h2>
+      <span slot="actions">Versione 0.3.3</span>
+    </bolle-navigation-drawer>
   );
 }
 ```
 
 ### bolle-tabs
 
-```tsx
-const primaryTabs: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox", badge: "3" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Preferenze", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
-];
+属性: `activation`, `label`, `scrollable`, `value`, `variant` · JavaScript 属性: `items`, `labels` · 插槽: `content-{itemId}`, `default` · 事件: `change`
 
-const manyTabs: BolleItem[] = Array.from({ length: 8 }, (_, index) => ({
-  id: `s${index}`,
-  label: `Vista ${index + 1}`,
-}));
+**带面板的标签** — items 声明标签，value 指定当前标签：组件自行应用选择并通过 change 报告。每个面板通过 slot 声明打开它的标签。
 
-export function TabsExamples() {
-  const [tab, setTab] = useState("inbox");
-  const [manyTab, setManyTab] = useState("s0");
-  const tabs = useRef<BolleTabs | null>(null);
-  const secondary = useRef<BolleTabs | null>(null);
-  const scrollTabs = useRef<BolleTabs | null>(null);
-  useBolleEvent(tabs, "change", ({ value }: { value: string }) => setTab(value));
-  useBolleEvent(secondary, "change", ({ value }: { value: string }) => setTab(value));
-  useBolleEvent(scrollTabs, "change", ({ value }: { value: string }) => setManyTab(value));
-
+```jsx
+export function Dettaglio({ scheda, schede, onScheda }) {
   return (
-    <div>
-      <bolle-tabs
-        ref={tabs}
-        label="Categorie"
-        items={primaryTabs}
-        value={tab}
-        variant="primary"
-        activation="automatic"
-        scrollable={false}
-      >
-        <p slot="inbox">Messaggi ricevuti.</p>
-        <p slot="archive">Documenti salvati.</p>
-        <p slot="settings">Preferenze personali.</p>
-        <p slot="trash">Elementi eliminati.</p>
-      </bolle-tabs>
-
-      <bolle-tabs
-        ref={secondary}
-        label="Dettagli"
-        items={primaryTabs}
-        value={tab}
-        variant="secondary"
-        activation="manual"
-      >
-        <p slot="inbox">Scheda secondaria.</p>
-        <p slot="archive">Archivio secondario.</p>
-        <p slot="settings">Impostazioni secondarie.</p>
-        <p slot="trash">Cestino secondario.</p>
-      </bolle-tabs>
-
-      <bolle-tabs
-        ref={scrollTabs}
-        label="Viste scorrevoli"
-        items={manyTabs}
-        value={manyTab}
-        scrollable
-      >
-        {manyTabs.map((item) => (
-          <p key={item.id} slot={item.id}>{item.label}</p>
-        ))}
-      </bolle-tabs>
-    </div>
+    <bolle-tabs
+      label="Dettaglio"
+      items={schede}
+      value={scheda}
+      onChange={onScheda}
+    >
+      <div slot="note">Note della commessa</div>
+      <div slot="documenti">Documenti allegati</div>
+    </bolle-tabs>
   );
 }
 ```
 
-## 选择（Selection）
+更多配方: 可滚动的标签
 
 ### bolle-checkbox
 
-```tsx
-export function CheckboxExamples() {
-  const [terms, setTerms] = useState(false);
-  const [newsletter, setNewsletter] = useState(true);
-  const termsField = useRef<BolleCheckbox | null>(null);
-  const newsletterField = useRef<BolleCheckbox | null>(null);
-  useBolleEvent(termsField, "change", ({ checked }: { checked: boolean }) =>
-    setTerms(checked),
-  );
-  useBolleEvent(newsletterField, "change", ({ checked }: { checked: boolean }) =>
-    setNewsletter(checked),
-  );
+属性: `checked`, `error`, `indeterminate`, `supporting-text` · 插槽: `default` · 事件: `change`
 
+**带文本与辅助说明的复选框** — 复选框从默认插槽取得标签文本并自行切换状态，通过 change 报告 checked。supporting-text 增加说明行，indeterminate 显示混合状态。
+
+```jsx
+export function Scelte() {
   return (
-    <form>
+    <>
+      <bolle-checkbox name="urgente">Segna come urgente</bolle-checkbox>
       <bolle-checkbox
-        ref={termsField}
-        label="Accetto i termini"
-        name="terms"
-        value="si"
+        name="privacy"
         required
-        checked={terms}
-        supportingText="Puoi revocare il consenso in qualsiasi momento."
-      />
-      <bolle-checkbox
-        ref={newsletterField}
-        name="newsletter"
-        value="si"
-        checked={newsletter}
-        label="Newsletter"
-      />
-      <bolle-checkbox indeterminate label="Selezione parziale" />
-      <bolle-checkbox checked disabled label="Disabilitata" />
-      <bolle-checkbox
-        checked
-        error
-        required
-        label="Campo con errore"
-        supportingText="Devi accettare per continuare."
-      />
-    </form>
+        supporting-text="Serve per inviare la richiesta"
+      >
+        Ho letto l'informativa
+      </bolle-checkbox>
+    </>
   );
 }
 ```
 
-该组件的 `change` 事件不是浏览器的原生事件：必须始终通过 ref 用 `useBolleEvent` 绑定，就像两个受控字段那样。
+更多配方: 控制列表的复选框
 
 ### bolle-switch
 
-```tsx
-export function SwitchExamples() {
-  const [wifi, setWifi] = useState(true);
-  const [notifications, setNotifications] = useState(false);
-  const wifiSwitch = useRef<BolleSwitch | null>(null);
-  const notificationsSwitch = useRef<BolleSwitch | null>(null);
-  useBolleEvent(wifiSwitch, "change", ({ checked }: { checked: boolean }) =>
-    setWifi(checked),
-  );
-  useBolleEvent(notificationsSwitch, "change", ({ checked }: { checked: boolean }) =>
-    setNotifications(checked),
-  );
+属性: `checked`, `error`, `indeterminate`, `supporting-text` · JavaScript 属性: `icon`, `iconSelected` · 插槽: `default` · 事件: `change`
+
+**开关** — 开关自行切换状态并通过 change 返回值：适合立即生效的偏好；复选框则用于需要确认的选择。
+
+```jsx
+import { useState } from "react";
+
+export function Notifiche() {
+  const [attive, setAttive] = useState(true);
 
   return (
-    <div>
-      <bolle-switch
-        ref={wifiSwitch}
-        label="Wi-Fi"
-        name="wifi"
-        value="on"
-        checked={wifi}
-        icon="🔅"
-        iconSelected="🔆"
-      />
-      <bolle-switch
-        ref={notificationsSwitch}
-        label="Notifiche"
-        checked={notifications}
-        supportingText="Ricevi un avviso per ogni aggiornamento."
-      />
-      <bolle-switch checked disabled label="Bluetooth disabilitato" />
-      <bolle-switch checked error required label="Con errore" supportingText="Azione richiesta." />
-    </div>
+    <bolle-switch
+      name="notifiche"
+      checked={attive}
+      onChange={(event) => setAttive(event.detail.checked)}
+    >
+      Notifiche attive
+    </bolle-switch>
   );
 }
 ```
-
-`icon` 和 `iconSelected` 只作为 property 存在（没有对应的 attribute）：React 19 能正确赋值。在 React 18 中请使用 `useBolleProps(switchRef, { icon, iconSelected })`。
 
 ### bolle-radio-button
 
-```tsx
-export function RadioExamples() {
-  const [plan, setPlan] = useState("standard");
-  const group = useRef<HTMLDivElement | null>(null);
-  useBolleEvent(group, "change", ({ value }: { value: string }) => setPlan(value));
+属性: `checked`, `error`, `indeterminate`, `supporting-text` · 插槽: `default` · 事件: `change`
+
+**选项组** — 单选按钮按 name 分组：选择一项会清除同组其他项的选择，值通过 change 返回。
+
+```jsx
+import { useState } from "react";
+
+const opzioni = ["alta", "media", "bassa"];
+
+export function Priorita() {
+  const [priorita, setPriorita] = useState("alta");
 
   return (
-    <form ref={group}>
-      {["standard", "plus", "enterprise"].map((option) => (
+    <>
+      {opzioni.map((valore) => (
         <bolle-radio-button
-          key={option}
-          name="plan"
-          value={option}
-          label={option}
-          checked={plan === option}
-          required
-        />
+          key={valore}
+          name="priorita"
+          value={valore}
+          checked={priorita === valore}
+          onChange={() => setPriorita(valore)}
+        >
+          {valore}
+        </bolle-radio-button>
       ))}
-      <bolle-radio-button name="plan" value="legacy" label="Legacy" disabled />
-      <bolle-radio-button name="locale" value="it" label="Italiano" checked />
-      <bolle-radio-button name="locale" value="en" label="Inglese" />
-    </form>
+    </>
   );
 }
 ```
-
-监听器放在容器上，而不是单个 radio 上：这样可以接收整个分组的 `change`。
 
 ### bolle-chip
 
-```tsx
-export function ChipExamples() {
-  const [favorite, setFavorite] = useState(false);
-  const [cities, setCities] = useState(["Roma"]);
-  const [log, setLog] = useState("");
-  const chips = useRef<HTMLDivElement | null>(null);
+属性: `disabled`, `elevated`, `href`, `label`, `removable`, `remove-label`, `selected`, `variant` · 插槽: `avatar`, `default`, `icon` · 事件: `action`, `change`, `remove`
 
-  useBolleEvent(chips, "action", () => setLog("assist"));
-  useBolleEvent(chips, "change", ({ selected }: { selected: boolean }) =>
-    setFavorite(selected),
-  );
-  useBolleEvent(chips, "remove", (_detail, event) => {
-    const label = (event.target as BolleChip).label;
-    setCities((current) => current.filter((city) => city !== label));
-  });
+**带图标与移除的标签** — 标签从默认插槽取得文本，其他插槽提供图标或 avatar。selected 将其标记为已选，removable 增加移除命令并报告 remove。
 
+```jsx
+export function Filtri() {
   return (
-    <div ref={chips}>
-      <bolle-chip variant="assist" label="Aggiungi al calendario" />
-      <bolle-chip
-        variant="filter"
-        name="filters"
-        value="favorite"
-        label="Preferiti"
-        selected={favorite}
-      />
-      <bolle-chip variant="filter" name="filters" value="unread" label="Solo non letti" />
-      <bolle-chip variant="filter" elevated label="Elevata" />
-
-      {cities.map((city) => (
-        <bolle-chip
-          key={city}
-          variant="input"
-          label={city}
-          removable
-          removeLabel={`Rimuovi ${city}`}
-        >
-          <span slot="avatar" aria-hidden="true">{city.slice(0, 2)}</span>
-        </bolle-chip>
-      ))}
-
-      <bolle-chip variant="suggestion" label="Grazie!">
-        <span slot="icon" aria-hidden="true">✓</span>
+    <>
+      <bolle-chip selected>Urgente</bolle-chip>
+      <bolle-chip removable remove-label="Togli il filtro Cliente">
+        <bolle-avatar slot="avatar" name="Giulia Ferraro" />
+        Cliente
       </bolle-chip>
-      <bolle-chip variant="assist" href="https://example.com" label="Apri collegamento">
-        <span slot="icon" aria-hidden="true">↗</span>
-      </bolle-chip>
-      <bolle-chip variant="assist" label="Disabilitata" disabled />
-      <output>{log}</output>
-    </div>
+    </>
   );
 }
 ```
-
-只有 `filter` 变体会通过 `name` 和 `value` 参与表单提交。
 
 ### bolle-list
 
-```tsx
-const listItems: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox", supportingText: "Messaggi ricevuti" },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
-  {
-    id: "folders",
-    label: "Cartelle",
-    icon: "folder",
-    items: [
-      { id: "work", label: "Lavoro" },
-      { id: "home", label: "Casa" },
-    ],
-  },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
-  { id: "pinned", label: "Fissati", icon: "pin", selected: true },
-];
+属性: `interactive`, `label`, `selection`, `variant` · JavaScript 属性: `expanded`, `itemRenderer`, `items`, `labels`, `value` · 插槽: `default` · 事件: `action`, `change`, `expand`
 
-export function ListExamples() {
-  const [single, setSingle] = useState("inbox");
-  const [multiple, setMultiple] = useState<string[]>(["inbox"]);
-  const [expanded, setExpanded] = useState<string[]>(["folders"]);
-  const [log, setLog] = useState("");
-  const singleList = useRef<BolleList | null>(null);
-  const multiList = useRef<BolleList | null>(null);
-  const actionList = useRef<BolleList | null>(null);
+**带图标与详情的列表** — 列表从默认插槽取得行，并组合图标、文本、辅助内容和尾部内容；interactive 启用点击，selection 通过 change 报告选择。
 
-  useBolleEvent(singleList, "change", ({ value }: { value: string }) => setSingle(value));
-  useBolleEvent(singleList, "expand", ({ id, expanded: open }: { id: string; expanded: boolean }) =>
-    setExpanded((current) => (open ? [...current, id] : current.filter((value) => value !== id))),
-  );
-  useBolleEvent(multiList, "change", ({ value }: { value: string[] }) => setMultiple(value));
-  useBolleEvent(actionList, "action", ({ id }: { id: string }) => setLog(`azione ${id}`));
-
+```jsx
+export function Elenco({ onScelta }) {
   return (
-    <div>
-      <bolle-list
-        ref={singleList}
-        label="Selezione singola"
-        variant="standard"
-        interactive
-        selection="single"
-        items={listItems}
-        value={single}
-        expanded={expanded}
-      />
-      <bolle-list
-        ref={multiList}
-        label="Selezione multipla"
-        variant="segmented"
-        selection="multiple"
-        items={listItems}
-        value={multiple}
-      />
-      <bolle-list
-        ref={actionList}
-        label="Azioni"
-        interactive
-        selection="none"
-        items={listItems}
-      />
-      <bolle-list label="Statico con link" selection="none" items={listItems}>
-        <li><div className="list-item">Riga personalizzata</div></li>
-      </bolle-list>
-      <output>{log}</output>
-    </div>
+    <bolle-list
+      label="Commesse"
+      interactive
+      selection="single"
+      onChange={onScelta}
+    >
+      <bolle-list-item>
+        <span slot="leading" aria-hidden="true">
+          ★
+        </span>
+        C2026-1000
+        <span slot="supporting">Ristrutturazione scuola</span>
+        <span slot="trailing">12</span>
+      </bolle-list-item>
+      <bolle-list-item>C2026-1001</bolle-list-item>
+    </bolle-list>
   );
 }
 ```
+
+更多配方: 由数组生成的列表
 
 ### bolle-segmented-buttons
 
-```tsx
-const segments: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
+属性: `multiple` · JavaScript 属性: `items`, `values` · 插槽: - · 事件: `change`
+
+**分段选择** — 分段来自 items，选择来自 value：控件自行应用并通过 change 报告。multiple 允许多个分段并返回 values。
+
+```jsx
+import { useEffect, useRef, useState } from "react";
+
+const items = [
+  { id: "elenco", label: "Elenco" },
+  { id: "griglia", label: "Griglia" },
+  { id: "mappa", label: "Mappa" },
 ];
 
-export function SegmentedExamples() {
-  const [view, setView] = useState("inbox");
-  const [filters, setFilters] = useState<string[]>(["inbox", "archive"]);
-  const single = useRef<BolleSegmentedButtons | null>(null);
-  const multi = useRef<BolleSegmentedButtons | null>(null);
-  useBolleEvent(single, "change", ({ value }: { value: string }) => setView(value));
-  useBolleEvent(multi, "change", ({ values }: { values: string[] }) => setFilters(values));
+export function Vista() {
+  const ref = useRef(null);
+  const [vista, setVista] = useState("elenco");
 
-  return (
-    <form>
-      <bolle-segmented-buttons
-        ref={single}
-        label="Vista"
-        name="view"
-        items={segments}
-        value={view}
-        required
-      />
-      <bolle-segmented-buttons
-        ref={multi}
-        label="Filtri"
-        name="filters"
-        multiple
-        items={segments}
-        values={filters}
-      />
-      <bolle-segmented-buttons label="Disabilitati" name="disabled" items={segments} value="inbox" disabled />
-    </form>
-  );
+  useEffect(() => {
+    const control = ref.current;
+    if (!control) return;
+    control.items = items;
+    control.value = vista;
+  }, [vista]);
+
+  return <bolle-segmented-buttons ref={ref} label="Vista" />;
 }
 ```
+
+更多配方: 多选
 
 ### bolle-slider
 
-```tsx
-export function SliderExamples() {
-  const [volume, setVolume] = useState("40");
-  const [balance, setBalance] = useState("60");
-  const [price, setPrice] = useState("20");
-  const [upper, setUpper] = useState(80);
-  const [brightness, setBrightness] = useState("40");
-  const volumeSlider = useRef<BolleSlider | null>(null);
-  const balanceSlider = useRef<BolleSlider | null>(null);
-  const range = useRef<BolleSlider | null>(null);
-  const brightnessSlider = useRef<BolleSlider | null>(null);
+属性: `compact`, `max`, `min`, `min-gap`, `step`, `suffix`, `upper-label`, `upper-value`, `variant` · JavaScript 属性: `icon` · 插槽: `icon`, `label`, `value` · 事件: `change`, `value-input`
 
-  useBolleEvent(volumeSlider, "value-input", ({ value }: { value: string }) => setVolume(value));
-  useBolleEvent(balanceSlider, "value-input", ({ value }: { value: string }) => setBalance(value));
-  useBolleEvent(brightnessSlider, "value-input", ({ value }: { value: string }) => setBrightness(value));
-  useBolleEvent(range, "value-input", ({ value, upperValue }: { value: string; upperValue?: number }) => {
-    setPrice(value);
-    setUpper(upperValue ?? upper);
-  });
+**单个滑块** — 滑块在标签上显示值，拖动时通过 input 返回，结束时通过 change 返回。min 与 max 设定范围，step 设定步长。
+
+```jsx
+import { useState } from "react";
+
+export function Avanzamento() {
+  const [valore, setValore] = useState(40);
 
   return (
-    <div>
-      <bolle-slider
-        ref={volumeSlider}
-        name="volume"
-        label="Volume"
-        value={volume}
-        min={0}
-        max={100}
-        step={1}
-        variant="continuous"
-        size="xs"
-        orientation="horizontal"
-        showValue
-      />
-      <bolle-slider
-        ref={balanceSlider}
-        label="Bilanciamento"
-        variant="centered"
-        value={balance}
-        showValue
-      />
-      <bolle-slider
-        ref={range}
-        label="Prezzo"
-        name="price"
-        variant="range"
-        value={price}
-        upperValue={upper}
-        upperLabel="Massimo"
-        showValue
-        required
-      />
-      <bolle-slider
-        ref={brightnessSlider}
-        label="Luminosità"
-        value={brightness}
-        showValue
-        iconStart="🔅"
-        iconEnd="🔆"
-      />
-      <bolle-slider label="Passo 10 con indicatori" step={10} value="40" showValue stops />
-      <bolle-slider label="Small" size="small" value="30" />
-      <bolle-slider label="Large" size="large" value="70" />
-      <bolle-slider label="Verticale" orientation="vertical" value="50" />
-      <bolle-slider label="Disabilitato" value="20" disabled />
-    </div>
+    <bolle-slider
+      label="Avanzamento"
+      min={0}
+      max={100}
+      step={5}
+      value={String(valore)}
+      onChange={(event) => setValore(Number(event.detail.value))}
+    />
   );
 }
 ```
 
-`iconStart` 和 `iconEnd` 是 property：React 19 会直接赋值；在 React 18 中请使用 `useBolleProps`。
+更多配方: 两值之间的区间
 
-## 文本与输入（Text and input）
+### bolle-steps
+
+属性: `options` · 插槽: `label` · 事件: `change`
+
+**流程步骤** — options 声明步骤名称，value 指定当前步骤：组件标记已完成、当前和待完成的步骤，并通过 change 报告选择。
+
+```jsx
+const passi = ["Dati", "Documenti", "Riepilogo"];
+
+export function Passi({ passo, onChange }) {
+  return (
+    <bolle-steps
+      label="Avanzamento"
+      options={passi}
+      value={passo}
+      onChange={(event) => onChange(String(event.detail.index))}
+    />
+  );
+}
+```
 
 ### bolle-text-field
 
-```tsx
-export function TextFieldExamples() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const field = useRef<BolleTextField | null>(null);
-  const bio = useRef<BolleTextField | null>(null);
-  const emailError = email.length > 0 && !email.includes("@");
+属性: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `inputmode`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · 插槽: `leading`, `prefix`, `suffix`, `supporting`, `trailing` · 事件: `change`, `value-input`
 
-  useBolleEvent(field, "value-input", ({ value }: { value: string }) => setEmail(value));
-  useBolleEvent(bio, "value-input", ({ value }: { value: string }) => setMessage(value));
+**带前缀与辅助文本的字段** — 字段从插槽取得前缀、后缀和辅助文本，值留在 input 中并通过 input 与 change 返回。variant filled 或 outlined 改变框的样式。
+
+```jsx
+import { useState } from "react";
+
+export function Importo() {
+  const [importo, setImporto] = useState("");
 
   return (
-    <form>
-      <bolle-text-field
-        ref={field}
-        name="email"
-        label="Email"
-        type="email"
-        variant="outlined"
-        placeholder="nome@dominio.it"
-        autocomplete="email"
-        maxlength={120}
-        counter
-        required
-        value={email}
-        error={emailError}
-        supportingText="Useremo questo indirizzo per le notifiche."
-      >
-        <span slot="leading" aria-hidden="true">✉</span>
-        <span slot="trailing" aria-hidden="true">?</span>
-      </bolle-text-field>
-
-      <bolle-text-field label="Nome utente" variant="filled" prefix="@" maxlength={30} counter />
-      <bolle-text-field label="Prezzo" type="number" min="0" max="9999" step="0.01" prefix="€" suffix="EUR" value="12.50" />
-      <bolle-text-field
-        ref={bio}
-        label="Messaggio"
-        multiline
-        rows={4}
-        maxlength={200}
-        counter
-        value={message}
-      />
-      <bolle-text-field label="Solo lettura" readonly value="Valore bloccato" />
-      <bolle-text-field label="Quantità" type="number" min="1" max="10" step="1" value="2" />
-      <bolle-text-field label="Codice" pattern="[A-Z]{3}[0-9]{3}" value="ABC123" supportingText="Tre lettere e tre cifre." />
-      <bolle-text-field label="Data" type="date" min="2026-01-01" max="2026-12-31" />
-      <bolle-text-field label="Ricerca" type="search" placeholder="Cerca" />
-      <bolle-text-field label="Disabilitato" disabled value="Non modificabile" />
-    </form>
+    <bolle-text-field
+      label="Importo"
+      type="number"
+      value={importo}
+      onChange={(event) => setImporto(event.detail.value)}
+    >
+      <span slot="prefix">€</span>
+      <span slot="supporting">Importo al netto dell'IVA</span>
+    </bolle-text-field>
   );
 }
 ```
+
+更多配方: 错误状态的字段 · 多行字段
 
 ### bolle-search
 
-```tsx
-const allCities = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
+属性: `appearance`, `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `filter`, `inputmode`, `layout`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `suggestion-delay`, `suggestions-label`, `supporting-text`, `type`, `variant` · JavaScript 属性: `suggestions` · 插槽: `leading`, `prefix`, `results`, `suffix`, `supporting`, `trailing` · 事件: `change`, `search`, `suggest`, `value-input`
 
-export function SearchExamples() {
-  const [query, setQuery] = useState("");
-  const [cities, setCities] = useState(allCities);
-  const [lastSearch, setLastSearch] = useState("");
-  const search = useRef<BolleSearch | null>(null);
+**带结果的搜索栏** — 搜索是已内置清除命令的文本字段：results 接收显示在栏下的列表，由应用用 suggest 或 search 的结果填充。
 
-  useBolleEvent(search, "value-input", ({ value }: { value: string }) => setQuery(value));
-  useBolleEvent(search, "suggest", ({ value }: { value: string }) =>
-    setCities(allCities.filter((city) => city.toLowerCase().includes(value.toLowerCase()))),
-  );
-  useBolleEvent(search, "search", ({ value }: { value: string }) => setLastSearch(value));
-
+```jsx
+export function Ricerca({ risultati, onSearch }) {
   return (
-    <div>
-      <bolle-search
-        label="Cerca documenti"
-        placeholder="Titolo o autore"
-        appearance="contained"
-        layout="docked"
-        value={query}
-        suggestions={[]}
-        suggestionDelay={0}
-      >
-        <span slot="leading" aria-hidden="true">🔍</span>
-        <span slot="trailing" aria-hidden="true">⌘K</span>
-        <bolle-list
-          slot="results"
-          label="Risultati"
-          selection="none"
-          items={[
-            { id: "r1", label: "Roma", supportingText: "Capitale d'Italia" },
-            { id: "r2", label: "Torino", supportingText: "Capoluogo piemontese" },
-          ]}
-        />
-      </bolle-search>
-
-      <bolle-search appearance="divided" label="Cerca nel testo" placeholder="Parola chiave" />
-      <bolle-search layout="full-screen" label="Cerca ovunque" placeholder="Cerca ovunque" />
-
-      <bolle-search
-        ref={search}
-        filter
-        label="Cerca città"
-        placeholder="Scrivi una città"
-        suggestionsLabel="Suggerimenti"
-        suggestionDelay={150}
-        suggestions={cities}
-      />
-      <output>{lastSearch}</output>
-    </div>
+    <bolle-search
+      label="Cerca commesse"
+      onSearch={(event) => onSearch(event.detail.value)}
+    >
+      <bolle-list slot="results" label="Risultati">
+        {risultati.map((voce) => (
+          <bolle-list-item key={voce.id}>{voce.label}</bolle-list-item>
+        ))}
+      </bolle-list>
+    </bolle-search>
   );
 }
 ```
+
+更多配方: 栏内行内搜索
 
 ### bolle-date-picker
 
-```tsx
-export function DatePickerExamples() {
-  const [appointment, setAppointment] = useState("2026-11-11");
-  const [rangeStart, setRangeStart] = useState("2026-11-01");
-  const [rangeEnd, setRangeEnd] = useState("2026-11-20");
-  const single = useRef<BolleDatePicker | null>(null);
-  const range = useRef<BolleDatePicker | null>(null);
+属性: `autocapitalize`, `autocomplete`, `counter`, `end-value`, `enterkeyhint`, `error`, `inputmode`, `locale`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `selection-mode`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant`, `week-starts-on` · JavaScript 属性: `labels` · 插槽: `end-label`, `leading`, `prefix`, `suffix`, `supporting`, `title`, `trailing` · 事件: `change`, `value-input`
 
-  useBolleEvent(single, "change", ({ value }: { value: string }) => setAppointment(value));
-  useBolleEvent(range, "change", ({ value, endValue }: { value: string; endValue: string }) => {
-    setRangeStart(value);
-    setRangeEnd(endValue);
-  });
+**选择日期** — 选择器从字段打开日历：所选值以 ISO 格式通过 change 返回，locale 决定语言与星期名称。selection-mode range 在 end-value 中增加第二个日期。
 
+```jsx
+export function Scadenza({ scadenza, onChange }) {
   return (
-    <form>
-      <bolle-date-picker
-        ref={single}
-        label="Data appuntamento"
-        name="appointment"
-        locale="it"
-        variant="modal"
-        selectionMode="single"
-        min="2026-01-01"
-        max="2026-12-31"
-        required
-        value={appointment}
-        supportingText="Seleziona un giorno lavorativo."
-      />
-
-      <bolle-date-picker
-        ref={range}
-        label="Periodo"
-        name="period"
-        locale="it"
-        selectionMode="range"
-        value={rangeStart}
-        endValue={rangeEnd}
-      />
-
-      <bolle-date-picker
-        variant="docked"
-        label="Calendario sempre visibile"
-        locale="it"
-        selectionMode="single"
-        value={appointment}
-        weekStartsOn={1}
-        labels={{ previous: "Mese precedente", next: "Mese successivo" }}
-      />
-
-      <bolle-date-picker label="Disabilitato" disabled value="2026-11-11" />
-    </form>
+    <bolle-date-picker
+      label="Scadenza"
+      value={scadenza}
+      onChange={(event) => onChange(event.detail.value)}
+    />
   );
 }
 ```
+
+更多配方: 日期区间
 
 ### bolle-time-picker
 
-```tsx
-export function TimePickerExamples() {
-  const [time, setTime] = useState("09:30");
-  const [evening, setEvening] = useState("18:45");
-  const dial = useRef<BolleTimePicker | null>(null);
-  const twelve = useRef<BolleTimePicker | null>(null);
+属性: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `hour-cycle`, `inputmode`, `locale`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · JavaScript 属性: `labels` · 插槽: `leading`, `prefix`, `suffix`, `supporting`, `title`, `trailing` · 事件: `change`, `value-input`
 
-  useBolleEvent(dial, "change", ({ value }: { value: string }) => setTime(value));
-  useBolleEvent(twelve, "change", ({ value }: { value: string }) => setEvening(value));
+**选择时间** — 选择器从字段打开小时表盘：所选值通过 change 返回，hour-cycle 决定十二或二十四小时制，title 插槽命名表盘。
 
+```jsx
+export function Consegna({ consegna, onChange }) {
   return (
-    <form>
-      <bolle-time-picker
-        ref={dial}
-        label="Ora promemoria"
-        name="time"
-        variant="dial"
-        hourCycle={24}
-        locale="it"
-        required
-        value={time}
-      />
-      <bolle-time-picker
-        ref={twelve}
-        label="Ora in formato 12"
-        variant="dial"
-        hourCycle={12}
-        locale="it"
-        value={evening}
-        labels={{ period: "AM o PM", hour: "Ora", minute: "Minuti" }}
-      />
-      <bolle-time-picker label="Inserimento da tastiera" variant="input" hourCycle={24} value="08:15" />
-      <bolle-time-picker label="Disabilitato" disabled value="07:00" />
-    </form>
+    <bolle-time-picker
+      label="Consegna"
+      hour-cycle={24}
+      value={consegna}
+      onChange={(event) => onChange(event.detail.value)}
+    >
+      <span slot="title">Orario di consegna</span>
+    </bolle-time-picker>
   );
 }
 ```
 
-## 菜单（Menu）
-
 ### bolle-menu
 
-```tsx
-const documentItems: MenuEntry[] = [
-  {
-    group: true,
-    label: "Modifica",
-    items: [
-      { id: "undo", label: "Annulla", icon: "undo", trailingText: "⌘Z" },
-      { id: "redo", label: "Ripeti", icon: "redo", trailingText: "⇧⌘Z", disabled: true },
-    ],
-  },
-  { separator: true },
-  {
-    id: "share",
-    label: "Condividi",
-    icon: "share",
-    children: [
-      { id: "link", label: "Copia collegamento" },
-      { id: "email", label: "Invia per email" },
-    ],
-  },
-  { id: "open", label: "Apri in nuova scheda", href: "https://example.com" },
-  { id: "download", label: "Scarica", icon: "download", badge: "PDF" },
+属性: `color-scheme`, `compact-width`, `density`, `filter`, `filterable`, `inactive`, `locale`, `menu-label`, `options`, `quick`, `selection-mode`, `tail`, `variant` · JavaScript 属性: `items`, `labels` · 插槽: - · 事件: -
+
+**操作菜单** — show(anchor) 在调用它的元素下方打开菜单，选择通过 menu-select 返回。items 声明条目，含图标、快捷键、disabled 与子菜单。
+
+```jsx
+import { useRef } from "react";
+
+const items = [
+  { id: "apri", label: "Apri scheda" },
+  { id: "duplica", label: "Duplica", shortcut: "Ctrl D" },
 ];
 
-const filterItems: MenuEntry[] = [
-  { id: "unread", label: "Non letti", selected: true },
-  { id: "flagged", label: "Con stella" },
-  { id: "attachments", label: "Con allegati", supportingText: "Almeno un file" },
-];
-
-const baselineItems: MenuEntry[] = [
-  { id: "copy", label: "Copia" },
-  { id: "paste", label: "Incolla", disabled: true },
-];
-
-export function MenuExamples() {
-  const actions = useRef<BolleMenu | null>(null);
-  const filters = useRef<BolleMenu | null>(null);
-  const baseline = useRef<BolleMenu | null>(null);
-  const [last, setLast] = useState("");
-
-  const onSelect = ({ item, selectedIds }: { item: { label: string }; selectedIds: string[] }) =>
-    setLast(`${item.label} (${selectedIds.join(", ")})`);
-
-  useBolleEvent(actions, "menu-select", onSelect);
-  useBolleEvent(filters, "menu-select", onSelect);
-  useBolleEvent(baseline, "menu-select", onSelect);
-  useBolleEvent(actions, "menu-open", () => setLast("menu aperto"));
-  useBolleEvent(actions, "menu-close", () => setLast("menu chiuso"));
-
-  function open(
-    menu: BolleMenu | null,
-    event: React.MouseEvent,
-    options?: { last?: boolean; x?: number; y?: number },
-  ) {
-    menu?.show(event.currentTarget as HTMLElement, options);
-  }
+export function Azioni({ onScelta }) {
+  const menu = useRef(null);
 
   return (
-    <div>
-      <bolle-button haspopup="menu" onClick={(event) => open(actions.current, event)}>
+    <>
+      <bolle-button
+        variant="tonal"
+        onClick={(event) => menu.current?.show(event.currentTarget)}
+      >
         Azioni
       </bolle-button>
       <bolle-menu
-        ref={actions}
-        menuLabel="Azioni documento"
-        variant="vertical"
-        colorScheme="standard"
-        selectionMode="none"
-        quick={false}
-        density={0}
-        inactive={false}
-        items={documentItems}
+        ref={menu}
+        label="Azioni"
+        items={items}
+        onMenuSelect={onScelta}
       />
-
-      <bolle-button
-        variant="tonal"
-        haspopup="menu"
-        onClick={(event) => open(filters.current, event, { last: true })}
-      >
-        Filtri
-      </bolle-button>
-      <bolle-menu
-        ref={filters}
-        menuLabel="Filtri contenuti"
-        colorScheme="vibrant"
-        selectionMode="multi"
-        density={-1}
-        items={filterItems}
-      />
-
-      <bolle-button
-        variant="outlined"
-        haspopup="menu"
-        onClick={(event) => open(baseline.current, event, { x: 120, y: 160 })}
-      >
-        Menu baseline a coordinate
-      </bolle-button>
-      <bolle-button variant="text" onClick={() => actions.current?.close()}>
-        Chiudi menu azioni
-      </bolle-button>
-      <bolle-menu ref={baseline} menuLabel="Azioni rapide" variant="baseline" items={baselineItems} />
-      <output>{last}</output>
-    </div>
+    </>
   );
 }
 ```
 
 ### bolle-fab-menu
 
-```tsx
-const fabItems: BolleItem[] = [
-  { id: "note", label: "Nota", icon: "note" },
-  { id: "folder", label: "Cartella", icon: "folder" },
-  { id: "upload", label: "Carica file", icon: "upload" },
-  { id: "event", label: "Evento", icon: "calendar", disabled: true },
-];
+属性: `color`, `label`, `open`, `tail` · JavaScript 属性: `items` · 插槽: `icon` · 事件: `action`
 
-export function FabMenuExamples() {
-  const [log, setLog] = useState("");
-  const fab = useRef<BolleFabMenu | null>(null);
-  useBolleEvent(fab, "action", ({ id }: { id?: string }) => setLog(`crea ${id}`));
+**快捷操作** — 浮动按钮菜单从主按钮展开次要操作：items 声明条目，open 表示是否展开，选择通过 menu-select 返回。
 
+```jsx
+export function AzioniRapide({ items }) {
   return (
-    <div>
-      <bolle-fab-menu ref={fab} label="Crea" items={fabItems}>
-        <span slot="icon" aria-hidden="true">＋</span>
-      </bolle-fab-menu>
-      <output>{log}</output>
-    </div>
+    <bolle-fab-menu label="Azioni rapide" items={items}>
+      <span slot="icon" aria-hidden="true">
+        +
+      </span>
+    </bolle-fab-menu>
   );
 }
 ```
 
 ### bolle-split-button
 
-```tsx
-const splitItems: MenuEntry[] = [
-  { id: "later", label: "Invia più tardi" },
-  { id: "draft", label: "Salva bozza" },
-  { separator: true },
-  { id: "template", label: "Usa modello" },
+属性: `disabled`, `icon`, `label`, `menu-label`, `size`, `variant` · JavaScript 属性: `items` · 插槽: `icon` · 事件: `action`
+
+**主要操作与菜单** — 分体按钮左侧保持主要操作，菜单从旁边的命令展开：条目来自 items，选择通过 menu-select 返回，主要操作的点击通过 click 返回。
+
+```jsx
+const items = [
+  { id: "bozza", label: "Salva come bozza" },
+  { id: "duplica", label: "Salva e duplica" },
 ];
 
-export function SplitButtonExamples() {
-  const [log, setLog] = useState("");
-  const variants = ["filled", "tonal", "outlined", "elevated"] as const;
-  const sizes = ["xs", "small", "medium", "large", "xl"] as const;
-  const split = useRef<BolleSplitButton | null>(null);
-
-  useBolleEvent(split, "action", () => setLog("azione principale"));
-  useBolleEvent(split, "menu-select", ({ item }: { item: { label: string } }) =>
-    setLog(item.label),
-  );
-  useBolleEvent(split, "menu-open", () => setLog("menu aperto"));
-  useBolleEvent(split, "menu-close", () => setLog("menu chiuso"));
-
+export function Salva() {
   return (
-    <div>
-      {variants.map((variant) => (
-        <bolle-split-button
-          key={variant}
-          variant={variant}
-          label={`Invia ${variant}`}
-          menuLabel={`Altre opzioni ${variant}`}
-          items={splitItems}
-        />
-      ))}
-
-      {sizes.map((size) => (
-        <bolle-split-button
-          key={size}
-          size={size}
-          label={size}
-          menuLabel={`Altre opzioni ${size}`}
-          items={splitItems}
-        />
-      ))}
-
-      <bolle-split-button
-        ref={split}
-        label="Invia"
-        menuLabel="Altre opzioni"
-        items={splitItems}
-      />
-      <bolle-split-button label="Invia" menuLabel="Altre opzioni" disabled items={splitItems} />
-      <output>{log}</output>
-    </div>
+    <bolle-split-button label="Salva" variant="filled" items={items}>
+      <span slot="icon" aria-hidden="true">
+        ★
+      </span>
+    </bolle-split-button>
   );
 }
 ```
 
-## 覆盖范围
+### bolle-select
 
-| 分组          | 组件                                                                       |
-| ------------- | -------------------------------------------------------------------------- |
-| 操作          | button, icon-button, floating-action-button, extended-fab, button-group    |
-| 通信          | badge, progress-indicator, loading-indicator, snackbar, tooltip, carousel  |
-| 容器          | card, dialog, bottom-sheet, side-sheet, divider                            |
-| 导航          | app-bar, toolbar, navigation-bar, navigation-rail, navigation-drawer, tabs |
-| 选择          | checkbox, switch, radio-button, chip, list, segmented-buttons, slider      |
-| 文本与输入    | text-field, search, date-picker, time-picker                               |
-| 菜单          | menu, fab-menu, split-button                                               |
+属性: `error`, `open`, `placeholder`, `supporting-text`, `variant` · 插槽: `supporting` · 事件: `change`
 
+**带原生选项的 select** — select 包装原生 select 元素：选项留在标记中，值通过 change 返回。展开的菜单由组件提供，与文本字段样式一致。
 
+```jsx
+export function Stato({ stato, onChange }) {
+  return (
+    <bolle-select
+      label="Stato"
+      value={stato}
+      onChange={(event) => onChange(event.detail.value)}
+    >
+      <select name="stato">
+        <option value="aperta">In corso</option>
+        <option value="chiusa">Chiusa</option>
+        <option value="sospesa">Sospesa</option>
+      </select>
+      <span slot="supporting">Lo stato decide l'ordine delle commesse</span>
+    </bolle-select>
+  );
+}
+```
 
+### bolle-autocomplete
 
+属性: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `inputmode`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · JavaScript 属性: `options` · 插槽: `leading`, `prefix`, `suffix`, `supporting`, `trailing` · 事件: `change`, `value-input`
 
+**带建议的字段** — suggestions 声明建议项，组件在输入时筛选并通过 suggest 返回；选择一项会填充字段并触发 change。suggestion-delay 设定请求数据前的等待。
 
+```jsx
+const suggerimenti = [
+  { id: "bergamo", label: "Bergamo" },
+  { id: "brescia", label: "Brescia" },
+  { id: "seriate", label: "Seriate" },
+];
+
+export function Comune() {
+  return (
+    <bolle-autocomplete
+      label="Comune"
+      suggestions={suggerimenti}
+      suggestion-delay={200}
+    />
+  );
+}
+```
+
+### bolle-sidebar
+
+属性: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · JavaScript 属性: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · 插槽: `empty`, `filter`, `footer`, `header` · 事件: `collapse`, `expand`, `navigate`, `resize`
+
+**导航树** — items 声明条目及其子项：组件构建最多三层的树，展开所选条目的分支，并通过 navigate 报告路径。当前条目用 current 设定，路径由条目以斜线分隔。
+
+```jsx
+import { useEffect, useRef } from "react";
+import type { BolleSidebar, SidebarItem } from "@bolle/web-components";
+
+const items: SidebarItem[] = [
+  { id: "cruscotto", label: "Cruscotto" },
+  {
+    id: "commesse",
+    label: "Commesse",
+    count: 12,
+    children: [
+      { id: "attive", label: "Attive" },
+      { id: "chiuse", label: "Chiuse" },
+    ],
+  },
+  { id: "clienti", label: "Clienti" },
+];
+
+export function Navigation() {
+  const ref = useRef<BolleSidebar>(null);
+
+  useEffect(() => {
+    const nav = ref.current;
+    if (!nav) return;
+    nav.items = items;
+    nav.current = "commesse/attive";
+  }, []);
+
+  return (
+    <bolle-sidebar ref={ref} label="Navigazione" style={{ blockSize: "520px" }} />
+  );
+}
+```
+
+更多配方: 搜索、计数与紧凑栏 · 条目内容
+
+### bolle-app-shell
+
+属性: `close-label`, `expanded-width`, `form`, `label`, `medium-width`, `supporting-label`, `supporting-mode`, `supporting-open` · JavaScript 属性: `labels` · 插槽: `bar`, `bottom-bar`, `default`, `navigation`, `navigation-compact`, `status`, `supporting`, `supporting-actions`, `supporting-header`, `supporting-inline`, `supporting-modal` · 事件: `form-change`, `supporting-close`
+
+**完整外壳** — 外壳在内容周围组合各面板：导航、栏、底部栏与辅助面板来自插槽，主要内容位于默认插槽。未接收内容的区域不占空间。
+
+```jsx
+export function Shell({ children }) {
+  return (
+    <bolle-app-shell style={{ blockSize: "100dvh" }}>
+      <bolle-navigation-drawer slot="navigation" label="Sezioni">
+        <a href="#/commesse">Commesse</a>
+        <a href="#/clienti">Clienti</a>
+      </bolle-navigation-drawer>
+      <bolle-app-bar slot="bar" title="Commesse" />
+      <main>{children}</main>
+      <bolle-bottom-app-bar slot="bottom-bar" />
+    </bolle-app-shell>
+  );
+}
+```
+
+更多配方: 辅助面板
+
+### bolle-dashboard
+
+属性: `columns`, `compact-columns`, `density`, `label`, `medium-columns` · JavaScript 属性: `labels` · 插槽: `default` · 事件: -
+
+**瓦片网格** — 仪表盘排列收到的瓦片，不限定内容：每个瓦片都是 bolle-widget，span 决定占多少列，min-span 在空间变窄时设定下限。
+
+```jsx
+export function Overview() {
+  return (
+    <bolle-dashboard label="Panoramica" style={{ blockSize: "640px" }}>
+      <bolle-widget title="Lavori in ritardo" span={8} min-span={4}>
+        <p>Quattro commesse oltre la scadenza.</p>
+      </bolle-widget>
+      <bolle-widget title="Avanzamento cantieri" span={4} min-span={3}>
+        <bolle-progress-indicator value={62} label="Avanzamento" />
+      </bolle-widget>
+    </bolle-dashboard>
+  );
+}
+```
+
+更多配方: 可移动与调整大小的瓦片
+
+### bolle-kanban
+
+属性: `addable`, `card-gap`, `collapsible`, `column-gap`, `column-max-width`, `column-min-width`, `density`, `empty-label`, `error`, `label`, `lanes`, `loading`, `movable`, `selected` · JavaScript 属性: `card`, `cardActions`, `cards`, `collapsed`, `columnActions`, `columnRenderer`, `columns`, `contentStyles`, `emptyRenderer`, `errorRenderer`, `labels`, `laneLabel`, `laneRenderer`, `loadingRenderer`, `restrict` · 插槽: `empty`, `error`, `loading` · 事件: `card-action`, `card-add`, `card-move`, `card-move-blocked`, `card-open`, `column-action`, `column-collapse`, `retry`
+
+**最简看板** — columns 声明列，cards 声明卡片，每张卡片带有其所在列。使用 movable 时，读者可拖动卡片或用 Alt 加方向键移动：看板自行应用并通过 card-move 报告。
+
+```jsx
+import { useEffect, useRef } from "react";
+
+export function Board({ columns, cards }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const board = ref.current;
+    if (!board) return;
+    board.columns = columns;
+    board.cards = cards;
+    board.movable = true;
+  }, [columns, cards]);
+
+  return (
+    <bolle-kanban ref={ref} label="Cantieri" style={{ blockSize: "520px" }} />
+  );
+}
+```
+
+更多配方: 移动规则与限制 · 卡片内容
+
+### bolle-gantt
+
+属性: `baseline`, `density`, `editable`, `empty-label`, `error`, `group-by`, `label`, `linkable`, `loading`, `scale`, `selected` · JavaScript 属性: `barRenderer`, `columns`, `contentStyles`, `emptyRenderer`, `errorRenderer`, `groupLabel`, `labels`, `loadingRenderer`, `restrict`, `tasks` · 插槽: `empty`, `error`, `loading` · 事件: `columns-change`, `dependency-add`, `dependency-blocked`, `retry`, `task-change`, `task-change-blocked`, `task-open`, `task-select`, `view-change`
+
+**最简计划** — 计划在时间轴上绘制任务：parent 构建层级，带子任务的任务显示为汇总条。宿主必须设定高度，因为该面板会填满收到的空间。
+
+```jsx
+import { useEffect, useRef } from "react";
+import type { BolleGantt, GanttTask } from "@bolle/web-components";
+
+const tasks: GanttTask[] = [
+  {
+    id: "p-1",
+    code: "C2026-1000",
+    name: "Ristrutturazione scuola",
+    start: "2026-09-07",
+    end: "2027-03-12",
+  },
+  {
+    id: "p-1-1",
+    parent: "p-1",
+    code: "C2026-1000.01",
+    name: "Impianto elettrico",
+    start: "2026-09-14",
+    end: "2026-10-02",
+    progress: 30,
+    resource: "Giulia Ferraro",
+  },
+];
+
+export function Plan() {
+  const ref = useRef<BolleGantt>(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.tasks = tasks;
+  }, []);
+
+  return (
+    <bolle-gantt
+      ref={ref}
+      label="Piano di commessa"
+      style={{ blockSize: "420px" }}
+    />
+  );
+}
+```
+
+更多配方: 列与单元格内容 · 移动与调整长度 · 条形内容 · 状态与插槽
+
+### bolle-data-table
+
+属性: `compact-row-height`, `default-column-width`, `density`, `empty-label`, `error`, `expandable`, `group-by`, `group-height`, `header-height`, `label`, `loading`, `max-column-width`, `min-column-width`, `overscan`, `page`, `page-size`, `row-height`, `row-key`, `selectable`, `total`, `updating`, `variant`, `virtual` · JavaScript 属性: `columnHandler`, `columns`, `contentStyles`, `detail`, `emptyRenderer`, `errorRenderer`, `expanded`, `footerRenderer`, `groupRenderer`, `groupSummary`, `headerRenderer`, `labels`, `loadingRenderer`, `pageHandler`, `rowActions`, `rowRenderer`, `rows`, `selected`, `sort`, `sortHandler` · 插槽: `empty`, `empty-state`, `error`, `footer`, `header`, `loading` · 事件: `column-change`, `expand`, `group`, `retry`, `row-action`, `row-activate`, `select`, `sort`
+
+**通过包装组件使用框架插槽** — Vue 和 React 无法向自定义元素传递带作用域的插槽。几行代码的包装组件把插槽转换为渲染函数：页面只写一次单元格模板，包装组件为每一行挂载内容，并在单元格离开文档时释放内存。
+
+```jsx
+// BolleDataTable.tsx
+import { useEffect, useRef } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import type { ReactNode } from "react";
+import type {
+  BolleDataTable as Element,
+  DataTableColumn,
+  DataTableRow,
+} from "@bolle/web-components";
+
+interface Props {
+  columns: DataTableColumn[];
+  rows: DataTableRow[];
+  label: string;
+  rowKey?: string;
+  cell?: (scope: { row: DataTableRow; column: DataTableColumn }) => ReactNode;
+}
+
+export function BolleDataTable({ columns, rows, label, rowKey = "id", cell }: Props) {
+  const ref = useRef<Element>(null);
+  const cells = useRef(new Map<string, { host: HTMLElement; root: Root }>());
+
+  useEffect(() => {
+    const table = ref.current;
+    if (!table) return;
+
+    table.columns = columns.map((column) => ({
+      ...column,
+      render: cell
+        ? (row: DataTableRow) => {
+            const key = `${row[rowKey]}-${column.key}`;
+            let entry = cells.current.get(key);
+            if (!entry) {
+              const host = document.createElement("span");
+              entry = { host, root: createRoot(host) };
+              cells.current.set(key, entry);
+            }
+            entry.root.render(<>{cell({ row, column })}</>);
+            return entry.host;
+          }
+        : column.render,
+    }));
+    table.rows = rows;
+  }, [columns, rows, cell, rowKey]);
+
+  useEffect(() => {
+    const entries = cells.current;
+    return () => {
+      for (const { root } of entries.values()) root.unmount();
+      entries.clear();
+    };
+  }, []);
+
+  return <bolle-data-table ref={ref} label={label} row-key={rowKey} />;
+}
+
+// Pagina: il contenuto della cella è JSX, non una funzione che costruisce nodi.
+<BolleDataTable
+  label="Commesse"
+  columns={columns}
+  rows={rows}
+  cell={({ row, column }) =>
+    column.key === "status" ? <span className="badge">{row.status}</span> : null
+  }
+/>
+```
+
+更多配方: 注册组件 · 最小表格 · 格式化数值 · 自定义单元格 · 排序 · 行选择 · 行详情 · 分组 · 分页 · 加载、错误和空状态 · 固定列、宽度与可见性 · 连续滚动 · 通过 CSS 部件设置样式

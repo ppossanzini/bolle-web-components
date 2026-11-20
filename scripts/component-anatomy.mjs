@@ -55,10 +55,38 @@ const partNames = (block) => {
   return [...names];
 };
 
+const propertyNames = (block) => {
+  const rows = [];
+  for (const match of block.matchAll(
+    /^\s{4}([A-Za-z_$][\w$]*):\s*(\{[^}]*\}|\{\s*[^)]*?\}|true|\{\})/gm,
+  )) {
+    const name = match[1];
+    const spec = match[2];
+    if (/\bstate:\s*true\b/.test(spec)) continue;
+    const attribute = /\battribute:\s*false\b/.test(spec)
+      ? ""
+      : (/\battribute:\s*"([^"]+)"/.exec(spec)?.[1] ?? name.toLowerCase());
+    const type = /\btype:\s*(Boolean|Number|String|Array|Object)\b/.exec(
+      spec,
+    )?.[1];
+    rows.push({ name, attribute, type: type ?? "string" });
+  }
+  return rows;
+};
+
+const eventNames = (block) => {
+  const names = new Set();
+  for (const match of block.matchAll(/this\.emit(?:<[^>]*>)?\(\s*"([a-z-]+)"/g))
+    names.add(match[1]);
+  return [...names];
+};
+
 const result = {};
 for (const component of sources.keys()) {
   const slots = new Set();
   const parts = new Set();
+  const attributes = new Map();
+  const events = new Set();
   let current = component;
   const visited = new Set();
   while (current && !visited.has(current)) {
@@ -67,6 +95,9 @@ for (const component of sources.keys()) {
     if (!found) break;
     for (const slot of slotNames(found.block)) slots.add(slot);
     for (const part of partNames(found.block)) parts.add(part);
+    for (const row of propertyNames(found.block))
+      if (!attributes.has(row.name)) attributes.set(row.name, row);
+    for (const name of eventNames(found.block)) events.add(name);
     if (
       ["LitElement", "BolleElement", "BolleFormElement"].includes(found.parent)
     )
@@ -76,6 +107,10 @@ for (const component of sources.keys()) {
   result[component] = {
     slots: [...slots].sort(),
     parts: [...parts].sort(),
+    attributes: [...attributes.values()].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    ),
+    events: [...events].sort(),
   };
 }
 

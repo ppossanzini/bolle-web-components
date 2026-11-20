@@ -2,7 +2,7 @@
 
 # Vue 3 · exemples d’utilisation exhaustifs
 
-Ce guide couvre les 36 composants de la bibliothèque. Chaque section énumère les
+Ce guide couvre les 51 composants de la bibliothèque. Chaque section énumère les
 attributs publics, les slots, les événements et les méthodes, puis montre un
 exemple Vue 3 qui les utilise tous. Les exemples supposent `<script setup lang="ts">`
 et Vue 3.4 ou une version ultérieure. Pour React, voir [react.md](./react.md).
@@ -61,8 +61,7 @@ Si le build de Vue s’effectue à l’exécution, appliquez la même règle sur
 l’application :
 
 ```ts
-app.config.compilerOptions.isCustomElement = (tag) =>
-  tag.startsWith("bolle-");
+app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith("bolle-");
 ```
 
 `vue-tsc` ne déduit pas les types des attributs des Custom Elements. Pour une
@@ -81,7 +80,9 @@ const model = defineModel<string>({ default: "" });
   <bolle-text-field
     :label="label"
     :value="model"
-    @value-input="model = ($event as CustomEvent<{ value: string }>).detail.value"
+    @value-input="
+      model = ($event as CustomEvent<{ value: string }>).detail.value
+    "
   />
 </template>
 ```
@@ -97,15 +98,15 @@ Vue définit une propriété DOM lorsque la clé existe sur l’élément, sinon
 un attribut. Les propriétés qui acceptent des tableaux ou des objets doivent donc
 être liées avec `:` et le nom de la propriété, et non comme une chaîne :
 
-| Composant             | Propriétés à lier                                |
-| --------------------- | ------------------------------------------------ |
-| `bolle-segmented-buttons` | `:items`, `:values`                         |
-| `bolle-search`       | `:suggestions`                                   |
-| `bolle-date-picker`  | `:labels`                                        |
-| `bolle-list`         | `:items`, `:value` (aussi tableau), `:expanded`  |
-| `bolle-navigation-*`, `bolle-tabs`, `bolle-fab-menu`, `bolle-split-button`, `bolle-menu` | `:items` |
-| `bolle-slider`       | `:iconStart`, `:iconEnd` (acceptent SVG ou texte) |
-| `bolle-switch`       | `:icon`, `:iconSelected`                         |
+| Composant                                                                                | Propriétés à lier                                 |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `bolle-segmented-buttons`                                                                | `:items`, `:values`                               |
+| `bolle-search`                                                                           | `:suggestions`                                    |
+| `bolle-date-picker`                                                                      | `:labels`                                         |
+| `bolle-list`                                                                             | `:items`, `:value` (aussi tableau), `:expanded`   |
+| `bolle-navigation-*`, `bolle-tabs`, `bolle-fab-menu`, `bolle-split-button`, `bolle-menu` | `:items`                                          |
+| `bolle-slider`                                                                           | `:iconStart`, `:iconEnd` (acceptent SVG ou texte) |
+| `bolle-switch`                                                                           | `:icon`, `:iconSelected`                          |
 
 Tous les autres attributs (`variant`, `size`, `label`, `disabled`, `required`,
 `supporting-text`…) fonctionnent à la fois comme attributs statiques et avec
@@ -197,7 +198,9 @@ const snackbar = ref<BolleSnackbar | null>(null);
 
 <template>
   <bolle-snackbar ref="snackbar" message="Documento salvato" />
-  <bolle-button @click="snackbar?.show('Documento salvato')">Salva</bolle-button>
+  <bolle-button @click="snackbar?.show('Documento salvato')"
+    >Salva</bolle-button
+  >
 </template>
 ```
 
@@ -254,7 +257,10 @@ ignorent le raccourci.
 ```vue
 <template>
   <bolle-button shortcut="Alt+S" @click="save">Enregistrer</bolle-button>
-  <bolle-text-field label="Rechercher" shortcut="Control+K Meta+K"></bolle-text-field>
+  <bolle-text-field
+    label="Rechercher"
+    shortcut="Control+K Meta+K"
+  ></bolle-text-field>
 </template>
 ```
 
@@ -272,1801 +278,1369 @@ markup HTML sous forme de chaîne, car il s’afficherait littéralement.
 La bibliothèque n’inclut pas de police d’icônes. La démo utilise des SVG inline
 dans les slots et des noms de ligature dans les items.
 
-## Actions
+### État appliqué et crochets
+
+Les composants appliquent eux-mêmes le changement du lecteur et le rapportent
+avec un événement : tri, page, sélection, ouverture de ligne, regroupement,
+colonnes, déplacement d'une carte ou d'une tâche. Il n'est pas nécessaire de
+réécrire l'état en écoutant ; l'écoute reste utile pour savoir ce qui a changé.
+
+Quand les données sont sur un serveur, le composant confie le travail à un
+crochet : `sortHandler`, `pageHandler` et `columnHandler` sur la table de
+données, `restrict` sur kanban et gantt. Le crochet reçoit la demande et le
+composant redessine quand la promesse est résolue. En Vue ce sont des propriétés
+fonction, donc liées en camelCase : `:sortHandler`, `:itemRenderer`, `:restrict`.
+
+<!-- catalogue -->
+
+## Catalogue des composants
+
+Chaque composant liste ses attributs, propriétés JavaScript, slots et événements publics ; l'exemple est celui de la première recette de la documentation du site, déjà écrite pour ce framework.
 
 ### bolle-button
 
-Attributs : `variant` (filled, tonal, filled-tonal, outlined, elevated, text,
-standard), `size` (xs, small, medium, large, xl), `shape` (round, square),
-`width` (default, narrow, wide ; a un effet sur icon-only), `disabled`, `toggle`,
-`selected`, `label`, `href`, `target`, `type` (button, submit, reset), `name`,
-`value`, `expanded`, `controls`, `haspopup`. Slots : default, `icon`. Événements :
-`change` avec `{ selected }` lorsque `toggle` est actif.
+Attributs: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · Slots: `default`, `icon`, `trailing-icon` · Événements: `change`
+
+**Bouton avec icône** — La variante décide la forme : filled pour l'action principale, tonal pour la secondaire, outlined et text pour les autres. Le slot par défaut porte le texte, icon l'icône initiale et trailing-icon la finale.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import { detail } from "./bolle";
-
-const variants = ["filled", "tonal", "filled-tonal", "outlined", "elevated", "text", "standard"] as const;
-const sizes = ["xs", "small", "medium", "large", "xl"] as const;
-const expanded = ref(false);
-const submitted = ref("");
-
-function onToggle(event: Event) {
-  expanded.value = detail<{ selected: boolean }>(event).selected;
-}
-function onSubmit(event: Event) {
-  submitted.value = String(
-    new FormData(event.currentTarget as HTMLFormElement).get("azione"),
-  );
-}
-</script>
-
 <template>
-  <bolle-button v-for="variant in variants" :key="variant" :variant="variant">
-    {{ variant }}
+  <bolle-button variant="filled">Salva la commessa</bolle-button>
+  <bolle-button variant="outlined">
+    <span slot="icon" aria-hidden="true">★</span>
+    Archivia
   </bolle-button>
-  <bolle-button v-for="size in sizes" :key="size" :size="size" variant="tonal">
-    {{ size }}
-  </bolle-button>
-
-  <bolle-button variant="outlined" shape="square">Quadrato</bolle-button>
-
-  <bolle-button variant="filled">
-    <svg slot="icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M11 5h2v14h-2zM5 11h14v2H5z" />
-    </svg>
-    Nuovo
-  </bolle-button>
-
-  <bolle-button
-    toggle
-    haspopup="menu"
-    :selected="expanded"
-    :expanded="expanded"
-    controls="pannello"
-    @change="onToggle"
+  <bolle-button variant="text" href="#/commesse"
+    >Tutte le commesse</bolle-button
   >
-    {{ expanded ? "Chiudi" : "Apri" }}
-  </bolle-button>
-
-  <bolle-button href="https://example.com" target="_blank" variant="text">
-    Documentazione
-  </bolle-button>
-
-  <form @submit.prevent="onSubmit">
-    <bolle-button type="submit" name="azione" value="salva">Salva</bolle-button>
-    <bolle-button type="reset" variant="outlined">Reimposta</bolle-button>
-  </form>
-
-  <bolle-button label="Aggiungi" disabled>Disabilitato</bolle-button>
-  <output>{{ submitted }}</output>
 </template>
 ```
 
+Autres recettes: Bouton qui reste enfoncé
+
 ### bolle-icon-button
 
-Il hérite de tout `bolle-button` et ajoute `icon-only`. Le libellé accessible est
-obligatoire : utilisez toujours `label`. `width` (narrow, wide) modifie la zone
-de la seule icône.
+Attributs: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · Slots: `default`, `icon`, `trailing-icon` · Événements: `change`
+
+**Bouton icône** — label est obligatoire car c'est le nom lu par les lecteurs d'écran, le bouton n'affichant que le symbole. variant standard laisse l'icône sans fond, filled la pose sur une surface.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import { detail } from "./bolle";
-
-const pinned = ref(false);
-const menuOpen = ref(false);
-</script>
-
 <template>
-  <bolle-icon-button
-    v-for="size in ['xs', 'small', 'medium', 'large', 'xl']"
-    :key="size"
-    :size="size"
-    :label="`Azione ${size}`"
-  >
-    <svg slot="icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" />
-    </svg>
+  <bolle-icon-button label="Cerca">
+    <span slot="icon" aria-hidden="true">★</span>
   </bolle-icon-button>
-
-  <bolle-icon-button width="narrow" label="Ristretto">★</bolle-icon-button>
-  <bolle-icon-button width="wide" label="Largo">★</bolle-icon-button>
-  <bolle-icon-button variant="tonal" shape="square" label="Quadrato">★</bolle-icon-button>
-
-  <bolle-icon-button
-    toggle
-    :selected="pinned"
-    label="Fissa in alto"
-    @change="pinned = detail<{ selected: boolean }>($event).selected"
-  >
-    📌
-  </bolle-icon-button>
-
-  <bolle-icon-button
-    haspopup="menu"
-    :expanded="menuOpen"
-    controls="menu-azioni"
-    label="Altre azioni"
-  >
-    ⋯
+  <bolle-icon-button variant="filled" label="Aggiungi">
+    <span slot="icon" aria-hidden="true">+</span>
   </bolle-icon-button>
 </template>
 ```
 
 ### bolle-floating-action-button
 
-Attributs : `size` (fab est la taille de base, puis small, medium, large), `color`
-(primary-container, secondary-container, tertiary-container, primary, secondary,
-tertiary, surface), `label`, `disabled`, `href`. Slots : default, `icon`. Le FAB
-n’affiche que l’icône : `label` est le libellé accessible.
+Attributs: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · Slots: `default`, `icon`, `trailing-icon` · Événements: `change`
+
+**Bouton flottant** — Le bouton flottant reste ancré au coin de son conteneur et n'affiche que le symbole : label est le nom accessible et reste obligatoire. size regular reste rond, extended ajoute le texte.
 
 ```vue
-<script setup lang="ts">
-const colors = [
-  "primary-container",
-  "secondary-container",
-  "tertiary-container",
-  "primary",
-  "secondary",
-  "tertiary",
-  "surface",
-] as const;
-</script>
-
 <template>
-  <bolle-floating-action-button
-    v-for="color in colors"
-    :key="color"
-    :color="color"
-    :label="`Crea (${color})`"
-  >
-    ＋
-  </bolle-floating-action-button>
-
-  <bolle-floating-action-button size="small" label="Crea piccolo">＋</bolle-floating-action-button>
-  <bolle-floating-action-button size="medium" label="Crea medio" color="tertiary">＋</bolle-floating-action-button>
-  <bolle-floating-action-button size="large" label="Crea grande" color="secondary">＋</bolle-floating-action-button>
-  <bolle-floating-action-button href="https://example.com" label="Apri collegamento">↗</bolle-floating-action-button>
-  <bolle-floating-action-button label="Crea disabilitato" disabled>＋</bolle-floating-action-button>
+  <div class="tela">
+    <bolle-floating-action-button label="Nuova commessa">
+      <span slot="icon" aria-hidden="true">+</span>
+    </bolle-floating-action-button>
+  </div>
 </template>
+
+<style>
+.tela {
+  position: relative;
+  block-size: 320px;
+}
+.tela bolle-floating-action-button {
+  position: absolute;
+  inset-block-end: 16px;
+  inset-inline-end: 16px;
+}
+</style>
 ```
 
 ### bolle-extended-fab
 
-Il étend le FAB avec un texte visible. Attributs : comme le FAB, plus `size`
-small, medium, large (par défaut small). Le texte visible est le slot par défaut ;
-`label` définit le libellé accessible.
+Attributs: `color`, `controls`, `disabled`, `download`, `expanded`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `haspopup`, `href`, `hreflang`, `label`, `name`, `selected`, `shape`, `size`, `target`, `toggle`, `type`, `value`, `variant`, `width` · Slots: `default`, `icon`, `trailing-icon` · Événements: `change`
+
+**Bouton flottant étendu** — La forme étendue montre icône et texte ensemble : le slot icon porte le symbole, le slot par défaut le texte. Il reste le bouton de l'action principale de l'écran.
 
 ```vue
 <template>
-  <bolle-extended-fab label="Nuovo documento" size="small" color="primary-container">
-    Nuovo documento
-  </bolle-extended-fab>
-  <bolle-extended-fab label="Condividi" size="medium" color="tertiary">
-    Condividi
-  </bolle-extended-fab>
-  <bolle-extended-fab label="Crea presentazione" size="large" color="secondary">
-    <span slot="icon" aria-hidden="true">＋</span>
-    Crea presentazione
+  <bolle-extended-fab>
+    <span slot="icon" aria-hidden="true">+</span>
+    Nuova commessa
   </bolle-extended-fab>
 </template>
 ```
 
 ### bolle-button-group
 
-Attributs : `label`, `variant` (standard, connected), `selection` (none, single,
-multiple), `required`, `size`, `shape`. Enfants : `bolle-button` ou
-`bolle-icon-button` avec `value`. Événement : `selection-change` avec
-`{ values }`. Avec `selection` différent de `none`, les enfants deviennent des
-toggle et le clavier se déplace avec les flèches.
+Attributs: `label`, `required`, `selection`, `shape`, `size`, `variant` · Slots: `default` · Événements: `selection-change`
+
+**Boutons liés** — Le groupe réunit des boutons adjacents : variant connected retire l'espace et partage les bordures, selection single transforme le groupe en choix unique et rapporte la valeur avec change.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const alignment = ref("left");
-const formats = ref<string[]>(["bold"]);
+const vista = ref("elenco");
 </script>
 
 <template>
   <bolle-button-group
-    label="Allineamento"
     variant="connected"
     selection="single"
-    required
-    size="small"
-    shape="round"
-    @selection-change="alignment = detail<{ values: string[] }>($event).values[0] ?? alignment"
+    label="Vista"
+    @change="vista = $event.detail.value"
   >
-    <bolle-button value="left" :selected="alignment === 'left'">Sinistra</bolle-button>
-    <bolle-button value="center" :selected="alignment === 'center'">Centro</bolle-button>
-    <bolle-button value="right" :selected="alignment === 'right'">Destra</bolle-button>
-  </bolle-button-group>
-
-  <bolle-button-group
-    label="Formato"
-    variant="connected"
-    selection="multiple"
-    size="small"
-    @selection-change="formats = detail<{ values: string[] }>($event).values"
-  >
-    <bolle-button value="bold" :selected="formats.includes('bold')">B</bolle-button>
-    <bolle-button value="italic" :selected="formats.includes('italic')">I</bolle-button>
-    <bolle-button value="underline" :selected="formats.includes('underline')">U</bolle-button>
-  </bolle-button-group>
-
-  <bolle-button-group label="Gruppo semplice" variant="standard" selection="none" size="large">
-    <bolle-button variant="outlined">A</bolle-button>
-    <bolle-button variant="outlined">B</bolle-button>
+    <bolle-button
+      variant="outlined"
+      value="elenco"
+      :selected="vista === 'elenco'"
+    >
+      Elenco
+    </bolle-button>
+    <bolle-button
+      variant="outlined"
+      value="griglia"
+      :selected="vista === 'griglia'"
+    >
+      Griglia
+    </bolle-button>
   </bolle-button-group>
 </template>
 ```
-
-## Communication
 
 ### bolle-badge
 
-Attributs : `value`, `label`, `small`, `max`. Sans `label`, le badge est
-`aria-hidden` ; avec `label`, il devient `role="status"` et annonce la valeur.
-Avec `small`, il n’affiche pas de texte, seulement le point. `max` produit `999+`.
+Attributs: `label`, `max`, `small`, `value` · Slots: `label` · Événements: -
+
+**Signal sur un élément** — Le badge affiche value au-dessus de l'élément qui le contient et abrège le nombre au-delà de max en « 999+ ». small retire le texte et garde le point, pour un signal sans nombre.
 
 ```vue
 <template>
-  <span class="badge-anchor">
-    <bolle-icon-button label="Notifiche">🔔</bolle-icon-button>
-    <bolle-badge value="12" style="position: absolute; inset-block-start: -4px; inset-inline-end: -4px" />
-  </span>
+  <bolle-badge value="12">
+    <bolle-icon-button label="Messaggi">
+      <span slot="icon" aria-hidden="true">★</span>
+    </bolle-icon-button>
+  </bolle-badge>
 
-  <bolle-badge :value="1200" :max="999" label="Messaggi non letti" />
-  <bolle-badge value="Nuovo" label="Novità" />
-  <bolle-badge value="" label="Aggiornamento disponibile" small />
-  <bolle-badge value="7" />
+  <bolle-badge value="1200" :max="99">
+    <bolle-avatar name="Giulia Ferraro"></bolle-avatar>
+  </bolle-badge>
 </template>
 ```
 
-### bolle-progress-indicator
+### bolle-bottom-app-bar
 
-Attributs : `label`, `value`, `max`, `indeterminate`, `variant` (linear,
-circular), `wavy`. `wavy` s’applique à la variante linéaire et se combine avec le
-mode déterminé et indéterminé.
+Attributs: `align`, `divider`, `dock`, `label`, `sticky`, `variant` · Slots: `default`, `fab`, `leading`, `trailing` · Événements: -
+
+**Barre inférieure avec bouton flottant** — La barre inférieure tient les commandes en ligne et le bouton flottant : le slot par défaut reçoit les commandes, leading et trailing les éléments latéraux, fab le bouton qui s'encastre dans l'encoche. dock amène le bouton dans la barre.
 
 ```vue
 <template>
-  <bolle-progress-indicator label="Download" :value="65" />
-  <bolle-progress-indicator label="Connessione" indeterminate />
-  <bolle-progress-indicator label="Avanzamento pratica" :value="35" :max="50" />
-  <bolle-progress-indicator wavy label="Avanzamento ondulato" :value="60" />
-  <bolle-progress-indicator wavy indeterminate label="Attesa ondulata" />
-  <bolle-progress-indicator variant="circular" label="Caricamento file" :value="65" />
-  <bolle-progress-indicator variant="circular" indeterminate label="Attesa circolare" />
+  <bolle-bottom-app-bar dock>
+    <bolle-icon-button slot="leading" label="Menu">
+      <span slot="icon" aria-hidden="true">★</span>
+    </bolle-icon-button>
+    <bolle-icon-button label="Cerca">
+      <span slot="icon" aria-hidden="true">+</span>
+    </bolle-icon-button>
+    <bolle-floating-action-button slot="fab" label="Nuova commessa">
+      <span slot="icon" aria-hidden="true">+</span>
+    </bolle-floating-action-button>
+  </bolle-bottom-app-bar>
+</template>
+```
+
+### bolle-avatar
+
+Attributs: `alt`, `color`, `initials`, `label`, `name`, `shape`, `size`, `src`, `status` · Slots: `badge`, `icon` · Événements: -
+
+**Avatar avec image ou initiales** — src affiche l'image et, quand elle manque ou ne se charge pas, le composant revient aux initiales tirées de name. initials les fixe à la main, status ajoute le point de présence et size change la taille.
+
+```vue
+<script setup lang="ts">
+const persone = [
+  { src: "/giulia.jpg", name: "Giulia Ferraro", status: "online" },
+  { name: "Marco Bellini", size: "lg" },
+  { initials: "GF", color: "tertiary" },
+];
+</script>
+
+<template>
+  <bolle-avatar
+    v-for="persona in persone"
+    :key="persona.name ?? persona.initials"
+    v-bind="persona"
+  ></bolle-avatar>
+</template>
+```
+
+Autres recettes: Avatar avec une icône au lieu des initiales
+
+### bolle-breadcrumb
+
+Attributs: `label`, `max-items`, `separator` · Propriétés JavaScript: `items`, `labels` · Slots: - · Événements: `breadcrumb-select`
+
+**Fil d'Ariane** — items déclare les entrées du chemin : le composant place le séparateur entre elles et marque la dernière comme page courante. separator choisit le signe, max-items comprime les entrées centrales derrière une commande.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { BreadcrumbItem } from "@bolle/web-components";
+
+const items = ref<BreadcrumbItem[]>([
+  { label: "Home", href: "#/it/" },
+  { label: "Commesse", href: "#/it/commesse" },
+  { label: "C2026-1000" },
+]);
+
+const onSelect = (event: CustomEvent<BreadcrumbItem>) => {
+  console.log("Voce scelta:", event.detail.label);
+};
+</script>
+
+<template>
+  <bolle-breadcrumb
+    label="Percorso"
+    :items="items"
+    @breadcrumb-select="onSelect"
+  ></bolle-breadcrumb>
+</template>
+```
+
+### bolle-avatar-group
+
+Attributs: `interactive`, `label`, `max`, `overlap`, `size`, `total` · Propriétés JavaScript: `labels` · Slots: `default` · Événements: `avatar-group-select`
+
+**Groupe d'avatars** — Le groupe empile les avatars reçus et résume les autres dans une bulle avec compteur : max décide combien en montrer, total dit combien il y en a quand on ne les passe pas tous.
+
+```vue
+<script setup lang="ts">
+const partecipanti = [
+  { name: "Giulia Ferraro" },
+  { name: "Marco Bellini" },
+  { name: "Sara Colombo" },
+];
+</script>
+
+<template>
+  <bolle-avatar-group label="Partecipanti" :max="3" :total="8">
+    <bolle-avatar
+      v-for="persona in partecipanti"
+      :key="persona.name"
+      :name="persona.name"
+    ></bolle-avatar>
+  </bolle-avatar-group>
+</template>
+```
+
+Autres recettes: Bulle du compteur interactive
+
+### bolle-empty-state
+
+Attributs: `align`, `role`, `text`, `title`, `tone` · Propriétés JavaScript: `icon` · Slots: `actions`, `icon` · Événements: -
+
+**État vide avec une commande** — L'état vide centre une icône, un titre et un texte ; le slot actions porte la commande qui sort de l'état vide. tone error le colore pour une erreur de chargement.
+
+```vue
+<template>
+  <bolle-empty-state
+    title="Nessuna commessa"
+    text="Non ci sono commesse per questo filtro."
+  >
+    <bolle-button slot="actions" variant="filled">Crea commessa</bolle-button>
+  </bolle-empty-state>
+
+  <bolle-empty-state
+    tone="error"
+    title="Piano non raggiungibile"
+    text="Riprova fra qualche istante."
+  >
+    <bolle-button slot="actions" variant="tonal">Riprova</bolle-button>
+  </bolle-empty-state>
+</template>
+```
+
+Autres recettes: Icône personnalisée et alignement
+
+### bolle-pagination
+
+Attributs: `form`, `label`, `page`, `page-size`, `range`, `total` · Propriétés JavaScript: `labels`, `pageSizes` · Slots: - · Événements: `page-change`
+
+**Pagineur sur les lignes disponibles** — page-size active le pagineur et total dit combien de lignes existent : le composant se déplace seul vers la page demandée et la rapporte avec page-change, ainsi l'application découpe les données affichées.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { PaginationChangeDetail } from "@bolle/web-components";
+
+const total = ref(248);
+
+const onPage = (event: CustomEvent<PaginationChangeDetail>) => {
+  const { page, pageSize } = event.detail;
+  console.log("Pagina", page, "di", pageSize);
+};
+</script>
+
+<template>
+  <bolle-pagination
+    label="Pagine"
+    page-size="10"
+    :total="total"
+    @page-change="onPage"
+  ></bolle-pagination>
+</template>
+```
+
+Autres recettes: Choix de la taille et forme compacte
+
+### bolle-progress-indicator
+
+Attributs: `indeterminate`, `label`, `max`, `value`, `variant`, `wavy` · Slots: - · Événements: -
+
+**Avancement linéaire et circulaire** — value dit ce qui est fait par rapport à max, label est le nom lu par les lecteurs d'écran. variant circular passe à l'anneau, indeterminate signale une attente sans valeur.
+
+```vue
+<template>
+  <bolle-progress-indicator :value="62" label="Avanzamento cantieri" />
+  <bolle-progress-indicator
+    :value="30"
+    variant="circular"
+    label="Avanzamento"
+  />
+  <bolle-progress-indicator indeterminate label="Caricamento" />
 </template>
 ```
 
 ### bolle-loading-indicator
 
-Attributs : `label`, `variant` (default, morph, contained). Toujours indéterminé, avec `role="progressbar"`. La variante `morph` suit la séquence de sept formes ; `contained` dessine le conteneur plein.
+Slots: - · Événements: -
+
+**Indicateur de chargement** — L'indicateur montre l'attente d'une opération : label est le nom lu par les lecteurs d'écran et reste obligatoire. variant contained le pose sur une surface quand il couvre une tuile.
 
 ```vue
 <template>
-  <bolle-loading-indicator label="Caricamento" />
-  <bolle-loading-indicator variant="contained" label="Caricamento allegati" />
+  <bolle-loading-indicator label="Caricamento delle commesse" />
+  <bolle-loading-indicator variant="contained" label="Aggiornamento" />
 </template>
 ```
 
 ### bolle-snackbar
 
-Attributs : `open`, `message`, `action-label`, `close-label`, `duration` (ms,
-minimum effectif 4000 ; 0 désactive la fermeture automatique). Méthodes :
-`show(message?)`, `close(reason?)`. Événements : `action`, `closed` avec
-`{ reason }`, `queued` avec `{ pending }`. Des appels consécutifs à `show`
-mettent les messages en file d’attente.
+Attributs: `action-label`, `close-label`, `duration`, `message`, `open`, `tail` · Slots: `action`, `dismiss`, `message` · Événements: `action`, `closed`, `queued`
+
+**Message avec action** — show() ouvre le message et duration le ferme seul : le slot message porte le texte, action l'action qui l'accompagne et dismiss la commande de fermeture. message reste le raccourci pour le texte seul.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSnackbar } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const snackbar = ref<BolleSnackbar | null>(null);
-const log = ref("");
+const messaggio = ref<HTMLElement | null>(null);
 </script>
 
 <template>
-  <bolle-snackbar
-    ref="snackbar"
-    message="Documento eliminato"
-    action-label="Annulla"
-    close-label="Chiudi"
-    :duration="6000"
-    @action="log = 'azione: annulla'"
-    @closed="log = `chiuso: ${detail<{ reason: string }>($event).reason}`"
-    @queued="log = `in coda: ${detail<{ pending: number }>($event).pending}`"
-  />
-
-  <bolle-button variant="tonal" @click="snackbar?.show('Documento salvato')">Mostra</bolle-button>
-  <bolle-button
-    variant="outlined"
-    @click="snackbar?.show('Primo'); snackbar?.show('Secondo'); snackbar?.show('Terzo')"
+  <bolle-button variant="filled" @click="messaggio?.show()"
+    >Archivia</bolle-button
   >
-    Accoda tre messaggi
-  </bolle-button>
-  <bolle-button variant="text" @click="snackbar?.close('manuale')">Chiudi</bolle-button>
-  <output>{{ log }}</output>
+
+  <bolle-snackbar ref="messaggio" duration="6000">
+    <span slot="message">Commessa archiviata</span>
+    <bolle-button slot="action" variant="text" @click="ripristina"
+      >Annulla</bolle-button
+    >
+  </bolle-snackbar>
 </template>
 ```
 
 ### bolle-tooltip
 
-Attributs : `label`, `variant` (plain, rich), `supporting-text`, `persistent`.
-Slots : default (trigger), `content`, `actions`. Méthodes : `show()`, `hide()`. Le
-tooltip simple se ferme au relâchement du focus/hover ; `persistent` le maintient
-ouvert jusqu’à Escape. La variante riche se ferme au clic extérieur et ne doit pas
-être utilisée pour des contenus interactifs indispensables.
+Attributs: `label`, `persistent`, `supporting-text`, `tail`, `variant` · Propriétés JavaScript: `labels` · Slots: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · Événements: -
+
+**Infobulle sur une commande** — L'infobulle s'accroche à un élément avec show(anchor) et se ferme seule quand le pointeur sort ou qu'Échap arrive. label est le texte court, supporting-text ajoute la ligne de détail.
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
-import type { BolleTooltip } from "bolle-web-components";
-
-const tip = ref<BolleTooltip | null>(null);
+const hint = ref<HTMLElement | null>(null);
+const salva = ref<HTMLElement | null>(null);
 </script>
 
 <template>
-  <bolle-tooltip label="Conserva una copia del documento">
-    <bolle-button variant="tonal">Salva una copia</bolle-button>
-  </bolle-tooltip>
+  <bolle-icon-button
+    ref="salva"
+    label="Salva"
+    @pointerenter="hint?.show(salva)"
+    @pointerleave="hint?.close()"
+  >
+    <span slot="icon" aria-hidden="true">★</span>
+  </bolle-icon-button>
 
   <bolle-tooltip
-    ref="tip"
-    variant="rich"
-    persistent
-    label="Spazio personale"
-    supporting-text="La copia resta nel tuo spazio e resta aperta finché non la chiudi."
+    ref="hint"
+    label="Salva la commessa"
+    supporting-text="Scorciatoia: Ctrl e S"
   >
-    <bolle-button variant="outlined">Dettagli</bolle-button>
-    <p slot="content">Puoi riaprire la copia dalla sezione Documenti.</p>
-    <bolle-button slot="actions" variant="text">Apri Documenti</bolle-button>
   </bolle-tooltip>
-
-  <bolle-button variant="text" @click="tip?.show()">Mostra tooltip ricco</bolle-button>
-  <bolle-button variant="text" @click="tip?.hide()">Nascondi</bolle-button>
 </template>
 ```
 
 ### bolle-carousel
 
-Attributs : `label`, `variant` (hero, multi-browse, uncontained,
-uncontained-multi-aspect-ratio, center-aligned-hero, full-screen),
-`previous-label`, `next-label`, `index`. Enfants : les slides. Méthode :
-`goTo(index)`. Événement : `change` avec `{ index }`. La variante `full-screen`
-défile verticalement. Les keylines suivent la largeur du carrousel : `hero`
-remplit le conteneur, `multi-browse` montre trois entrées et `uncontained` reste
-entre 160 et 220px.
+Attributs: `index`, `label`, `next-label`, `previous-label`, `variant` · Slots: `controls`, `default`, `next`, `previous`, `status` · Événements: `change`
+
+**Carrousel de cartes** — Le carrousel fait défiler les éléments du slot par défaut et affiche les commandes avant et arrière : index dit lequel est visible et le choix arrive avec change. Le défilement se fait par étapes, au toucher et au clavier.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import type { BolleCarousel } from "bolle-web-components";
-import { detail } from "./bolle";
-
-const carousel = ref<BolleCarousel | null>(null);
-const current = ref(0);
-const variants = [
-  "hero",
-  "multi-browse",
-  "uncontained",
-  "uncontained-multi-aspect-ratio",
-  "center-aligned-hero",
-  "full-screen",
-] as const;
-</script>
-
 <template>
-  <bolle-carousel
-    ref="carousel"
-    variant="hero"
-    label="Documenti recenti"
-    previous-label="Precedente"
-    next-label="Successivo"
-    :index="current"
-    @change="current = detail<{ index: number }>($event).index"
-  >
-    <article><h3>Posta</h3><p>Messaggi ricevuti</p></article>
-    <article><h3>Archivio</h3><p>Documenti salvati</p></article>
-    <article><h3>Impostazioni</h3><p>Preferenze personali</p></article>
+  <bolle-carousel label="Schede" @change="indice = $event.detail.index">
+    <bolle-card>Prima scheda</bolle-card>
+    <bolle-card>Seconda scheda</bolle-card>
+    <bolle-card>Terza scheda</bolle-card>
   </bolle-carousel>
-
-  <bolle-carousel
-    v-for="variant in variants"
-    :key="variant"
-    :variant="variant"
-    :label="`Carousel ${variant}`"
-    previous-label="Precedente"
-    next-label="Successivo"
-  >
-    <article>A · {{ variant }}</article>
-    <article>B · {{ variant }}</article>
-    <article>C · {{ variant }}</article>
-  </bolle-carousel>
-
-  <bolle-button variant="outlined" @click="carousel?.goTo(0)">Prima slide</bolle-button>
-  <bolle-button variant="outlined" @click="carousel?.goTo(2)">Ultima slide</bolle-button>
-  <output>{{ current + 1 }}</output>
 </template>
 ```
-
-## Confinement
 
 ### bolle-card
 
-Attributs : `variant` (filled, elevated, outlined), `orientation` (vertical,
-horizontal), `href`, `label`. Slots : `media`, default. Avec `href`, le contenu
-par défaut est enveloppé dans un lien ; n’insérez donc pas d’autres liens ni de
-boutons interactifs dans la carte.
+Attributs: `href`, `label`, `orientation`, `tail`, `variant` · Slots: `content`, `default`, `media` · Événements: -
+
+**Carte avec image et commandes** — La carte prend le contenu dans le slot par défaut, dans media l'image de tête qui occupe la largeur et dans actions la ligne de commandes. href transforme toute la carte en lien.
 
 ```vue
 <template>
-  <bolle-card
-    v-for="variant in ['filled', 'elevated', 'outlined']"
-    :key="variant"
-    :variant="variant"
-    :label="`Scheda ${variant}`"
-  >
-    <h3>Documento</h3>
-    <p>Contenuto indipendente con un'azione interna.</p>
-    <bolle-button variant="text">Apri</bolle-button>
-  </bolle-card>
-
-  <bolle-card orientation="horizontal" href="https://example.com" label="Rapporto annuale">
-    <img slot="media" src="/cover.jpg" alt="Copertina del rapporto" />
-    <h3>Rapporto annuale</h3>
-    <p>Riepilogo delle attività dell'anno.</p>
+  <bolle-card variant="filled">
+    <img slot="media" alt="" src="/cantiere.jpg" />
+    <h3>Ristrutturazione scuola</h3>
+    <p>Consegna prevista a marzo 2027.</p>
+    <bolle-button slot="actions" variant="text">Apri</bolle-button>
   </bolle-card>
 </template>
 ```
+
+Autres recettes: Carte horizontale comme lien
 
 ### bolle-dialog
 
-Attributs : `open`, `label`, `variant` (basic, full-screen), `modal`,
-`close-label`. Slots : default, `actions`. Méthodes : `show(opener?)`,
-`close(returnValue?)`. Événements : `closed` avec `{ returnValue }`,
-`before-close` avec `{ reason }` annulable.
+Attributs: `close-label`, `label`, `modal`, `open`, `variant` · Slots: `actions`, `default`, `heading` · Événements: `before-close`, `closed`
+
+**Dialogue de confirmation** — open ouvre le dialogue et modal le rend bloquant : le focus reste à l'intérieur jusqu'à la fermeture, et la fermeture arrive avec closed. heading reçoit le titre lu comme en-tête, actions la ligne de commandes.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleDialog } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const confirm = ref<BolleDialog | null>(null);
-const fullscreen = ref<BolleDialog | null>(null);
-const nonModal = ref<BolleDialog | null>(null);
-const proposalOpen = ref(false);
-const dirty = ref(true);
-const result = ref("");
-
-function onBeforeClose(event: Event) {
-  if (dirty.value) event.preventDefault();
-}
-function onClosed(event: Event) {
-  result.value = detail<{ returnValue: string }>(event).returnValue;
-  proposalOpen.value = false;
-}
+const aperto = ref(false);
+const chiuso = (event: CustomEvent<{ returnValue: string }>) => {
+  aperto.value = false;
+  if (event.detail.returnValue === "archivia") archiviaLaCommessa();
+};
 </script>
 
 <template>
-  <bolle-button variant="filled" @click="confirm?.show()">Elimina</bolle-button>
-  <bolle-dialog
-    ref="confirm"
-    label="Eliminare il documento?"
-    variant="basic"
-    :modal="true"
-    close-label="Annulla"
-    @before-close="onBeforeClose"
-    @closed="onClosed"
-  >
-    <p>L'operazione non può essere annullata.</p>
-    <bolle-button slot="actions" variant="text" @click="confirm?.close('elimina')">
-      Elimina
+  <bolle-button variant="filled" @click="aperto = true">Archivia</bolle-button>
+
+  <bolle-dialog label="Archivia commessa" modal :open="aperto" @closed="chiuso">
+    <h2 slot="heading">Archiviare la commessa?</h2>
+    <p>La commessa esce dagli elenchi attivi e resta consultabile.</p>
+    <bolle-button slot="actions" variant="text" @click="aperto = false">
+      Annulla
     </bolle-button>
+    <bolle-button slot="actions" variant="filled">Archivia</bolle-button>
   </bolle-dialog>
-
-  <bolle-button variant="outlined" @click="fullscreen?.show()">Apri a schermo intero</bolle-button>
-  <bolle-dialog ref="fullscreen" variant="full-screen" label="Editor" close-label="Chiudi">
-    <p>Contenuto a schermo intero.</p>
-    <bolle-button slot="actions" @click="fullscreen?.close('salvato')">Salva</bolle-button>
-  </bolle-dialog>
-
-  <bolle-button variant="text" @click="nonModal?.show()">Dialog non modale</bolle-button>
-  <bolle-dialog ref="nonModal" :modal="false" label="Nota" close-label="Chiudi">
-    <p>Questo dialog non blocca il resto della pagina.</p>
-  </bolle-dialog>
-
-  <bolle-button variant="tonal" @click="proposalOpen = true">Dialog dichiarativo</bolle-button>
-  <bolle-dialog :open="proposalOpen" label="Proposta" close-label="Chiudi" @closed="onClosed">
-    <p>Controllato dalla proprietà open.</p>
-  </bolle-dialog>
-  <output>{{ result }}</output>
 </template>
 ```
 
+Autres recettes: Dialogue plein écran
+
 ### bolle-bottom-sheet
 
-Il hérite de dialog. Attributs supplémentaires : `drag-handle`, `variant` (modal,
-standard). La variante standard n’utilise pas le dialog natif : elle rend une
-section inline visible lorsque `open` est vrai.
+Attributs: `close-label`, `drag-handle`, `label`, `modal`, `open`, `variant` · Slots: `actions`, `default`, `heading` · Événements: `before-close`, `closed`
+
+**Panneau inférieur** — Le panneau entre par le bord inférieur et porte ses commandes : drag-handle affiche la poignée qui le fait glisser, heading le titre, actions la ligne finale. open et show() l'ouvrent.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleBottomSheet } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const sheet = ref<BolleBottomSheet | null>(null);
-const inlineOpen = ref(true);
-const result = ref("");
+const aperto = ref(false);
 </script>
 
 <template>
-  <bolle-button variant="filled" @click="sheet?.show()">Apri foglio modale</bolle-button>
-  <bolle-bottom-sheet
-    ref="sheet"
-    drag-handle
-    label="Filtri"
-    close-label="Chiudi"
-    @closed="result = detail<{ returnValue: string }>($event).returnValue ?? ''"
-  >
-    <p>Scegli i filtri da applicare.</p>
-    <bolle-button slot="actions" @click="sheet?.close('applica')">Applica</bolle-button>
+  <bolle-button variant="filled" @click="aperto = true">Filtri</bolle-button>
+  <bolle-bottom-sheet label="Filtri" drag-handle modal :open="aperto">
+    <h2 slot="heading">Filtri</h2>
+    <p>Scegli lo stato delle commesse.</p>
+    <bolle-button slot="actions" variant="text" @click="aperto = false">
+      Annulla
+    </bolle-button>
+    <bolle-button slot="actions" variant="filled">Applica</bolle-button>
   </bolle-bottom-sheet>
-
-  <bolle-bottom-sheet
-    :open="inlineOpen"
-    variant="standard"
-    drag-handle
-    label="Filtri inline"
-  >
-    <p>Foglio standard ancorato in basso.</p>
-    <bolle-button variant="text" @click="inlineOpen = false">Chiudi</bolle-button>
-  </bolle-bottom-sheet>
-  <output>{{ result }}</output>
 </template>
 ```
 
 ### bolle-side-sheet
 
-Il hérite de dialog. Attributs supplémentaires : `detached`, `variant` (modal,
-standard). Le côté est défini par le composant : `side`. `detached` ajoute la
-marge de la variante détachée.
+Attributs: `close-label`, `detached`, `label`, `modal`, `open`, `variant` · Slots: `actions`, `default`, `heading` · Événements: `before-close`, `closed`
+
+**Panneau latéral de détail** — Le panneau entre par le côté indiqué par placement et laisse le contenu visible : c'est la forme adéquate pour le détail d'une ligne, avec heading pour le titre et actions pour les commandes de fin.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleSideSheet } from "bolle-web-components";
 
-const side = ref<BolleSideSheet | null>(null);
-const standardOpen = ref(true);
+const aperto = ref(false);
 </script>
 
 <template>
-  <bolle-button variant="filled" @click="side?.show()">Apri pannello</bolle-button>
-  <bolle-side-sheet ref="side" label="Dettagli" detached close-label="Chiudi">
-    <p>Dettagli del documento selezionato.</p>
-    <bolle-button slot="actions" @click="side?.close('salvato')">Salva</bolle-button>
-  </bolle-side-sheet>
-
-  <bolle-side-sheet :open="standardOpen" variant="standard" detached label="Dettagli inline">
-    <p>Pannello standard sempre visibile accanto al contenuto.</p>
-    <bolle-button variant="text" @click="standardOpen = false">Chiudi</bolle-button>
+  <bolle-button variant="tonal" @click="aperto = true">Dettaglio</bolle-button>
+  <bolle-side-sheet
+    label="Dettaglio commessa"
+    placement="end"
+    modal
+    :open="aperto"
+  >
+    <h2 slot="heading">C2026-1000</h2>
+    <p>Ristrutturazione scuola di Seriate.</p>
+    <bolle-button slot="actions" variant="filled">Apri scheda</bolle-button>
   </bolle-side-sheet>
 </template>
 ```
 
 ### bolle-divider
 
-Attributs : `vertical`, `inset`, `variant` (full, inset, inset-start, inset-end),
-`decorative`. Sans `decorative`, il expose `role="separator"` ; avec
-`decorative`, il est masqué aux technologies d’assistance.
+Attributs: `decorative`, `inset`, `variant`, `vertical` · Slots: - · Événements: -
+
+**Séparateur entre groupes** — Le séparateur n'a pas de contenu : il divise deux groupes d'éléments, avec inset pour le détacher des bords et vertical pour séparer des commandes côte à côte.
 
 ```vue
 <template>
-  <bolle-divider />
-  <bolle-divider inset />
-  <bolle-divider variant="inset-start" />
-  <bolle-divider variant="inset-end" />
-  <bolle-divider decorative />
+  <p>Committenti</p>
+  <bolle-divider inset></bolle-divider>
+  <p>Fornitori</p>
 
-  <div style="display: flex; block-size: 120px; align-items: center; gap: 8px">
-    <span>Prima</span>
-    <bolle-divider vertical />
-    <span>Dopo</span>
-  </div>
-  <div style="display: flex; block-size: 120px; align-items: center; gap: 8px">
-    <span>Prima</span>
-    <bolle-divider vertical decorative />
-    <span>Dopo</span>
-  </div>
+  <span>Esporta</span>
+  <bolle-divider vertical></bolle-divider>
+  <span>Archivia</span>
 </template>
 ```
-
-## Navigation
 
 ### bolle-app-bar
 
-Attributs : `label`, `variant` (small, center-aligned, medium,
-medium-flexible, large, large-flexible, search), `subtitle`, `alignment`
-(leading, center), `sticky`, `scrolled`, `collapsed`. Slots : `leading`,
-`trailing`, default. Dans la variante `search`, le slot par défaut accueille une
-`bolle-search` ; dans les autres, il accueille le titre à la place de `label`.
+Attributs: `alignment`, `collapsed`, `label`, `scrolled`, `sticky`, `subtitle`, `variant` · Slots: `actions`, `default`, `leading`, `title`, `trailing` · Événements: -
+
+**Barre de l'application** — La barre porte le titre et les commandes : title reçoit le texte principal, subtitle la ligne en dessous, les slots leading et actions les commandes latérales. Le slot par défaut remplace le titre quand un en-tête plus riche est nécessaire.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-
-const scrolled = ref(false);
-const collapsed = ref(false);
-const variants = ["small", "center-aligned", "medium", "medium-flexible", "large", "large-flexible"] as const;
-</script>
-
 <template>
-  <bolle-app-bar
-    label="Posta"
-    variant="small"
-    subtitle="12 non letti"
-    alignment="leading"
-    sticky
-    :scrolled="scrolled"
-    :collapsed="collapsed"
-  >
-    <bolle-icon-button slot="leading" label="Menu">☰</bolle-icon-button>
-    <bolle-icon-button slot="trailing" label="Cerca">🔍</bolle-icon-button>
+  <bolle-app-bar title="Commesse" subtitle="12 attive" sticky>
+    <bolle-icon-button slot="leading" label="Menu">
+      <span slot="icon" aria-hidden="true">★</span>
+    </bolle-icon-button>
+    <bolle-icon-button slot="actions" label="Cerca">
+      <span slot="icon" aria-hidden="true">+</span>
+    </bolle-icon-button>
   </bolle-app-bar>
-
-  <bolle-app-bar
-    v-for="variant in variants"
-    :key="variant"
-    :variant="variant"
-    :label="`Posta ${variant}`"
-    subtitle="12 non letti"
-    :collapsed="collapsed"
-  >
-    <bolle-icon-button slot="leading" label="Menu">☰</bolle-icon-button>
-  </bolle-app-bar>
-
-  <bolle-app-bar variant="search">
-    <bolle-search label="Cerca" placeholder="Cerca nella posta">
-      <span slot="leading" aria-hidden="true">🔍</span>
-    </bolle-search>
-  </bolle-app-bar>
-
-  <bolle-button variant="outlined" @click="scrolled = !scrolled">Alterna scrolled</bolle-button>
-  <bolle-button variant="outlined" @click="collapsed = !collapsed">Alterna collapsed</bolle-button>
 </template>
 ```
 
+Autres recettes: Barre qui se comprime au défilement
+
 ### bolle-toolbar
 
-Attributs : `label`, `variant` (docked, floating), `orientation` (horizontal,
-vertical), `color` (standard, vibrant). Les contrôles enfants reçoivent un
-`tabindex` mobile et se déplacent avec les flèches selon l’orientation.
+Attributs: `color`, `label`, `orientation`, `variant` · Slots: `default` · Événements: -
+
+**Barre de commandes** — La barre dispose les éléments reçus dans le slot par défaut : des variantes différentes séparent les commandes principales des commandes de service, et la barre renvoie à la ligne les éléments en trop au lieu de les comprimer.
 
 ```vue
 <template>
-  <bolle-toolbar label="Formato" variant="docked" orientation="horizontal" color="standard">
-    <bolle-icon-button label="Grassetto" toggle>B</bolle-icon-button>
-    <bolle-icon-button label="Corsivo" toggle>I</bolle-icon-button>
-    <bolle-icon-button label="Sottolineato" toggle>U</bolle-icon-button>
-    <bolle-divider vertical decorative />
-    <bolle-icon-button label="Allinea a sinistra">≡</bolle-icon-button>
-  </bolle-toolbar>
-
-  <bolle-toolbar label="Modifica" color="vibrant">
-    <bolle-icon-button label="Taglia" variant="standard">✂</bolle-icon-button>
-    <bolle-icon-button label="Copia" variant="standard">⧉</bolle-icon-button>
-    <bolle-icon-button label="Incolla" variant="standard">📋</bolle-icon-button>
-  </bolle-toolbar>
-
-  <bolle-toolbar label="Formato" variant="floating">
-    <bolle-icon-button label="Grassetto" toggle>B</bolle-icon-button>
-    <bolle-icon-button label="Corsivo" toggle>I</bolle-icon-button>
-  </bolle-toolbar>
-
-  <bolle-toolbar label="Allineamento" variant="floating" orientation="vertical">
-    <bolle-icon-button label="Su">↑</bolle-icon-button>
-    <bolle-icon-button label="Giù">↓</bolle-icon-button>
+  <bolle-toolbar label="Azioni sulle commesse">
+    <bolle-segmented-buttons label="Vista" :items="viste" />
+    <bolle-button variant="text">Esporta</bolle-button>
+    <bolle-button variant="text">Archivia</bolle-button>
   </bolle-toolbar>
 </template>
 ```
 
 ### bolle-navigation-bar
 
-Attributs : `label`, `items` (tableau d’`BolleItem` avec `id`, `label`, `icon`,
-`href`, `disabled`), `value`, `variant` (standard, flexible), `layout`
-(vertical, horizontal). Événement : `navigate` avec `{ id }`. Utilisez de trois à
-cinq destinations.
+Attributs: `label`, `layout`, `value`, `variant` · Propriétés JavaScript: `items` · Slots: - · Événements: `navigate`
+
+**Barre de navigation** — items déclare les destinations avec icône et texte, value dit laquelle est active : le composant applique le choix seul et le rapporte avec change. Au-delà de cinq destinations, mieux vaut passer à la barre latérale.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const destinations: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
+const sezione = ref("commesse");
+const sezioni = [
+  { id: "commesse", label: "Commesse" },
+  { id: "clienti", label: "Clienti" },
+  { id: "scadenze", label: "Scadenze" },
 ];
-
-const current = ref("inbox");
 </script>
 
 <template>
   <bolle-navigation-bar
-    label="Navigazione principale"
-    :items="destinations"
-    :value="current"
-    variant="standard"
-    layout="vertical"
-    @navigate="current = detail<{ id: string }>($event).id"
-  />
-
-  <bolle-navigation-bar
-    label="Navigazione flessibile"
-    :items="destinations"
-    :value="current"
-    variant="flexible"
-    layout="horizontal"
-    @navigate="current = detail<{ id: string }>($event).id"
-  />
-  <output>{{ current }}</output>
+    label="Sezioni"
+    :items="sezioni"
+    :value="sezione"
+    @change="sezione = $event.detail.value"
+  ></bolle-navigation-bar>
 </template>
 ```
 
 ### bolle-navigation-rail
 
-Il hérite de navigation bar et ajoute `expanded`. Le rail est toujours compressé
-par défaut ; `expanded` affiche les libellés à côté des icônes. `variant` et
-`layout` restent disponibles.
+Attributs: `expanded`, `label`, `layout`, `value`, `variant` · Propriétés JavaScript: `items` · Slots: - · Événements: `navigate`
+
+**Barre étroite** — La barre étroite montre les icônes des destinations et, avec expanded, aussi les textes. Elle se place entre la barre inférieure et le panneau latéral, quand l'espace est réduit mais que les sections restent nombreuses.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
-
-const destinations: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-];
-const current = ref("inbox");
-</script>
-
 <template>
   <bolle-navigation-rail
-    label="Rail compresso"
-    :items="destinations"
-    :value="current"
-    @navigate="current = detail<{ id: string }>($event).id"
-  />
-  <bolle-navigation-rail
+    label="Sezioni"
     expanded
-    variant="standard"
-    layout="vertical"
-    label="Rail espanso"
-    :items="destinations"
-    :value="current"
-    @navigate="current = detail<{ id: string }>($event).id"
-  />
+    :items="sezioni"
+    :value="sezione"
+    @change="sezione = $event.detail.value"
+  ></bolle-navigation-rail>
 </template>
 ```
 
 ### bolle-navigation-drawer
 
-Il hérite de side sheet. Attributs : `items`, `value`, `label`, `variant` (modal,
-standard), `detached`, `close-label` ; slot par défaut pour du contenu
-supplémentaire. Événement : `navigate` avec `{ id }`. Méthodes : `show(opener?)`,
-`close()`. Dans la variante standard, il reste inline et se contrôle avec `open`.
+Attributs: `close-label`, `detached`, `label`, `modal`, `open`, `value`, `variant` · Propriétés JavaScript: `items` · Slots: `actions`, `default`, `heading` · Événements: `before-close`, `closed`, `navigate`
+
+**Panneau de navigation** — Le panneau ouvre les entrées verticalement et peut se placer en ligne à côté du contenu ou par-dessus la page : placement start ou end choisit le côté, modal le rend bloquant.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import type { BolleItem, BolleNavigationDrawer } from "bolle-web-components";
-import { detail } from "./bolle";
-
-const destinations: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-];
-const current = ref("inbox");
-const standardOpen = ref(true);
-const drawer = ref<BolleNavigationDrawer | null>(null);
-</script>
-
 <template>
-  <bolle-button variant="filled" @click="drawer?.show()">Apri drawer</bolle-button>
   <bolle-navigation-drawer
-    ref="drawer"
     label="Sezioni"
-    close-label="Chiudi"
-    :items="destinations"
-    :value="current"
-    @navigate="current = detail<{ id: string }>($event).id"
+    open
+    :items="sezioni"
+    :value="sezione"
+    @change="sezione = $event.detail.value"
   >
-    <p>Contenuto aggiuntivo del drawer.</p>
-  </bolle-navigation-drawer>
-
-  <bolle-navigation-drawer
-    :open="standardOpen"
-    variant="standard"
-    detached
-    label="Sezioni standard"
-    :items="destinations"
-    :value="current"
-    @navigate="current = detail<{ id: string }>($event).id"
-  >
-    <bolle-button variant="text" @click="standardOpen = false">Chiudi</bolle-button>
+    <h2 slot="heading">Commesse</h2>
+    <span slot="actions">Versione 0.3.3</span>
   </bolle-navigation-drawer>
 </template>
 ```
 
 ### bolle-tabs
 
-Attributs : `items` (`id`, `label`, `icon`, `badge`, `disabled`), `value`,
-`label`, `variant` (primary, secondary), `activation` (automatic, manual),
-`scrollable`. Slots : un par `id` d’item. Événement : `change` avec `{ value }`.
-Avec `manual`, la sélection s’effectue avec Entrée ou un clic, et non avec les
-seules flèches.
+Attributs: `activation`, `label`, `scrollable`, `value`, `variant` · Propriétés JavaScript: `items`, `labels` · Slots: `content-{itemId}`, `default` · Événements: `change`
+
+**Onglets avec panneaux** — items déclare les onglets et value celui qui est actif : le composant applique le choix seul et le rapporte avec change. Chaque panneau nomme l'onglet qui l'ouvre via slot.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const primary: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox", badge: "3" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Preferenze", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
+const scheda = ref("note");
+const schede = [
+  { id: "note", label: "Note" },
+  { id: "documenti", label: "Documenti", count: 3 },
 ];
-const many: BolleItem[] = Array.from({ length: 8 }, (_, index) => ({
-  id: `s${index}`,
-  label: `Vista ${index + 1}`,
-}));
-
-const tab = ref("inbox");
-const manyTab = ref("s0");
 </script>
 
 <template>
   <bolle-tabs
-    label="Categorie"
-    :items="primary"
-    :value="tab"
-    variant="primary"
-    activation="automatic"
-    :scrollable="false"
-    @change="tab = detail<{ value: string }>($event).value"
+    label="Dettaglio"
+    :items="schede"
+    :value="scheda"
+    @change="scheda = $event.detail.value"
   >
-    <p slot="inbox">Messaggi ricevuti.</p>
-    <p slot="archive">Documenti salvati.</p>
-    <p slot="settings">Preferenze personali.</p>
-    <p slot="trash">Elementi eliminati.</p>
-  </bolle-tabs>
-
-  <bolle-tabs
-    label="Dettagli"
-    :items="primary"
-    :value="tab"
-    variant="secondary"
-    activation="manual"
-    @change="tab = detail<{ value: string }>($event).value"
-  >
-    <p slot="inbox">Scheda secondaria.</p>
-    <p slot="archive">Archivio secondario.</p>
-    <p slot="settings">Impostazioni secondarie.</p>
-    <p slot="trash">Cestino secondario.</p>
-  </bolle-tabs>
-
-  <bolle-tabs
-    label="Viste scorrevoli"
-    :items="many"
-    :value="manyTab"
-    scrollable
-    @change="manyTab = detail<{ value: string }>($event).value"
-  >
-    <p v-for="item in many" :key="item.id" :slot="item.id">{{ item.label }}</p>
+    <div slot="note">Note della commessa</div>
+    <div slot="documenti">Documenti allegati</div>
   </bolle-tabs>
 </template>
 ```
 
-## Sélection
+Autres recettes: Onglets qui défilent
 
 ### bolle-checkbox
 
-Attributs : `checked`, `indeterminate`, `label`, `value`, `name`, `required`,
-`disabled`, `supporting-text`, `error`. Slots : default (libellé). Événement :
-`change` avec `{ checked, value }`. Form-associated.
+Attributs: `checked`, `error`, `indeterminate`, `supporting-text` · Slots: `default` · Événements: `change`
+
+**Case avec texte et aide** — La case prend le texte de l'étiquette dans le slot par défaut et change d'état seule, en rapportant checked avec change. supporting-text ajoute la ligne d'explication, indeterminate montre l'état mixte.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import { detail } from "./bolle";
-
-const terms = ref(false);
-const partial = ref(true);
-const newsletter = ref(true);
-
-function onTerms(event: Event) {
-  terms.value = detail<{ checked: boolean }>(event).checked;
-}
-</script>
-
 <template>
-  <form>
-    <bolle-checkbox
-      label="Accetto i termini"
-      name="terms"
-      value="si"
-      required
-      :checked="terms"
-      supporting-text="Puoi revocare il consenso in qualsiasi momento."
-      @change="onTerms"
-    />
-    <bolle-checkbox name="newsletter" value="si" :checked="newsletter" label="Newsletter" />
-    <bolle-checkbox :indeterminate="partial" label="Selezione parziale" />
-    <bolle-checkbox checked disabled label="Disabilitata" />
-    <bolle-checkbox checked error required label="Campo con errore" supporting-text="Devi accettare per continuare." />
-  </form>
+  <bolle-checkbox name="urgente">Segna come urgente</bolle-checkbox>
+  <bolle-checkbox
+    name="privacy"
+    required
+    supporting-text="Serve per inviare la richiesta"
+  >
+    Ho letto l'informativa
+  </bolle-checkbox>
 </template>
 ```
 
+Autres recettes: Case qui pilote une liste
+
 ### bolle-switch
 
-Il hérite de checkbox et ajoute `icon` et `iconSelected`, disponibles uniquement
-comme propriétés (`:icon`, `:iconSelected`). Le rôle est `switch`. Mêmes
-attributs, événements et comportement de formulaire que la checkbox.
+Attributs: `checked`, `error`, `indeterminate`, `supporting-text` · Propriétés JavaScript: `icon`, `iconSelected` · Slots: `default` · Événements: `change`
+
+**Interrupteur** — L'interrupteur change d'état seul et rapporte la valeur avec change : c'est la forme adaptée à une préférence à effet immédiat, tandis que la case reste pour un choix à confirmer.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const wifi = ref(true);
-const notifications = ref(false);
+const notifiche = ref(true);
 </script>
 
 <template>
   <bolle-switch
-    label="Wi-Fi"
-    name="wifi"
-    value="on"
-    :checked="wifi"
-    :icon="'🔅'"
-    :iconSelected="'🔆'"
-    @change="wifi = detail<{ checked: boolean }>($event).checked"
-  />
-  <bolle-switch
-    label="Notifiche"
-    :checked="notifications"
-    supporting-text="Ricevi un avviso per ogni aggiornamento."
-    @change="notifications = detail<{ checked: boolean }>($event).checked"
-  />
-  <bolle-switch checked disabled label="Bluetooth disabilitato" />
-  <bolle-switch checked error required label="Con errore" supporting-text="Azione richiesta." />
+    name="notifiche"
+    :checked="notifiche"
+    @change="notifiche = $event.detail.checked"
+  >
+    Notifiche attive
+  </bolle-switch>
 </template>
 ```
 
 ### bolle-radio-button
 
-Attributs : `name`, `value`, `checked`, `label`, `required`, `disabled`. La
-sélection est groupée via `name` ; les flèches déplacent le focus et sélectionnent,
-Home/End vont au premier et au dernier. Événement : `change` avec
-`{ checked, value }`.
+Attributs: `checked`, `error`, `indeterminate`, `supporting-text` · Slots: `default` · Événements: `change`
+
+**Groupe d'options** — Les boutons radio se regroupent par name : choisir une entrée retire le choix aux autres du même groupe, et la valeur arrive avec change.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const plan = ref("standard");
+const priorita = ref("alta");
+const opzioni = ["alta", "media", "bassa"];
 </script>
 
 <template>
-  <form>
-    <bolle-radio-button
-      v-for="option in ['standard', 'plus', 'enterprise']"
-      :key="option"
-      name="plan"
-      :value="option"
-      :label="option"
-      :checked="plan === option"
-      required
-      @change="plan = detail<{ value: string }>($event).value"
-    />
-    <bolle-radio-button name="plan" value="legacy" label="Legacy" disabled />
-    <bolle-radio-button name="locale" value="it" label="Italiano" checked />
-    <bolle-radio-button name="locale" value="en" label="Inglese" />
-  </form>
+  <bolle-radio-button
+    v-for="valore in opzioni"
+    :key="valore"
+    name="priorita"
+    :value="valore"
+    :checked="priorita === valore"
+    @change="priorita = valore"
+  >
+    {{ valore }}
+  </bolle-radio-button>
 </template>
 ```
 
 ### bolle-chip
 
-Attributs : `variant` (assist, filter, input, suggestion), `label`, `selected`,
-`elevated`, `disabled`, `removable`, `remove-label`, `href`, `name`, `value`,
-`required`. Slots : `avatar`, `icon`, default. Événements : `action`, `change`
-avec `{ selected }` pour filter, `remove`. Seule la variante filter entre dans le
-formulaire.
+Attributs: `disabled`, `elevated`, `href`, `label`, `removable`, `remove-label`, `selected`, `variant` · Slots: `avatar`, `default`, `icon` · Événements: `action`, `change`, `remove`
+
+**Pastille avec icône et retrait** — La pastille prend son texte dans le slot par défaut et, dans les autres, une icône ou un avatar. selected la marque comme choisie, removable ajoute la commande qui la retire et rapporte remove.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import { detail } from "./bolle";
-
-const favorite = ref(false);
-const city = ref(["Roma"]);
-const log = ref("");
-</script>
-
 <template>
-  <bolle-chip variant="assist" label="Aggiungi al calendario" @action="log = 'assist'" />
-  <bolle-chip
-    variant="filter"
-    name="filters"
-    value="favorite"
-    label="Preferiti"
-    :selected="favorite"
-    @change="favorite = detail<{ selected: boolean }>($event).selected"
-  />
-  <bolle-chip variant="filter" name="filters" value="unread" label="Solo non letti" />
-  <bolle-chip variant="filter" elevated label="Elevata" />
-
-  <bolle-chip
-    v-for="name in city"
-    :key="name"
-    variant="input"
-    :label="name"
-    removable
-    :remove-label="`Rimuovi ${name}`"
-    @remove="city = city.filter((value) => value !== name)"
-  >
-    <span slot="avatar" aria-hidden="true">{{ name.slice(0, 2) }}</span>
+  <bolle-chip selected>Urgente</bolle-chip>
+  <bolle-chip removable remove-label="Togli il filtro Cliente">
+    <bolle-avatar slot="avatar" name="Giulia Ferraro"></bolle-avatar>
+    Cliente
   </bolle-chip>
-
-  <bolle-chip variant="suggestion" label="Grazie!">
-    <span slot="icon" aria-hidden="true">✓</span>
-  </bolle-chip>
-  <bolle-chip variant="assist" href="https://example.com" label="Apri collegamento">
-    <span slot="icon" aria-hidden="true">↗</span>
-  </bolle-chip>
-  <bolle-chip variant="assist" label="Disabilitata" disabled />
-  <output>{{ log }}</output>
 </template>
 ```
 
 ### bolle-list
 
-Attributs : `items` (avec `id`, `label`, `icon`, `supportingText`, `badge`,
-`href`, `selected`, `disabled`, `items`, `expanded`), `label`, `variant`
-(standard, segmented), `interactive`, `selection` (none, single, multiple),
-`value` (chaîne ou tableau), `expanded` (tableau d’id). Slots : default pour des
-lignes supplémentaires. Événements : `action` avec `{ id }`, `change` avec
-`{ value, id, selected }`, `expand` avec `{ id, expanded }`.
+Attributs: `interactive`, `label`, `selection`, `variant` · Propriétés JavaScript: `expanded`, `itemRenderer`, `items`, `labels`, `value` · Slots: `default` · Événements: `action`, `change`, `expand`
+
+**Liste avec icônes et détail** — La liste prend les lignes dans le slot par défaut et les compose avec icône, texte, aide et contenu final ; interactive active le clic et selection rapporte le choix avec change.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
-
-const items: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox", supportingText: "Messaggi ricevuti" },
-  { id: "archive", label: "Archivio", icon: "archive", href: "/archivio" },
-  {
-    id: "folders",
-    label: "Cartelle",
-    icon: "folder",
-    items: [
-      { id: "work", label: "Lavoro" },
-      { id: "home", label: "Casa" },
-    ],
-  },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
-  { id: "pinned", label: "Fissati", icon: "pin", selected: true },
-];
-
-const single = ref("inbox");
-const multiple = ref<string[]>(["inbox"]);
-const expanded = ref<string[]>(["folders"]);
-const log = ref("");
-
-function onExpand(event: Event) {
-  const { id, expanded: open } = detail<{ id: string; expanded: boolean }>(event);
-  expanded.value = open
-    ? [...expanded.value, id]
-    : expanded.value.filter((value) => value !== id);
-}
-</script>
-
 <template>
   <bolle-list
-    label="Selezione singola"
-    variant="standard"
+    label="Commesse"
     interactive
     selection="single"
-    :items="items"
-    :value="single"
-    :expanded="expanded"
-    @change="single = detail<{ value: string }>($event).value"
-    @expand="onExpand"
-  />
-
-  <bolle-list
-    label="Selezione multipla"
-    variant="segmented"
-    selection="multiple"
-    :items="items"
-    :value="multiple"
-    @change="multiple = detail<{ value: string[] }>($event).value"
-  />
-
-  <bolle-list
-    label="Azioni"
-    interactive
-    selection="none"
-    :items="items"
-    @action="log = `azione ${detail<{ id: string }>($event).id}`"
-  />
-
-  <bolle-list label="Statico con link" selection="none" :items="items">
-    <li><div class="list-item">Riga personalizzata</div></li>
+    @change="scelta = $event.detail.value"
+  >
+    <bolle-list-item>
+      <span slot="leading" aria-hidden="true">★</span>
+      C2026-1000
+      <span slot="supporting">Ristrutturazione scuola</span>
+      <span slot="trailing">12</span>
+    </bolle-list-item>
+    <bolle-list-item>C2026-1001</bolle-list-item>
   </bolle-list>
-  <output>{{ log }}</output>
 </template>
 ```
+
+Autres recettes: Liste à partir d'un tableau
 
 ### bolle-segmented-buttons
 
-Attributs : `items` (avec `id`, `label`, `icon`, `disabled`), `multiple`,
-`values` (tableau, uniquement en mode multiple), `value` (unique), `label`,
-`name`, `required`, `disabled`. Événement : `change` avec `{ value, values }`.
-Utilisez de deux à cinq segments.
+Attributs: `multiple` · Propriétés JavaScript: `items`, `values` · Slots: - · Événements: `change`
+
+**Choix entre segments** — Les segments viennent de items et le choix de value : le contrôle l'applique seul et le rapporte avec change. multiple autorise plusieurs segments et renvoie values.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const segments: BolleItem[] = [
-  { id: "inbox", label: "Posta", icon: "inbox" },
-  { id: "archive", label: "Archivio", icon: "archive" },
-  { id: "settings", label: "Impostazioni", icon: "settings" },
-  { id: "trash", label: "Cestino", icon: "trash", disabled: true },
+const vista = ref("elenco");
+
+const items = [
+  { id: "elenco", label: "Elenco" },
+  { id: "griglia", label: "Griglia" },
+  { id: "mappa", label: "Mappa" },
 ];
-
-const view = ref("inbox");
-const filters = ref<string[]>(["inbox", "archive"]);
 </script>
 
 <template>
-  <form>
-    <bolle-segmented-buttons
-      label="Vista"
-      name="view"
-      :items="segments"
-      :value="view"
-      required
-      @change="view = detail<{ value: string }>($event).value"
-    />
-    <bolle-segmented-buttons
-      label="Filtri"
-      name="filters"
-      multiple
-      :items="segments"
-      :values="filters"
-      @change="filters = detail<{ values: string[] }>($event).values"
-    />
-    <bolle-segmented-buttons label="Disabilitati" name="disabled" :items="segments" value="inbox" disabled />
-  </form>
+  <bolle-segmented-buttons
+    label="Vista"
+    :items="items"
+    :value="vista"
+    @change="vista = $event.detail.value"
+  ></bolle-segmented-buttons>
 </template>
 ```
+
+Autres recettes: Choix multiple
 
 ### bolle-slider
 
-Attributs : `value`, `min`, `max`, `step`, `variant` (continuous, centered,
-range), `size` (xs, small, medium, large, xl), `upper-value`, `upper-label`,
-`orientation` (horizontal, vertical), `show-value`, `stops`, `iconStart`,
-`iconEnd`, `label`, `name`, `required`, `disabled`. Événements : `value-input`
-avec `{ value, upperValue }`, `change` avec le même payload. Les deux champs
-d’icône sont uniquement des propriétés et se lient comme `:iconStart` et
-`:iconEnd`.
+Attributs: `compact`, `max`, `min`, `min-gap`, `step`, `suffix`, `upper-label`, `upper-value`, `variant` · Propriétés JavaScript: `icon` · Slots: `icon`, `label`, `value` · Événements: `change`, `value-input`
+
+**Curseur unique** — Le curseur affiche la valeur sur l'étiquette et la renvoie avec input pendant le glissement et avec change à la fin. min et max fixent l'intervalle, step la granularité.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const volume = ref("40");
-const balance = ref("60");
-const price = ref("20");
-const upper = ref(80);
-const brightness = ref("40");
-
-function onPrice(event: Event) {
-  const value = detail<{ value: string; upperValue?: number }>(event);
-  price.value = value.value;
-  upper.value = value.upperValue ?? upper.value;
-}
+const avanzamento = ref(40);
 </script>
 
 <template>
   <bolle-slider
-    name="volume"
-    label="Volume"
-    :value="volume"
-    :min="0"
-    :max="100"
-    :step="1"
-    variant="continuous"
-    size="xs"
-    orientation="horizontal"
-    show-value
-    @value-input="volume = detail<{ value: string }>($event).value"
-  />
-
-  <bolle-slider
-    label="Bilanciamento"
-    variant="centered"
-    :value="balance"
-    show-value
-    @value-input="balance = detail<{ value: string }>($event).value"
-  />
-
-  <bolle-slider
-    label="Prezzo"
-    name="price"
-    variant="range"
-    :value="price"
-    :upper-value="upper"
-    upper-label="Massimo"
-    show-value
-    required
-    @value-input="onPrice"
-    @change="onPrice"
-  />
-
-  <bolle-slider
-    label="Luminosità"
-    :value="brightness"
-    show-value
-    :iconStart="'🔅'"
-    :iconEnd="'🔆'"
-    @value-input="brightness = detail<{ value: string }>($event).value"
-  />
-
-  <bolle-slider label="Passo 10 con indicatori" :step="10" value="40" show-value stops />
-  <bolle-slider label="Small" size="small" value="30" />
-  <bolle-slider label="Large" size="large" value="70" />
-  <bolle-slider label="Verticale" orientation="vertical" value="50" />
-  <bolle-slider label="Disabilitato" value="20" disabled />
+    label="Avanzamento"
+    min="0"
+    max="100"
+    step="5"
+    :value="avanzamento"
+    @change="avanzamento = Number($event.detail.value)"
+  ></bolle-slider>
 </template>
 ```
 
-## Texte et saisie
+Autres recettes: Intervalle entre deux valeurs
+
+### bolle-steps
+
+Attributs: `options` · Slots: `label` · Événements: `change`
+
+**Étapes d'un parcours** — options déclare les noms des étapes et value celle en cours : le composant marque les étapes faites, celle active et les restantes, et rapporte le choix avec change.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const passo = ref("1");
+const passi = ["Dati", "Documenti", "Riepilogo"];
+</script>
+
+<template>
+  <bolle-steps
+    label="Avanzamento"
+    :options="passi"
+    :value="passo"
+    @change="passo = String($event.detail.index)"
+  ></bolle-steps>
+</template>
+```
 
 ### bolle-text-field
 
-Attributs : `variant` (filled, outlined), `type` (text, email, password, number,
-date, time, url, tel, search), `label`, `value`, `placeholder`,
-`supporting-text`, `error`, `multiline`, `rows`, `readonly`, `min`, `max`,
-`step`, `pattern`, `autocomplete`, `maxlength`, `counter`, `prefix`, `suffix`,
-`name`, `required`, `disabled`. Slots : `leading`, `trailing`. Événements :
-`value-input` avec `{ value }` à chaque frappe, `change` avec `{ value }` à la
-validation. `pattern` et `autocomplete` s’appliquent au champ sur une seule ligne ;
-`rows` uniquement à `multiline`.
+Attributs: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `inputmode`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · Slots: `leading`, `prefix`, `suffix`, `supporting`, `trailing` · Événements: `change`, `value-input`
+
+**Champ avec préfixe et texte d'aide** — Le champ prend dans les slots le préfixe, le suffixe et le texte d'aide, tandis que la valeur reste dans l'input et arrive avec input et change. variant filled ou outlined change la forme du cadre.
 
 ```vue
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { detail } from "./bolle";
+import { ref } from "vue";
 
-const email = ref("");
-const message = ref("");
-const emailError = computed(
-  () => email.value.length > 0 && !email.value.includes("@"),
-);
-
-function onEmail(event: Event) {
-  email.value = detail<{ value: string }>(event).value;
-}
-function onMessage(event: Event) {
-  message.value = detail<{ value: string }>(event).value;
-}
+const importo = ref("");
 </script>
 
 <template>
-  <form>
-    <bolle-text-field
-      name="email"
-      label="Email"
-      type="email"
-      variant="outlined"
-      placeholder="nome@dominio.it"
-      autocomplete="email"
-      :maxlength="120"
-      counter
-      required
-      :value="email"
-      :error="emailError"
-      supporting-text="Useremo questo indirizzo per le notifiche."
-      @value-input="onEmail"
-      @change="onEmail"
-    >
-      <span slot="leading" aria-hidden="true">✉</span>
-      <span slot="trailing" aria-hidden="true">?</span>
-    </bolle-text-field>
-
-    <bolle-text-field label="Nome utente" variant="filled" prefix="@" :maxlength="30" counter />
-    <bolle-text-field label="Prezzo" type="number" min="0" max="9999" step="0.01" prefix="€" suffix="EUR" value="12.50" />
-    <bolle-text-field
-      label="Messaggio"
-      multiline
-      :rows="4"
-      :maxlength="200"
-      counter
-      :value="message"
-      @value-input="onMessage"
-    />
-    <bolle-text-field label="Solo lettura" readonly value="Valore bloccato" />
-    <bolle-text-field label="Quantità" type="number" min="1" max="10" step="1" value="2" />
-    <bolle-text-field label="Codice" pattern="[A-Z]{3}[0-9]{3}" value="ABC123" supporting-text="Tre lettere e tre cifre." />
-    <bolle-text-field label="Data" type="date" min="2026-01-01" max="2026-12-31" />
-    <bolle-text-field label="Ricerca" type="search" placeholder="Cerca" />
-    <bolle-text-field label="Disabilitato" disabled value="Non modificabile" />
-  </form>
+  <bolle-text-field
+    label="Importo"
+    type="number"
+    :value="importo"
+    @change="importo = $event.detail.value"
+  >
+    <span slot="prefix">€</span>
+    <span slot="supporting">Importo al netto dell'IVA</span>
+  </bolle-text-field>
 </template>
 ```
+
+Autres recettes: Champ en erreur · Champ multiligne
 
 ### bolle-search
 
-Il hérite de text field. Attributs supplémentaires : `appearance` (contained,
-divided), `layout` (docked, full-screen), `suggestions` (tableau),
-`suggestions-label`, `filter`, `suggestion-delay` (ms). Slots : `leading`,
-`trailing`, `results` (uniquement avec le layout docked). Événements :
-`value-input`, `change`, `search` avec `{ value }` à la validation, `suggest`
-avec `{ value }` à chaque saisie (différé si `suggestion-delay` est supérieur à
-zéro).
+Attributs: `appearance`, `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `filter`, `inputmode`, `layout`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `suggestion-delay`, `suggestions-label`, `supporting-text`, `type`, `variant` · Propriétés JavaScript: `suggestions` · Slots: `leading`, `prefix`, `results`, `suffix`, `supporting`, `trailing` · Événements: `change`, `search`, `suggest`, `value-input`
+
+**Barre de recherche avec résultats** — La recherche est un champ de texte avec la commande d'effacement déjà incluse : results reçoit la liste qui apparaît sous la barre, que l'application remplit avec les résultats de suggest ou search.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const cities = ["Bologna", "Bolzano", "Firenze", "Genova", "Milano", "Napoli", "Roma", "Torino"];
-const suggestions = ref<string[]>(cities);
-const query = ref("");
-const lastSearch = ref("");
-
-const results: BolleItem[] = [
-  { id: "r1", label: "Roma", supportingText: "Capitale d'Italia" },
-  { id: "r2", label: "Torino", supportingText: "Capoluogo piemontese" },
-];
-
-function onSuggest(event: Event) {
-  const value = detail<{ value: string }>(event).value.toLocaleLowerCase();
-  suggestions.value = cities.filter((city) => city.toLocaleLowerCase().includes(value));
-}
+const risultati = ref<Array<{ id: string; label: string }>>([]);
 </script>
 
 <template>
   <bolle-search
-    label="Cerca documenti"
-    placeholder="Titolo o autore"
-    appearance="contained"
-    layout="docked"
-    :value="query"
-    :suggestions="[]"
-    :suggestion-delay="0"
-    @value-input="query = detail<{ value: string }>($event).value"
-    @search="lastSearch = detail<{ value: string }>($event).value"
+    label="Cerca commesse"
+    @search="risultati = cercaSulServer($event.detail.value)"
   >
-    <span slot="leading" aria-hidden="true">🔍</span>
-    <span slot="trailing" aria-hidden="true">⌘K</span>
-    <bolle-list slot="results" label="Risultati" selection="none" :items="results" />
+    <bolle-list slot="results" label="Risultati">
+      <bolle-list-item v-for="voce in risultati" :key="voce.id">
+        {{ voce.label }}
+      </bolle-list-item>
+    </bolle-list>
   </bolle-search>
-
-  <bolle-search appearance="divided" label="Cerca nel testo" placeholder="Parola chiave" />
-
-  <bolle-search layout="full-screen" label="Cerca ovunque" placeholder="Cerca ovunque" />
-
-  <bolle-search
-    filter
-    label="Cerca città"
-    placeholder="Scrivi una città"
-    suggestions-label="Suggerimenti"
-    :suggestion-delay="150"
-    :suggestions="suggestions"
-    @suggest="onSuggest"
-    @search="lastSearch = detail<{ value: string }>($event).value"
-  />
-  <output>{{ lastSearch }}</output>
 </template>
 ```
+
+Autres recettes: Recherche en ligne dans la barre
 
 ### bolle-date-picker
 
-Attributs : `variant` (modal, docked), `selection-mode` (single, range), `value`
-(format `AAAA-MM-GG`), `end-value`, `locale`, `labels`, `min`, `max`,
-`week-starts-on` (0 dimanche, 1 lundi), `label`, `name`, `required`, `disabled`,
-`supporting-text`, `error`. Événement : `change` avec `{ value, endValue }`. La
-variante `docked` rend le calendrier toujours visible et n’ouvre pas le dialog.
+Attributs: `autocapitalize`, `autocomplete`, `counter`, `end-value`, `enterkeyhint`, `error`, `inputmode`, `locale`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `selection-mode`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant`, `week-starts-on` · Propriétés JavaScript: `labels` · Slots: `end-label`, `leading`, `prefix`, `suffix`, `supporting`, `title`, `trailing` · Événements: `change`, `value-input`
+
+**Choix d'une date** — Le sélecteur ouvre le calendrier depuis le champ : la valeur choisie arrive avec change au format ISO, et locale décide langue et noms des jours. selection-mode range ajoute la seconde date dans end-value.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const appointment = ref("2026-11-11");
-const rangeStart = ref("2026-11-01");
-const rangeEnd = ref("2026-11-20");
-
-function onAppointment(event: Event) {
-  appointment.value = detail<{ value: string }>(event).value;
-}
-function onRange(event: Event) {
-  const value = detail<{ value: string; endValue: string }>(event);
-  rangeStart.value = value.value;
-  rangeEnd.value = value.endValue;
-}
+const scadenza = ref("");
 </script>
 
 <template>
-  <form>
-    <bolle-date-picker
-      label="Data appuntamento"
-      name="appointment"
-      locale="it"
-      variant="modal"
-      selection-mode="single"
-      min="2026-01-01"
-      max="2026-12-31"
-      required
-      :value="appointment"
-      supporting-text="Seleziona un giorno lavorativo."
-      @change="onAppointment"
-    />
-
-    <bolle-date-picker
-      label="Periodo"
-      name="period"
-      locale="it"
-      selection-mode="range"
-      :value="rangeStart"
-      :end-value="rangeEnd"
-      @change="onRange"
-    />
-
-    <bolle-date-picker
-      variant="docked"
-      label="Calendario sempre visibile"
-      locale="it"
-      selection-mode="single"
-      :value="appointment"
-      :week-starts-on="1"
-      :labels="{ previous: 'Mese precedente', next: 'Mese successivo' }"
-      @change="onAppointment"
-    />
-
-    <bolle-date-picker label="Disabilitato" disabled value="2026-11-11" />
-  </form>
+  <bolle-date-picker
+    label="Scadenza"
+    :value="scadenza"
+    @change="scadenza = $event.detail.value"
+  ></bolle-date-picker>
 </template>
 ```
 
-Dans un formulaire, le picker range envoie deux valeurs avec le même `name` :
-
-```ts
-new FormData(form).getAll("period"); // ["2026-11-01", "2026-11-20"]
-```
+Autres recettes: Plage de dates
 
 ### bolle-time-picker
 
-Attributs : `variant` (dial, input), `hour-cycle` (12, 24), `value` (`HH:mm`),
-`locale`, `labels`, `label`, `name`, `required`, `disabled`. Événement : `change`
-avec `{ value }`. Avec `hour-cycle="12"`, le sélecteur AM/PM apparaît.
+Attributs: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `hour-cycle`, `inputmode`, `locale`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · Propriétés JavaScript: `labels` · Slots: `leading`, `prefix`, `suffix`, `supporting`, `title`, `trailing` · Événements: `change`, `value-input`
+
+**Choix d'une heure** — Le sélecteur ouvre le cadran de l'heure depuis le champ : la valeur choisie arrive avec change, hour-cycle décide le format sur douze ou vingt-quatre heures et le slot title nomme le cadran.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { detail } from "./bolle";
 
-const time = ref("09:30");
-const evening = ref("18:45");
-
-function onTime(event: Event) {
-  time.value = detail<{ value: string }>(event).value;
-}
-function onEvening(event: Event) {
-  evening.value = detail<{ value: string }>(event).value;
-}
+const consegna = ref("");
 </script>
 
 <template>
-  <form>
-    <bolle-time-picker
-      label="Ora promemoria"
-      name="time"
-      variant="dial"
-      :hour-cycle="24"
-      locale="it"
-      required
-      :value="time"
-      @change="onTime"
-    />
-    <bolle-time-picker
-      label="Ora in formato 12"
-      variant="dial"
-      :hour-cycle="12"
-      locale="it"
-      :value="evening"
-      :labels="{ period: 'AM o PM', hour: 'Ora', minute: 'Minuti' }"
-      @change="onEvening"
-    />
-    <bolle-time-picker
-      label="Inserimento da tastiera"
-      variant="input"
-      :hour-cycle="24"
-      value="08:15"
-      @change="onTime"
-    />
-    <bolle-time-picker label="Disabilitato" disabled value="07:00" />
-  </form>
+  <bolle-time-picker
+    label="Consegna"
+    hour-cycle="24"
+    :value="consegna"
+    @change="consegna = $event.detail.value"
+  >
+    <span slot="title">Orario di consegna</span>
+  </bolle-time-picker>
 </template>
 ```
-
-## Menus
 
 ### bolle-menu
 
-Attributs : `items` (`MenuEntry[]`), `menu-label` (obligatoire), `variant`
-(vertical, baseline), `color-scheme` (standard, vibrant ; vertical uniquement),
-`selection-mode` (none, single, multi), `filterable`, `filter`, `locale`,
-`compact-width` (480px par défaut), `quick`, `density` (nombre, les valeurs
-négatives sont plus compactes), `inactive`. Méthodes :
-`show(anchor, { last?, x?, y? })`, `close(restoreFocus?)`. Getters : `open`,
-`selectedIds`. Événements : `menu-open`, `menu-close`, `menu-select` avec
-`{ item, selectedIds }`.
+Attributs: `color-scheme`, `compact-width`, `density`, `filter`, `filterable`, `inactive`, `locale`, `menu-label`, `options`, `quick`, `selection-mode`, `tail`, `variant` · Propriétés JavaScript: `items`, `labels` · Slots: - · Événements: -
 
-Avec `filterable` le menu affiche un champ qui filtre les entrées ; `filter`
-contient la requête et peut être défini de l'extérieur. Sous `compact-width` le
-menu vertical devient une feuille par le bas, fermée par Escape ou un appui
-extérieur. `selectedIds` agrège la sélection des sous-menus et `menu-select`
-rapporte la sélection de la racine.
+**Menu d'actions** — show(anchor) ouvre le menu sous l'élément qui l'appelle et le choix arrive avec menu-select. items déclare les entrées, avec icône, raccourci, disabled et enfants pour le sous-menu.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BolleMenu, MenuEntry } from "bolle-web-components";
-import { detail } from "./bolle";
+import type { MenuEntry } from "@bolle/web-components";
 
-const actions = ref<BolleMenu | null>(null);
-const filters = ref<BolleMenu | null>(null);
-const baseline = ref<BolleMenu | null>(null);
-const last = ref("");
-
-const documentItems: MenuEntry[] = [
+const items: MenuEntry[] = [
+  { id: "apri", label: "Apri scheda" },
+  { id: "duplica", label: "Duplica", shortcut: "Ctrl D" },
   {
-    group: true,
-    label: "Modifica",
-    items: [
-      { id: "undo", label: "Annulla", icon: "undo", trailingText: "⌘Z" },
-      { id: "redo", label: "Ripeti", icon: "redo", trailingText: "⇧⌘Z", disabled: true },
-    ],
+    id: "archivia",
+    label: "Archivia",
+    children: [{ id: "chiudi", label: "Chiudi anche i documenti" }],
   },
-  { separator: true },
-  {
-    id: "share",
-    label: "Condividi",
-    icon: "share",
-    children: [
-      { id: "link", label: "Copia collegamento" },
-      { id: "email", label: "Invia per email" },
-    ],
-  },
-  { id: "open", label: "Apri in nuova scheda", href: "https://example.com" },
-  { id: "download", label: "Scarica", icon: "download", badge: "PDF" },
 ];
 
-const filterItems: MenuEntry[] = [
-  { id: "unread", label: "Non letti", selected: true },
-  { id: "flagged", label: "Con stella" },
-  { id: "attachments", label: "Con allegati", supportingText: "Almeno un file" },
-];
-
-const baselineItems: MenuEntry[] = [
-  { id: "copy", label: "Copia" },
-  { id: "paste", label: "Incolla", disabled: true },
-];
-
-function open(
-  menu: BolleMenu | null,
-  event: Event,
-  options: { last?: boolean; x?: number; y?: number } = {},
-) {
-  menu?.show(event.currentTarget as HTMLElement, options);
-}
-function onSelect(event: Event) {
-  const result = detail<{ item: { label: string }; selectedIds: string[] }>(event);
-  last.value = `${result.item.label} (${result.selectedIds.join(", ")})`;
-}
+const menu = ref<HTMLElement | null>(null);
 </script>
 
 <template>
-  <bolle-button haspopup="menu" @click="open(actions, $event)">Azioni</bolle-button>
-  <bolle-menu
-    ref="actions"
-    menu-label="Azioni documento"
-    variant="vertical"
-    color-scheme="standard"
-    selection-mode="none"
-    :quick="false"
-    :density="0"
-    :inactive="false"
-    :items="documentItems"
-    @menu-open="last = 'menu aperto'"
-    @menu-close="last = 'menu chiuso'"
-    @menu-select="onSelect"
-  />
-
-  <bolle-button variant="tonal" haspopup="menu" @click="open(filters, $event, { last: true })">
-    Filtri
+  <bolle-button variant="tonal" @click="menu?.show($event.currentTarget)">
+    Azioni
   </bolle-button>
   <bolle-menu
-    ref="filters"
-    menu-label="Filtri contenuti"
-    color-scheme="vibrant"
-    selection-mode="multi"
-    :density="-1"
-    :items="filterItems"
-    @menu-select="onSelect"
-  />
-
-  <bolle-button variant="outlined" haspopup="menu" @click="open(baseline, $event, { x: 120, y: 160 })">
-    Menu baseline a coordinate
-  </bolle-button>
-  <bolle-button variant="text" @click="actions?.close()">Chiudi menu azioni</bolle-button>
-  <bolle-menu
-    ref="baseline"
-    menu-label="Azioni rapide"
-    variant="baseline"
-    :items="baselineItems"
-    @menu-select="onSelect"
-  />
-  <output>{{ last }}</output>
+    ref="menu"
+    label="Azioni"
+    :items="items"
+    @menu-select="onScelta"
+  ></bolle-menu>
 </template>
 ```
 
-Règles de validation appliquées par `show` : `menu-label` ne peut pas être vide,
-la variante baseline n’admet pas `color-scheme="vibrant"`, les id doivent être
-uniques, les groupes ne peuvent pas s’imbriquer sur plus de quatre niveaux, et une
-entrée avec `href` ne peut avoir ni `children` ni être utilisée dans un menu avec
-sélection.
-
 ### bolle-fab-menu
 
-Attributs : `label`, `items` (de deux à six actions), `open`. Slots : `icon`.
-Événement : `action` avec `{ id }`. Le `label` est le nom accessible du bouton et
-du menu. `open` est un état interne reflété : il n’existe pas d’événement de
-changement, il ne faut donc pas l’utiliser comme binding contrôlé.
+Attributs: `color`, `label`, `open`, `tail` · Propriétés JavaScript: `items` · Slots: `icon` · Événements: `action`
+
+**Actions rapides** — Le menu des boutons flottants ouvre les actions secondaires depuis le bouton principal : items déclare les entrées, open dit s'il est ouvert et le choix arrive avec menu-select.
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-import type { BolleItem } from "bolle-web-components";
-import { detail } from "./bolle";
-
-const fabItems: BolleItem[] = [
-  { id: "note", label: "Nota", icon: "note" },
-  { id: "folder", label: "Cartella", icon: "folder" },
-  { id: "upload", label: "Carica file", icon: "upload" },
-  { id: "event", label: "Evento", icon: "calendar", disabled: true },
-];
-const log = ref("");
-</script>
-
 <template>
-  <bolle-fab-menu
-    label="Crea"
-    :items="fabItems"
-    @action="log = `crea ${detail<{ id?: string }>($event).id}`"
-  >
-    <span slot="icon" aria-hidden="true">＋</span>
+  <bolle-fab-menu label="Azioni rapide" :items="items">
+    <span slot="icon" aria-hidden="true">+</span>
   </bolle-fab-menu>
-  <output>{{ log }}</output>
 </template>
 ```
 
 ### bolle-split-button
 
-Attributs : `label`, `menu-label`, `items` (`MenuEntry[]`), `disabled`, `variant`
-(filled, tonal, outlined, elevated), `size` (xs, small, medium, large, xl).
-Événements : `action` pour le bouton principal, `menu-select` avec
-`{ item, selectedIds }` propagé depuis le menu interne ; `menu-open` et
-`menu-close` remontent aussi. `menu-label` est obligatoire pour ouvrir le menu.
+Attributs: `disabled`, `icon`, `label`, `menu-label`, `size`, `variant` · Propriétés JavaScript: `items` · Slots: `icon` · Événements: `action`
+
+**Action principale et menu** — Le bouton divisé garde l'action principale à gauche et ouvre le menu depuis la commande voisine : les entrées viennent de items et le choix avec menu-select, tandis que le clic sur l'action principale arrive avec click.
+
+```vue
+<script setup lang="ts">
+const items = [
+  { id: "bozza", label: "Salva come bozza" },
+  { id: "duplica", label: "Salva e duplica" },
+];
+</script>
+
+<template>
+  <bolle-split-button label="Salva" variant="filled" :items="items">
+    <span slot="icon" aria-hidden="true">★</span>
+  </bolle-split-button>
+</template>
+```
+
+### bolle-select
+
+Attributs: `error`, `open`, `placeholder`, `supporting-text`, `variant` · Slots: `supporting` · Événements: `change`
+
+**Select avec options natives** — La select enveloppe un élément select natif : les options restent dans le balisage et la valeur arrive avec change. Le menu qui s'ouvre est celui du composant, avec la même forme que les champs de texte.
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MenuEntry } from "bolle-web-components";
-import { detail } from "./bolle";
 
-const variants = ["filled", "tonal", "outlined", "elevated"] as const;
-const sizes = ["xs", "small", "medium", "large", "xl"] as const;
-const log = ref("");
-
-const items: MenuEntry[] = [
-  { id: "later", label: "Invia più tardi" },
-  { id: "draft", label: "Salva bozza" },
-  { separator: true },
-  { id: "template", label: "Usa modello" },
-];
-
-function onSelect(event: Event) {
-  log.value = detail<{ item: { label: string } }>(event).item.label;
-}
+const stato = ref("aperta");
 </script>
 
 <template>
-  <bolle-split-button
-    v-for="variant in variants"
-    :key="variant"
-    :variant="variant"
-    :label="`Invia ${variant}`"
-    :menu-label="`Altre opzioni ${variant}`"
-    :items="items"
-    @action="log = 'azione principale'"
-    @menu-select="onSelect"
-    @menu-open="log = 'menu aperto'"
-    @menu-close="log = 'menu chiuso'"
-  />
-
-  <bolle-split-button
-    v-for="size in sizes"
-    :key="size"
-    :size="size"
-    :label="size"
-    :menu-label="`Altre opzioni ${size}`"
-    :items="items"
-    @menu-select="onSelect"
-  />
-
-  <bolle-split-button
-    label="Invia"
-    menu-label="Altre opzioni"
-    disabled
-    :items="items"
-  />
-  <output>{{ log }}</output>
+  <bolle-select
+    label="Stato"
+    :value="stato"
+    @change="stato = $event.detail.value"
+  >
+    <select name="stato">
+      <option value="aperta">In corso</option>
+      <option value="chiusa">Chiusa</option>
+      <option value="sospesa">Sospesa</option>
+    </select>
+    <span slot="supporting">Lo stato decide l'ordine delle commesse</span>
+  </bolle-select>
 </template>
 ```
 
-## Couverture
+### bolle-autocomplete
 
-| Groupe        | Composants                                                                 |
-| ------------- | -------------------------------------------------------------------------- |
-| Actions       | button, icon-button, floating-action-button, extended-fab, button-group    |
-| Communication | badge, progress-indicator, loading-indicator, snackbar, tooltip, carousel  |
-| Confinement   | card, dialog, bottom-sheet, side-sheet, divider                            |
-| Navigation    | app-bar, toolbar, navigation-bar, navigation-rail, navigation-drawer, tabs |
-| Sélection     | checkbox, switch, radio-button, chip, list, segmented-buttons, slider      |
-| Texte et saisie | text-field, search, date-picker, time-picker                             |
-| Menus         | menu, fab-menu, split-button                                               |
+Attributs: `autocapitalize`, `autocomplete`, `counter`, `enterkeyhint`, `error`, `inputmode`, `max`, `maxlength`, `min`, `minlength`, `multiline`, `pattern`, `placeholder`, `prefix`, `readonly`, `rows`, `spellcheck`, `step`, `suffix`, `supporting-text`, `type`, `variant` · Propriétés JavaScript: `options` · Slots: `leading`, `prefix`, `suffix`, `supporting`, `trailing` · Événements: `change`, `value-input`
+
+**Champ avec suggestions** — suggestions déclare les suggestions et le composant les filtre pendant la saisie, en les rapportant avec suggest ; choisir une entrée remplit le champ et émet change. suggestion-delay règle l'attente avant de demander les données.
+
+```vue
+<script setup lang="ts">
+const suggerimenti = [
+  { id: "bergamo", label: "Bergamo" },
+  { id: "brescia", label: "Brescia" },
+  { id: "seriate", label: "Seriate" },
+];
+</script>
+
+<template>
+  <bolle-autocomplete
+    label="Comune"
+    :suggestions="suggerimenti"
+    :suggestion-delay="200"
+  ></bolle-autocomplete>
+</template>
+```
+
+### bolle-sidebar
+
+Attributs: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · Propriétés JavaScript: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slots: `empty`, `filter`, `footer`, `header` · Événements: `collapse`, `expand`, `navigate`, `resize`
+
+**Arborescence de navigation** — items déclare les entrées et leurs enfants : le composant construit l'arbre jusqu'à trois niveaux, ouvre la branche de l'entrée choisie et rapporte le chemin avec navigate. L'entrée courante se règle avec current, le chemin des entrées séparées par une barre.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { SidebarItem, SidebarNavigateDetail } from "@bolle/web-components";
+
+const items: SidebarItem[] = [
+  { id: "cruscotto", label: "Cruscotto" },
+  {
+    id: "commesse",
+    label: "Commesse",
+    count: 12,
+    children: [
+      { id: "attive", label: "Attive" },
+      { id: "chiuse", label: "Chiuse" },
+    ],
+  },
+  { id: "clienti", label: "Clienti" },
+];
+
+const current = ref("commesse/attive");
+
+// La sidebar applica la scelta da sé: l'evento serve per navigare.
+const onNavigate = (event: CustomEvent<SidebarNavigateDetail>) => {
+  current.value = event.detail.path;
+};
+</script>
+
+<template>
+  <bolle-sidebar
+    label="Navigazione"
+    style="block-size: 520px"
+    :items="items"
+    :current="current"
+    @navigate="onNavigate"
+  ></bolle-sidebar>
+</template>
+```
+
+Autres recettes: Recherche, compteurs et rail compact · Contenu d'une entrée
+
+### bolle-app-shell
+
+Attributs: `close-label`, `expanded-width`, `form`, `label`, `medium-width`, `supporting-label`, `supporting-mode`, `supporting-open` · Propriétés JavaScript: `labels` · Slots: `bar`, `bottom-bar`, `default`, `navigation`, `navigation-compact`, `status`, `supporting`, `supporting-actions`, `supporting-header`, `supporting-inline`, `supporting-modal` · Événements: `form-change`, `supporting-close`
+
+**Coque complète** — La coque assemble les surfaces autour du contenu : la navigation, la barre, la barre inférieure et le panneau d'aide viennent des slots et le contenu principal est le slot par défaut. Les zones sans contenu n'occupent pas d'espace.
+
+```vue
+<template>
+  <bolle-app-shell style="block-size: 100dvh">
+    <bolle-navigation-drawer slot="navigation" label="Sezioni">
+      <a href="#/commesse">Commesse</a>
+      <a href="#/clienti">Clienti</a>
+    </bolle-navigation-drawer>
+    <bolle-app-bar slot="bar" title="Commesse"></bolle-app-bar>
+    <main>Contenuto della pagina</main>
+    <bolle-bottom-app-bar slot="bottom-bar"></bolle-bottom-app-bar>
+  </bolle-app-shell>
+</template>
+```
+
+Autres recettes: Panneau d'aide
+
+### bolle-dashboard
+
+Attributs: `columns`, `compact-columns`, `density`, `label`, `medium-columns` · Propriétés JavaScript: `labels` · Slots: `default` · Événements: -
+
+**Grille de tuiles** — Le tableau de bord dispose les tuiles reçues et n'impose aucun contenu : chaque tuile est un bolle-widget, et span décide du nombre de colonnes tandis que min-span fixe le minimum quand l'espace se réduit.
+
+```vue
+<template>
+  <bolle-dashboard label="Panoramica" style="block-size: 640px">
+    <bolle-widget title="Lavori in ritardo" span="8" min-span="4">
+      <p>Quattro commesse oltre la scadenza.</p>
+    </bolle-widget>
+    <bolle-widget title="Avanzamento cantieri" span="4" min-span="3">
+      <bolle-progress-indicator value="62" label="Avanzamento" />
+    </bolle-widget>
+  </bolle-dashboard>
+</template>
+```
+
+Autres recettes: Tuiles déplaçables et redimensionnables
+
+### bolle-kanban
+
+Attributs: `addable`, `card-gap`, `collapsible`, `column-gap`, `column-max-width`, `column-min-width`, `density`, `empty-label`, `error`, `label`, `lanes`, `loading`, `movable`, `selected` · Propriétés JavaScript: `card`, `cardActions`, `cards`, `collapsed`, `columnActions`, `columnRenderer`, `columns`, `contentStyles`, `emptyRenderer`, `errorRenderer`, `labels`, `laneLabel`, `laneRenderer`, `loadingRenderer`, `restrict` · Slots: `empty`, `error`, `loading` · Événements: `card-action`, `card-add`, `card-move`, `card-move-blocked`, `card-open`, `column-action`, `column-collapse`, `retry`
+
+**Tableau minimal** — columns déclare les colonnes et cards les cartes, chacune avec la colonne où elle se trouve. Avec movable, le lecteur glisse la carte ou la déplace avec Alt et les flèches : le tableau applique le déplacement et le rapporte avec card-move.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { KanbanCard, KanbanColumn } from "@bolle/web-components";
+
+const columns: KanbanColumn[] = [
+  { id: "da-fare", label: "Da fare" },
+  { id: "in-corso", label: "In corso" },
+  { id: "fatto", label: "Fatto" },
+];
+
+const cards = ref<KanbanCard[]>([
+  { id: "c-1", column: "da-fare", title: "Sopralluogo" },
+  { id: "c-2", column: "in-corso", title: "Posa massetto" },
+]);
+</script>
+
+<template>
+  <bolle-kanban
+    label="Cantieri"
+    movable
+    style="block-size: 520px"
+    :columns="columns"
+    :cards="cards"
+  ></bolle-kanban>
+</template>
+```
+
+Autres recettes: Règle de déplacement et limites · Contenu de la carte
+
+### bolle-gantt
+
+Attributs: `baseline`, `density`, `editable`, `empty-label`, `error`, `group-by`, `label`, `linkable`, `loading`, `scale`, `selected` · Propriétés JavaScript: `barRenderer`, `columns`, `contentStyles`, `emptyRenderer`, `errorRenderer`, `groupLabel`, `labels`, `loadingRenderer`, `restrict`, `tasks` · Slots: `empty`, `error`, `loading` · Événements: `columns-change`, `dependency-add`, `dependency-blocked`, `retry`, `task-change`, `task-change-blocked`, `task-open`, `task-select`, `view-change`
+
+**Plan minimal** — Le plan dessine les tâches sur l'axe du temps : parent construit l'arbre et une tâche avec des enfants devient une barre de synthèse. La hauteur de l'hôte est obligatoire, car la surface remplit l'espace qu'elle reçoit.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { GanttTask } from "@bolle/web-components";
+
+const tasks = ref<GanttTask[]>([
+  {
+    id: "p-1",
+    code: "C2026-1000",
+    name: "Ristrutturazione scuola",
+    start: "2026-09-07",
+    end: "2027-03-12",
+  },
+  {
+    id: "p-1-1",
+    parent: "p-1",
+    code: "C2026-1000.01",
+    name: "Impianto elettrico",
+    start: "2026-09-14",
+    end: "2026-10-02",
+    progress: 30,
+    resource: "Giulia Ferraro",
+  },
+]);
+</script>
+
+<template>
+  <bolle-gantt
+    label="Piano di commessa"
+    style="block-size: 420px"
+    :tasks="tasks"
+  ></bolle-gantt>
+</template>
+```
+
+Autres recettes: Colonnes et contenu des cellules · Déplacer et redimensionner · Contenu de la barre · États et slots
+
+### bolle-data-table
+
+Attributs: `compact-row-height`, `default-column-width`, `density`, `empty-label`, `error`, `expandable`, `group-by`, `group-height`, `header-height`, `label`, `loading`, `max-column-width`, `min-column-width`, `overscan`, `page`, `page-size`, `row-height`, `row-key`, `selectable`, `total`, `updating`, `variant`, `virtual` · Propriétés JavaScript: `columnHandler`, `columns`, `contentStyles`, `detail`, `emptyRenderer`, `errorRenderer`, `expanded`, `footerRenderer`, `groupRenderer`, `groupSummary`, `headerRenderer`, `labels`, `loadingRenderer`, `pageHandler`, `rowActions`, `rowRenderer`, `rows`, `selected`, `sort`, `sortHandler` · Slots: `empty`, `empty-state`, `error`, `footer`, `header`, `loading` · Événements: `column-change`, `expand`, `group`, `retry`, `row-action`, `row-activate`, `select`, `sort`
+
+**Emplacement du framework via un wrapper** — Vue et React ne peuvent pas transmettre un emplacement avec portée à un élément personnalisé. Un wrapper de quelques lignes transforme l'emplacement en renderer : la page écrit le template de la cellule une fois, le wrapper monte le contenu pour chaque ligne et libère la mémoire quand la cellule quitte le document.
+
+```vue
+<!-- BolleDataTable.vue -->
+<script setup lang="ts">
+import { computed, h, onBeforeUnmount, render as mountVue } from "vue";
+import type { DataTableColumn, DataTableRow } from "@bolle/web-components";
+
+const props = defineProps<{
+  columns: DataTableColumn[];
+  rows: DataTableRow[];
+}>();
+
+const slots = defineSlots<{
+  cell?: (scope: { row: DataTableRow; column: DataTableColumn }) => unknown;
+}>();
+
+const hosts = new Map<string, HTMLElement>();
+let pruneScheduled = false;
+
+const prune = () => {
+  if (pruneScheduled) return;
+  pruneScheduled = true;
+  queueMicrotask(() => {
+    pruneScheduled = false;
+    for (const [key, host] of hosts)
+      if (!host.isConnected) {
+        mountVue(null, host);
+        hosts.delete(key);
+      }
+  });
+};
+
+const mount = (key: string, vnode: unknown) => {
+  const host = hosts.get(key) ?? document.createElement("span");
+  hosts.set(key, host);
+  mountVue(vnode as never, host);
+  prune();
+  return host;
+};
+
+const columns = computed(() =>
+  props.columns.map((column) => ({
+    ...column,
+    render: slots.cell
+      ? (row: DataTableRow) =>
+          mount(
+            `${row.id}-${column.key}`,
+            h("span", slots.cell!({ row, column })),
+          )
+      : column.render,
+  })),
+);
+
+onBeforeUnmount(() => {
+  for (const host of hosts.values()) mountVue(null, host);
+  hosts.clear();
+});
+</script>
+
+<template>
+  <bolle-data-table v-bind="$attrs" :columns="columns" :rows="rows" />
+</template>
+
+<!-- Pagina.vue: il template della cella si scrive una volta. -->
+<template>
+  <BolleDataTable label="Commesse" row-key="id" :columns="columns" :rows="rows">
+    <template #cell="{ row, column }">
+      <span v-if="column.key === 'status'" class="badge">
+        {{ row.status }}
+      </span>
+    </template>
+  </BolleDataTable>
+</template>
+```
+
+Autres recettes: Enregistrer les composants · Table minimale · Formater les valeurs · Cellule personnalisée · Tri · Sélection des lignes · Détail de la ligne · Regroupement · Pagination · Chargement, erreur et vide · Colonnes fixes, largeurs et visibilité · Défilement continu · Style via les parties CSS

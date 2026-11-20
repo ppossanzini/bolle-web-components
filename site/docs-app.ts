@@ -55,6 +55,7 @@ import {
   type Locale,
 } from "./i18n.js";
 import { componentQuotes, shortTokenName, type Quote } from "./quotes.js";
+import { adaptText, pinnedPairs } from "./token-pins.js";
 import { bolleLogo, bolleMark, renderLanding } from "./landing.js";
 import { FOUNDATION_SECTIONS, renderFoundations } from "./foundations.js";
 import {
@@ -74,6 +75,7 @@ import {
   importTheme,
   COLOR_ROLE_GROUPS,
   COLOR_ROLES,
+  roleVariable,
   FONT_KEYS,
   SHAPE_TOKENS,
   DEFAULT_THEME_PRESET,
@@ -1211,6 +1213,7 @@ export class DocsApp extends LitElement {
     palettes: { state: true },
     contrast: { state: true },
     keepSeed: { state: true },
+    pins: { state: true },
     previousColors: { state: true },
     asideTab: { state: true },
     paletteDensity: { state: true },
@@ -1248,6 +1251,8 @@ export class DocsApp extends LitElement {
   declare palettes: Record<ThemeName, TokenSet>;
   declare contrast: number;
   declare keepSeed: boolean;
+  /** Colour roles the reader fixed, per theme: the generator adapts the rest around them. */
+  declare pins: Record<ThemeName, Record<string, string>>;
   /** Colours before the last generation or preset, to show what changed. */
   declare previousColors: Record<string, string> | null;
   declare asideTab: "colors" | "shape";
@@ -1310,6 +1315,7 @@ export class DocsApp extends LitElement {
     };
     this.contrast = 0;
     this.keepSeed = true;
+    this.pins = { light: {}, dark: {} };
     this.previousColors = null;
     this.asideTab = "colors";
     this.paletteDensity = "medium";
@@ -1613,11 +1619,14 @@ export class DocsApp extends LitElement {
       Secondary: "secondary",
       Tertiary: "tertiary",
       Error: "error",
+      Success: "success",
+      Warning: "warning",
       Surface: "surface-container",
       Outline: "outline",
       Inverse: "inverse-surface",
       Fixed: "primary-fixed",
       Utility: "scrim",
+      Bolle: "accent",
     };
     return [
       ...COLOR_ROLE_GROUPS.map((group) => ({
@@ -1775,8 +1784,41 @@ export class DocsApp extends LitElement {
   private setColor(token: string, value: string) {
     this.updateTokens((set) => ({
       ...set,
-      colors: { ...set.colors, [token]: value },
+      // A chosen accent decides the readable ink on it straight away.
+      colors: adaptText(
+        { ...set.colors, [token]: value },
+        token,
+        this.activeTheme === "dark",
+      ),
     }));
+    const theme = this.activeTheme;
+    if (!this.pins[theme][token]) return;
+    // A fixed colour drives the rest of the scheme, so changing it regenerates.
+    this.pins = {
+      ...this.pins,
+      [theme]: { ...this.pins[theme], [token]: value },
+    };
+    this.generateHct();
+  }
+
+  private readonly pinned = (token: string) =>
+    Boolean(this.pins[this.activeTheme][token]);
+
+  private readonly roleLabel = (token: string) =>
+    COLOR_ROLES.find((role) => role.token === token)?.label ?? token;
+
+  /** Pinning keeps the current colour of a role; unpinning returns it to the algorithm. */
+  private togglePin(token: string, pinned: boolean) {
+    const theme = this.activeTheme;
+    const next = { ...this.pins[theme] };
+    if (pinned) next[token] = this.tokenSet.colors[token];
+    else delete next[token];
+    this.pins = { ...this.pins, [theme]: next };
+    if (pinned) this.generateHct();
+  }
+
+  private clearPins() {
+    this.pins = { light: {}, dark: {} };
   }
 
   private setShape(token: string, value: number) {
@@ -1838,6 +1880,8 @@ export class DocsApp extends LitElement {
       keepSeed: this.keepSeed,
       algorithm: this.algorithm,
       surfaces: this.surfaces,
+      pins: this.pins[this.activeTheme],
+      previous: this.tokenSet.colors,
     });
     this.previousColors = { ...this.tokenSet.colors };
     this.updateTokens((set) => ({ ...set, colors }));
@@ -1874,6 +1918,7 @@ export class DocsApp extends LitElement {
     try {
       const result = importTheme(text, this.palettes);
       this.previousColors = { ...this.tokenSet.colors };
+      this.clearPins();
       this.palettes = result.palettes;
       if (result.density) this.density = result.density;
       applyTokens(this.tokenSet, this.density);
@@ -1918,6 +1963,7 @@ export class DocsApp extends LitElement {
 
   private applyPreset = (id: string) => {
     if (this.isTokens) this.previousColors = { ...this.tokenSet.colors };
+    this.clearPins();
     this.presetId = id;
     this.palettes = {
       light: presetTokenSet("light", id),
@@ -1928,6 +1974,7 @@ export class DocsApp extends LitElement {
 
   private resetTokens = () => {
     this.previousColors = { ...this.tokenSet.colors };
+    this.clearPins();
     const next = presetTokenSet(this.activeTheme, this.presetId);
     this.palettes = { ...this.palettes, [this.activeTheme]: next };
     applyTokens(next, this.density);
@@ -2220,6 +2267,59 @@ export class DocsApp extends LitElement {
         <h3>${l("Superficie")}</h3>
         <p>${l("Forma, colore e tipografia applicati a una scheda.")}</p>
       </bolle-card>
+      ${this.renderStatusExample()}
+    </div>`;
+  }
+
+  /**
+   * Success, warning, error and the accent in use: one state block each, with the
+   * container for the background and the plain role for the border and the icon, so a
+   * token edit shows up here before it shows up in a component.
+   */
+  private renderStatusExample(): TemplateResult {
+    const states = [
+      {
+        role: "success",
+        icon: "check",
+        title: l("Commessa salvata"),
+        text: l("Le modifiche sono state registrate e condivise con il team."),
+      },
+      {
+        role: "warning",
+        icon: "alert-triangle",
+        title: l("Scadenza vicina"),
+        text: l("Restano due giorni per consegnare il collaudo."),
+      },
+      {
+        role: "error",
+        icon: "alert-circle",
+        title: l("Sincronizzazione non riuscita"),
+        text: l("La connessione è caduta: i dati restano in coda."),
+      },
+    ];
+    return html`<div class="token-status" aria-label=${l("Stati")}>
+      <p class="token-status-caption">${l("Stati")}</p>
+      ${states.map(
+        (state) =>
+          html`<div class=${`status-note is-${state.role}`}>
+            <span class="status-icon" aria-hidden="true"
+              >${ti(state.icon)}</span
+            >
+            <div class="status-body">
+              <strong>${state.title}</strong>
+              <span>${state.text}</span>
+            </div>
+          </div>`,
+      )}
+      <div class="token-row">
+        <bolle-button variant="accent">${l("Azione critica")}</bolle-button>
+        <bolle-chip label=${l("In attesa")}></bolle-chip>
+        <bolle-chip
+          label=${l("Approvata")}
+          variant="filter"
+          selected
+        ></bolle-chip>
+      </div>
     </div>`;
   }
 
@@ -2385,19 +2485,36 @@ export class DocsApp extends LitElement {
     </svg>`;
   }
 
-  /** WCAG checks for the pairs a custom primary is most likely to break. */
+  /**
+   * WCAG checks for the pairs a generation, a custom colour or a pin is most likely to
+   * break: text on every accent and semantic colour, and each of them on the surface.
+   */
   private renderContrastChecks(colors: Record<string, string>): TemplateResult {
-    const checks = [
+    const pins = this.pins[this.activeTheme];
+    // Roles measured unconditionally: a pin on one of them must not repeat the row.
+    const measured = ["primary", "error", "success", "warning", "accent"];
+    const pairsOf = (role: string) => [
       {
-        label: l("Testo su Primary"),
-        ratio: contrastRatio(colors["on-primary"], colors.primary),
+        label: l("Testo su {role}", { role: this.roleLabel(role) }),
+        ratio: contrastRatio(colors[`on-${role}`], colors[role]),
         min: 4.5,
       },
       {
-        label: l("Primary su Surface"),
-        ratio: contrastRatio(colors.primary, colors.surface),
+        label: l("{role} su Surface", { role: this.roleLabel(role) }),
+        ratio: contrastRatio(colors[role], colors.surface),
         min: 3,
       },
+    ];
+    const checks = [
+      ...pairsOf("primary"),
+      ...["error", "success", "warning", "accent"].flatMap(pairsOf),
+      ...pinnedPairs(pins)
+        .filter((pair) => !measured.includes(pair.base))
+        .map((pair) => ({
+          label: l("Testo su {role}", { role: this.roleLabel(pair.base) }),
+          ratio: contrastRatio(colors[pair.on], colors[pair.base]),
+          min: 4.5,
+        })),
     ];
     return html`<ul
       class="contrast-checks"
@@ -2504,7 +2621,61 @@ export class DocsApp extends LitElement {
               )
         }
       </p>
-      ${this.renderContrastChecks(this.tokenSet.colors)}
+      <p class="hct-hint">
+        ${l(
+          "I colori Bolle (Accent e On accent) non derivano dal seme: la generazione li lascia come sono e adatta solo il testo sopra l'accento. Film, ombre e scrollbar si ricalcolano da soli dal primario e dalla superficie.",
+        )}
+      </p>
+      ${this.renderPins()} ${this.renderContrastChecks(this.tokenSet.colors)}
+    </div>`;
+  }
+
+  /** Roles the reader fixed, each removable; the generator rebuilds their family around them. */
+  private renderPins(): TemplateResult {
+    const pins = this.pins[this.activeTheme];
+    const entries = COLOR_ROLES.filter((role) => pins[role.token]);
+    return html`<div class="pins">
+      <div class="pins-head">
+        <span class="config-label">${l("Colori fissati")}</span>
+        ${
+          entries.length
+            ? html`<bolle-button
+                variant="text"
+                size="xs"
+                @click=${this.clearPins}
+                >${l("Sblocca tutti")}</bolle-button
+              >`
+            : null
+        }
+      </div>
+      ${
+        entries.length
+          ? html`<ul class="pin-list">
+              ${entries.map(
+                (role) =>
+                  html`<li class="pin-item">
+                    <span
+                      class="pin-swatch"
+                      style=${`background:${pins[role.token]}`}
+                      aria-hidden="true"
+                    ></span>
+                    <span class="pin-name">${l(role.label)}</span>
+                    <code>${pins[role.token]}</code>
+                    <bolle-icon-button
+                      variant="standard"
+                      label=${l("Sblocca {role}", { role: l(role.label) })}
+                      @click=${() => this.togglePin(role.token, false)}
+                      >${ti("x")}</bolle-icon-button
+                    >
+                  </li>`,
+              )}
+            </ul>`
+          : html`<p class="hct-hint">
+              ${l(
+                "Nessun colore fissato: la generazione segue il seme. Apri un colore della tavolozza e attiva «Fissa questo colore» per imporlo e lasciare che il resto si adatti.",
+              )}
+            </p>`
+      }
     </div>`;
   }
 
@@ -2557,24 +2728,33 @@ export class DocsApp extends LitElement {
                   const isChanged = before !== undefined && before !== value;
                   const used =
                     this.inspected?.usage.colors.includes(role.token) ?? false;
+                  const isPinned = this.pinned(role.token);
                   const tile = html`<docs-color
                     tile
+                    pinnable
                     class="role-tile ${used ? "is-used" : ""}"
                     .label=${role.label}
-                    .token=${`--md-sys-color-${role.token}`}
+                    .token=${roleVariable(role)}
                     .value=${value}
                     .previous=${isChanged ? (before ?? "") : ""}
+                    ?pinned=${isPinned}
                     @change=${(event: Event) =>
                       this.setColor(
                         role.token,
                         (event as CustomEvent<{ value: string }>).detail.value,
+                      )}
+                    @pin=${(event: Event) =>
+                      this.togglePin(
+                        role.token,
+                        (event as CustomEvent<{ pinned: boolean }>).detail
+                          .pinned,
                       )}
                   ></docs-color>`;
                   // Compact tiles show only the value: name and token move into a tooltip.
                   return this.paletteDensity === "compact"
                     ? html`<bolle-tooltip
                         class="role-tip"
-                        .label=${`${role.label} · --md-sys-color-${role.token}${isChanged ? l(" · prima {color}", { color: before ?? "" }) : ""}`}
+                        .label=${`${role.label} · ${roleVariable(role)}${isPinned ? l(" · fissato") : ""}${isChanged ? l(" · prima {color}", { color: before ?? "" }) : ""}`}
                         >${tile}</bolle-tooltip
                       >`
                     : tile;

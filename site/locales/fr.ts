@@ -594,7 +594,6 @@ const messages: Record<string, string> = {
     "Primary et container restent très proches de la graine, même saturée.",
   "Primary resta il colore scelto; il testo sopra diventa il tono più leggibile.":
     "Primary reste la couleur choisie ; le texte au-dessus prend le ton le plus lisible.",
-  "Primary su Surface": "Primary sur Surface",
   "Principale": "Principale",
   "Proprietà": "Propriété",
   "Proprietà pubbliche lette dalla classe registrata. Array e oggetti si assegnano come proprietà JavaScript; gli attributi booleani valgono per presenza, quindi {example} resta disabilitato.":
@@ -741,7 +740,6 @@ const messages: Record<string, string> = {
     "Texte d'exemple pour évaluer la police, l'interligne et la couleur sur une vraie surface.",
   "Testo di supporto": "Texte d'aide",
   "Testo e controlli": "Texte et contrôles",
-  "Testo su Primary": "Texte sur Primary",
   "Testo · {font} · {size}px": "Texte · {font} · {size}px",
   "Tinte (Material)": "Teintes (Material)",
   "Tinte ruotate e giocose per tutti gli accenti.":
@@ -768,8 +766,8 @@ const messages: Record<string, string> = {
   "Tutti i componenti di M3. Con più aria dentro.":
     "Tous les composants de M3. Avec plus d'air dedans.",
   "Tutti i componenti →": "Tous les composants →",
-  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.":
-    "Un dégradé conique léger dérivé de la couleur seed : les quatre teintes tournent autour de sa tonalité, si bien que le film suit le thème dynamique. À utiliser avec mesure : anneau de focus, état sélectionné, FAB. Une seule surface irisée par écran, jamais en arrière-plan.",
+  "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus dei bottoni e del FAB, stato selezionato. I chip restano sul solo contorno pieno, perché a quella dimensione l'anello cade fuori dal controllo e si legge come un difetto. Una sola superficie iridescente per schermata, mai come sfondo.":
+    "Un dégradé conique léger dérivé de la couleur graine : les quatre teintes tournent autour de sa teinte, si bien que le film suit le thème dynamique. À utiliser avec mesure : anneau de focus des boutons et du FAB, état sélectionné. Les chips gardent uniquement le contour plein, car à cette taille l’anneau tombe hors du contrôle et se lit comme un défaut. Une seule surface iridescente par écran, jamais comme arrière-plan.",
   "Un'iridescenza che deriva dal tuo colore seed e compare solo dove conta: focus, selezione, l'azione principale.":
     "Une irisation issue de votre couleur seed, qui n'apparaît que là où ça compte : focus, sélection, action principale.",
   "Una dialog che galleggia": "Une dialog qui flotte",
@@ -1646,6 +1644,33 @@ const messages: Record<string, string> = {
     "value dit ce qui est fait par rapport à max, label est le nom lu par les lecteurs d'écran. variant circular passe à l'anneau, indeterminate signale une attente sans valeur.",
   "variant fullscreen occupa la finestra e serve per un compito lungo, come un editor: la superficie perde gli angoli e i comandi restano in fondo.":
     "variant fullscreen occupe la fenêtre et sert à une tâche longue, comme un éditeur : la surface perd les coins et les commandes restent en bas.",
+  " · fissato": " · fixe",
+  ", fissato": ", fixe",
+  "Colori fissati": "Couleurs fixées",
+  "Fissa questo colore": "Fixer cette couleur",
+  "La generazione lo mantiene e ricalcola gli altri ruoli attorno a lui.":
+    "La génération la conserve et recalcule les autres rôles autour d’elle.",
+  "Nessun colore fissato: la generazione segue il seme. Apri un colore della tavolozza e attiva «Fissa questo colore» per imporlo e lasciare che il resto si adatti.":
+    "Aucune couleur fixée : la génération suit la graine. Ouvrez une couleur de la palette et activez « Fixer cette couleur » pour l’imposer et laisser le reste s’adapter.",
+  "Sblocca tutti": "Tout défixer",
+  "Sblocca {role}": "Défixer {role}",
+  "Testo su {role}": "Texte sur {role}",
+  "I colori Bolle (Accent e On accent) non derivano dal seme: la generazione li lascia come sono e adatta solo il testo sopra l'accento. Film, ombre e scrollbar si ricalcolano da soli dal primario e dalla superficie.":
+    "Les couleurs Bolle (Accent et Sur accent) ne dérivent pas de la graine : la génération les laisse telles quelles et n’adapte que le texte sur l’accent. Film, ombres et barres de défilement se recalculent seuls à partir du primaire et de la surface.",
+  "{role} su Surface": "{role} sur la surface",
+  "Commessa salvata": "Commande enregistrée",
+  "Le modifiche sono state registrate e condivise con il team.":
+    "Les modifications sont enregistrées et partagées avec l’équipe.",
+  "Scadenza vicina": "Échéance proche",
+  "Restano due giorni per consegnare il collaudo.":
+    "Il reste deux jours pour livrer le contrôle.",
+  "Sincronizzazione non riuscita": "Échec de la synchronisation",
+  "La connessione è caduta: i dati restano in coda.":
+    "La connexion a été interrompue : les données restent en file d’attente.",
+  "Stati": "États",
+  "Azione critica": "Action critique",
+  "In attesa": "En attente",
+  "Approvata": "Approuvée",
 };
 
 export default messages;

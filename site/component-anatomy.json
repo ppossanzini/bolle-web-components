@@ -27,20 +27,159 @@
       "supporting-header",
       "supporting-sheet",
       "supporting-title"
+    ],
+    "attributes": [
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "expandedWidth",
+        "attribute": "expanded-width",
+        "type": "Number"
+      },
+      {
+        "name": "form",
+        "attribute": "form",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "mediumWidth",
+        "attribute": "medium-width",
+        "type": "Number"
+      },
+      {
+        "name": "supportingLabel",
+        "attribute": "supporting-label",
+        "type": "string"
+      },
+      {
+        "name": "supportingMode",
+        "attribute": "supporting-mode",
+        "type": "string"
+      },
+      {
+        "name": "supportingOpen",
+        "attribute": "supporting-open",
+        "type": "Boolean"
+      }
+    ],
+    "events": [
+      "form-change",
+      "supporting-close"
     ]
   },
   "BolleAvatarGroup": {
     "slots": [
       "default"
     ],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "interactive",
+        "attribute": "interactive",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "Number"
+      },
+      {
+        "name": "overlap",
+        "attribute": "overlap",
+        "type": "Number"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "total",
+        "attribute": "total",
+        "type": "Number"
+      }
+    ],
+    "events": [
+      "avatar-group-select"
+    ]
   },
   "BolleAvatar": {
     "slots": [
       "badge",
       "icon"
     ],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "alt",
+        "attribute": "alt",
+        "type": "string"
+      },
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "initials",
+        "attribute": "initials",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "src",
+        "attribute": "src",
+        "type": "string"
+      },
+      {
+        "name": "status",
+        "attribute": "status",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleBottomAppBar": {
     "slots": [
@@ -49,11 +188,74 @@
       "leading",
       "trailing"
     ],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "align",
+        "attribute": "align",
+        "type": "string"
+      },
+      {
+        "name": "divider",
+        "attribute": "divider",
+        "type": "Boolean"
+      },
+      {
+        "name": "dock",
+        "attribute": "dock",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "sticky",
+        "attribute": "sticky",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleBreadcrumb": {
     "slots": [],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "maxItems",
+        "attribute": "max-items",
+        "type": "Number"
+      },
+      {
+        "name": "separator",
+        "attribute": "separator",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "breadcrumb-select"
+    ]
   },
   "BolleButton": {
     "slots": [
@@ -67,6 +269,126 @@
       "icon",
       "label",
       "trailing-icon"
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "controls",
+        "attribute": "controls",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "download",
+        "attribute": "download",
+        "type": "string"
+      },
+      {
+        "name": "expanded",
+        "attribute": "expanded",
+        "type": "Boolean"
+      },
+      {
+        "name": "formAction",
+        "attribute": "formaction",
+        "type": "string"
+      },
+      {
+        "name": "formEnctype",
+        "attribute": "formenctype",
+        "type": "string"
+      },
+      {
+        "name": "formMethod",
+        "attribute": "formmethod",
+        "type": "string"
+      },
+      {
+        "name": "formNoValidate",
+        "attribute": "formnovalidate",
+        "type": "Boolean"
+      },
+      {
+        "name": "haspopup",
+        "attribute": "haspopup",
+        "type": "string"
+      },
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "hreflang",
+        "attribute": "hreflang",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "Boolean"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "target",
+        "attribute": "target",
+        "type": "string"
+      },
+      {
+        "name": "toggle",
+        "attribute": "toggle",
+        "type": "Boolean"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "width",
+        "attribute": "width",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleIconButton": {
@@ -81,6 +403,126 @@
       "icon",
       "label",
       "trailing-icon"
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "controls",
+        "attribute": "controls",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "download",
+        "attribute": "download",
+        "type": "string"
+      },
+      {
+        "name": "expanded",
+        "attribute": "expanded",
+        "type": "Boolean"
+      },
+      {
+        "name": "formAction",
+        "attribute": "formaction",
+        "type": "string"
+      },
+      {
+        "name": "formEnctype",
+        "attribute": "formenctype",
+        "type": "string"
+      },
+      {
+        "name": "formMethod",
+        "attribute": "formmethod",
+        "type": "string"
+      },
+      {
+        "name": "formNoValidate",
+        "attribute": "formnovalidate",
+        "type": "Boolean"
+      },
+      {
+        "name": "haspopup",
+        "attribute": "haspopup",
+        "type": "string"
+      },
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "hreflang",
+        "attribute": "hreflang",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "Boolean"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "target",
+        "attribute": "target",
+        "type": "string"
+      },
+      {
+        "name": "toggle",
+        "attribute": "toggle",
+        "type": "Boolean"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "width",
+        "attribute": "width",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleFloatingActionButton": {
@@ -95,6 +537,126 @@
       "icon",
       "label",
       "trailing-icon"
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "controls",
+        "attribute": "controls",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "download",
+        "attribute": "download",
+        "type": "string"
+      },
+      {
+        "name": "expanded",
+        "attribute": "expanded",
+        "type": "Boolean"
+      },
+      {
+        "name": "formAction",
+        "attribute": "formaction",
+        "type": "string"
+      },
+      {
+        "name": "formEnctype",
+        "attribute": "formenctype",
+        "type": "string"
+      },
+      {
+        "name": "formMethod",
+        "attribute": "formmethod",
+        "type": "string"
+      },
+      {
+        "name": "formNoValidate",
+        "attribute": "formnovalidate",
+        "type": "Boolean"
+      },
+      {
+        "name": "haspopup",
+        "attribute": "haspopup",
+        "type": "string"
+      },
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "hreflang",
+        "attribute": "hreflang",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "Boolean"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "target",
+        "attribute": "target",
+        "type": "string"
+      },
+      {
+        "name": "toggle",
+        "attribute": "toggle",
+        "type": "Boolean"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "width",
+        "attribute": "width",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleExtendedFab": {
@@ -109,6 +671,126 @@
       "icon",
       "label",
       "trailing-icon"
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "controls",
+        "attribute": "controls",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "download",
+        "attribute": "download",
+        "type": "string"
+      },
+      {
+        "name": "expanded",
+        "attribute": "expanded",
+        "type": "Boolean"
+      },
+      {
+        "name": "formAction",
+        "attribute": "formaction",
+        "type": "string"
+      },
+      {
+        "name": "formEnctype",
+        "attribute": "formenctype",
+        "type": "string"
+      },
+      {
+        "name": "formMethod",
+        "attribute": "formmethod",
+        "type": "string"
+      },
+      {
+        "name": "formNoValidate",
+        "attribute": "formnovalidate",
+        "type": "Boolean"
+      },
+      {
+        "name": "haspopup",
+        "attribute": "haspopup",
+        "type": "string"
+      },
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "hreflang",
+        "attribute": "hreflang",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "Boolean"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "target",
+        "attribute": "target",
+        "type": "string"
+      },
+      {
+        "name": "toggle",
+        "attribute": "toggle",
+        "type": "Boolean"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "width",
+        "attribute": "width",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleButtonGroup": {
@@ -117,6 +799,41 @@
     ],
     "parts": [
       "group"
+    ],
+    "attributes": [
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "required",
+        "attribute": "required",
+        "type": "Boolean"
+      },
+      {
+        "name": "selection",
+        "attribute": "selection",
+        "type": "string"
+      },
+      {
+        "name": "shape",
+        "attribute": "shape",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "selection-change"
     ]
   },
   "BolleWidget": {
@@ -147,13 +864,109 @@
       "tile",
       "title",
       "titles"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "string"
+      },
+      {
+        "name": "icon",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "loading",
+        "attribute": "loading",
+        "type": "Boolean"
+      },
+      {
+        "name": "menuLabel",
+        "attribute": "menu-label",
+        "type": "string"
+      },
+      {
+        "name": "minSpan",
+        "attribute": "min-span",
+        "type": "Number"
+      },
+      {
+        "name": "movable",
+        "attribute": "movable",
+        "type": "Boolean"
+      },
+      {
+        "name": "removable",
+        "attribute": "removable",
+        "type": "Boolean"
+      },
+      {
+        "name": "resizable",
+        "attribute": "resizable",
+        "type": "Boolean"
+      },
+      {
+        "name": "span",
+        "attribute": "span",
+        "type": "Number"
+      },
+      {
+        "name": "subtitle",
+        "attribute": "subtitle",
+        "type": "string"
+      },
+      {
+        "name": "title",
+        "attribute": "title",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleDashboard": {
     "slots": [
       "default"
     ],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "columns",
+        "attribute": "columns",
+        "type": "Number"
+      },
+      {
+        "name": "compactColumns",
+        "attribute": "compact-columns",
+        "type": "Number"
+      },
+      {
+        "name": "density",
+        "attribute": "density",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "mediumColumns",
+        "attribute": "medium-columns",
+        "type": "Number"
+      }
+    ],
+    "events": []
   },
   "BolleDataTable": {
     "slots": [
@@ -207,6 +1020,233 @@
       "sort-mark",
       "table",
       "table-grid"
+    ],
+    "attributes": [
+      {
+        "name": "columnHandler",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "columns",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "compactRowHeight",
+        "attribute": "compact-row-height",
+        "type": "Number"
+      },
+      {
+        "name": "contentStyles",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "defaultColumnWidth",
+        "attribute": "default-column-width",
+        "type": "Number"
+      },
+      {
+        "name": "density",
+        "attribute": "density",
+        "type": "string"
+      },
+      {
+        "name": "detail",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "emptyLabel",
+        "attribute": "empty-label",
+        "type": "string"
+      },
+      {
+        "name": "emptyRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "string"
+      },
+      {
+        "name": "errorRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "expandable",
+        "attribute": "expandable",
+        "type": "Boolean"
+      },
+      {
+        "name": "expanded",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "footerRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "groupBy",
+        "attribute": "group-by",
+        "type": "string"
+      },
+      {
+        "name": "groupHeight",
+        "attribute": "group-height",
+        "type": "Number"
+      },
+      {
+        "name": "groupRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "groupSummary",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "headerHeight",
+        "attribute": "header-height",
+        "type": "Number"
+      },
+      {
+        "name": "headerRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "loading",
+        "attribute": "loading",
+        "type": "Boolean"
+      },
+      {
+        "name": "loadingRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "maxColumnWidth",
+        "attribute": "max-column-width",
+        "type": "Number"
+      },
+      {
+        "name": "minColumnWidth",
+        "attribute": "min-column-width",
+        "type": "Number"
+      },
+      {
+        "name": "overscan",
+        "attribute": "overscan",
+        "type": "Number"
+      },
+      {
+        "name": "page",
+        "attribute": "page",
+        "type": "Number"
+      },
+      {
+        "name": "pageHandler",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "pageSize",
+        "attribute": "page-size",
+        "type": "Number"
+      },
+      {
+        "name": "rowActions",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "rowHeight",
+        "attribute": "row-height",
+        "type": "Number"
+      },
+      {
+        "name": "rowKey",
+        "attribute": "row-key",
+        "type": "string"
+      },
+      {
+        "name": "rowRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "rows",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "selectable",
+        "attribute": "selectable",
+        "type": "Boolean"
+      },
+      {
+        "name": "selected",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "sort",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "sortHandler",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "total",
+        "attribute": "total",
+        "type": "Number"
+      },
+      {
+        "name": "updating",
+        "attribute": "updating",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "virtual",
+        "attribute": "virtual",
+        "type": "Boolean"
+      }
+    ],
+    "events": [
+      "column-change",
+      "expand",
+      "group",
+      "retry",
+      "row-action",
+      "row-activate",
+      "select",
+      "sort"
     ]
   },
   "BolleEmptyState": {
@@ -214,7 +1254,40 @@
       "actions",
       "icon"
     ],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "align",
+        "attribute": "align",
+        "type": "string"
+      },
+      {
+        "name": "icon",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "role",
+        "attribute": "role",
+        "type": "string"
+      },
+      {
+        "name": "text",
+        "attribute": "text",
+        "type": "string"
+      },
+      {
+        "name": "title",
+        "attribute": "title",
+        "type": "string"
+      },
+      {
+        "name": "tone",
+        "attribute": "tone",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleProgressIndicator": {
     "slots": [],
@@ -226,7 +1299,40 @@
       "track",
       "value",
       "wavy"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "indeterminate",
+        "attribute": "indeterminate",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "Number"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "Number"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "wavy",
+        "attribute": "wavy",
+        "type": "Boolean"
+      }
+    ],
+    "events": []
   },
   "BolleLoadingIndicator": {
     "slots": [],
@@ -238,7 +1344,9 @@
       "indicator",
       "loading",
       "morph"
-    ]
+    ],
+    "attributes": [],
+    "events": []
   },
   "BolleCarousel": {
     "slots": [
@@ -257,6 +1365,36 @@
       "previous",
       "status",
       "viewport"
+    ],
+    "attributes": [
+      {
+        "name": "index",
+        "attribute": "index",
+        "type": "Number"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "nextLabel",
+        "attribute": "next-label",
+        "type": "string"
+      },
+      {
+        "name": "previousLabel",
+        "attribute": "previous-label",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleCheckbox": {
@@ -269,6 +1407,31 @@
       "label",
       "label-text",
       "supporting-text"
+    ],
+    "attributes": [
+      {
+        "name": "checked",
+        "attribute": "checked",
+        "type": "Boolean"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "indeterminate",
+        "attribute": "indeterminate",
+        "type": "Boolean"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleSwitch": {
@@ -286,6 +1449,41 @@
       "label-text",
       "supporting-text",
       "track"
+    ],
+    "attributes": [
+      {
+        "name": "checked",
+        "attribute": "checked",
+        "type": "Boolean"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "icon",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "iconSelected",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "indeterminate",
+        "attribute": "indeterminate",
+        "type": "Boolean"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleRadioButton": {
@@ -298,6 +1496,31 @@
       "label",
       "label-text",
       "supporting-text"
+    ],
+    "attributes": [
+      {
+        "name": "checked",
+        "attribute": "checked",
+        "type": "Boolean"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "indeterminate",
+        "attribute": "indeterminate",
+        "type": "Boolean"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleTextField": {
@@ -321,6 +1544,122 @@
       "supporting-text",
       "surface",
       "trailing"
+    ],
+    "attributes": [
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleSearch": {
@@ -350,6 +1689,154 @@
       "supporting-text",
       "surface",
       "trailing"
+    ],
+    "attributes": [
+      {
+        "name": "appearance",
+        "attribute": "appearance",
+        "type": "string"
+      },
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "filter",
+        "attribute": "filter",
+        "type": "Boolean"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "layout",
+        "attribute": "layout",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "suggestionDelay",
+        "attribute": "suggestion-delay",
+        "type": "Number"
+      },
+      {
+        "name": "suggestions",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "suggestionsLabel",
+        "attribute": "suggestions-label",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "search",
+      "suggest",
+      "value-input"
     ]
   },
   "BolleSegmentedButtons": {
@@ -363,6 +1850,26 @@
       "segment-icon",
       "segment-label",
       "segments"
+    ],
+    "attributes": [
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "multiple",
+        "attribute": "multiple",
+        "type": "Boolean"
+      },
+      {
+        "name": "values",
+        "attribute": "",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleAutocomplete": {
@@ -388,6 +1895,127 @@
       "supporting-text",
       "surface",
       "trailing"
+    ],
+    "attributes": [
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "options",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleGantt": {
@@ -400,6 +2028,124 @@
       "empty",
       "error",
       "loading"
+    ],
+    "attributes": [
+      {
+        "name": "barRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "baseline",
+        "attribute": "baseline",
+        "type": "Boolean"
+      },
+      {
+        "name": "columns",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "contentStyles",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "density",
+        "attribute": "density",
+        "type": "string"
+      },
+      {
+        "name": "editable",
+        "attribute": "editable",
+        "type": "Boolean"
+      },
+      {
+        "name": "emptyLabel",
+        "attribute": "empty-label",
+        "type": "string"
+      },
+      {
+        "name": "emptyRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "string"
+      },
+      {
+        "name": "errorRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "groupBy",
+        "attribute": "group-by",
+        "type": "string"
+      },
+      {
+        "name": "groupLabel",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "linkable",
+        "attribute": "linkable",
+        "type": "Boolean"
+      },
+      {
+        "name": "loading",
+        "attribute": "loading",
+        "type": "Boolean"
+      },
+      {
+        "name": "loadingRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "restrict",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "scale",
+        "attribute": "scale",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "string"
+      },
+      {
+        "name": "tasks",
+        "attribute": "",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "columns-change",
+      "dependency-add",
+      "dependency-blocked",
+      "retry",
+      "task-change",
+      "task-change-blocked",
+      "task-open",
+      "task-select",
+      "view-change"
     ]
   },
   "BolleKanban": {
@@ -424,6 +2170,163 @@
       "lane",
       "lane-header",
       "loading"
+    ],
+    "attributes": [
+      {
+        "name": "addable",
+        "attribute": "addable",
+        "type": "Boolean"
+      },
+      {
+        "name": "card",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "cardActions",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "cardGap",
+        "attribute": "card-gap",
+        "type": "Number"
+      },
+      {
+        "name": "cards",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "collapsed",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "collapsible",
+        "attribute": "collapsible",
+        "type": "Boolean"
+      },
+      {
+        "name": "columnActions",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "columnGap",
+        "attribute": "column-gap",
+        "type": "Number"
+      },
+      {
+        "name": "columnMaxWidth",
+        "attribute": "column-max-width",
+        "type": "Number"
+      },
+      {
+        "name": "columnMinWidth",
+        "attribute": "column-min-width",
+        "type": "Number"
+      },
+      {
+        "name": "columnRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "columns",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "contentStyles",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "density",
+        "attribute": "density",
+        "type": "string"
+      },
+      {
+        "name": "emptyLabel",
+        "attribute": "empty-label",
+        "type": "string"
+      },
+      {
+        "name": "emptyRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "string"
+      },
+      {
+        "name": "errorRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "laneLabel",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "laneRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "lanes",
+        "attribute": "lanes",
+        "type": "Boolean"
+      },
+      {
+        "name": "loading",
+        "attribute": "loading",
+        "type": "Boolean"
+      },
+      {
+        "name": "loadingRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "movable",
+        "attribute": "movable",
+        "type": "Boolean"
+      },
+      {
+        "name": "restrict",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "card-action",
+      "card-add",
+      "card-move",
+      "card-move-blocked",
+      "card-open",
+      "column-action",
+      "column-collapse",
+      "retry"
     ]
   },
   "BolleMenu": {
@@ -445,7 +2348,85 @@
       "support",
       "surface",
       "trailing"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "colorScheme",
+        "attribute": "color-scheme",
+        "type": "string"
+      },
+      {
+        "name": "compactWidth",
+        "attribute": "compact-width",
+        "type": "Number"
+      },
+      {
+        "name": "density",
+        "attribute": "density",
+        "type": "Number"
+      },
+      {
+        "name": "filter",
+        "attribute": "filter",
+        "type": "string"
+      },
+      {
+        "name": "filterable",
+        "attribute": "filterable",
+        "type": "Boolean"
+      },
+      {
+        "name": "inactive",
+        "attribute": "inactive",
+        "type": "Boolean"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "locale",
+        "attribute": "locale",
+        "type": "string"
+      },
+      {
+        "name": "menuLabel",
+        "attribute": "menu-label",
+        "type": "string"
+      },
+      {
+        "name": "options",
+        "attribute": "options",
+        "type": "string"
+      },
+      {
+        "name": "quick",
+        "attribute": "quick",
+        "type": "Boolean"
+      },
+      {
+        "name": "selectionMode",
+        "attribute": "selection-mode",
+        "type": "string"
+      },
+      {
+        "name": "tail",
+        "attribute": "tail",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleNavigationBar": {
     "slots": [],
@@ -465,6 +2446,36 @@
       "navigation-label",
       "navigation-rail",
       "rail"
+    ],
+    "attributes": [
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "layout",
+        "attribute": "layout",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "navigate"
     ]
   },
   "BolleNavigationRail": {
@@ -485,6 +2496,41 @@
       "navigation-label",
       "navigation-rail",
       "rail"
+    ],
+    "attributes": [
+      {
+        "name": "expanded",
+        "attribute": "expanded",
+        "type": "Boolean"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "layout",
+        "attribute": "layout",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "navigate"
     ]
   },
   "BolleTabs": {
@@ -505,6 +2551,46 @@
       "tab-scroller",
       "tablist",
       "tabpanel"
+    ],
+    "attributes": [
+      {
+        "name": "activation",
+        "attribute": "activation",
+        "type": "string"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "scrollable",
+        "attribute": "scrollable",
+        "type": "Boolean"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleDialog": {
@@ -518,6 +2604,37 @@
       "close",
       "content",
       "heading"
+    ],
+    "attributes": [
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "modal",
+        "attribute": "modal",
+        "type": "Boolean"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "before-close",
+      "closed"
     ]
   },
   "BolleBottomSheet": {
@@ -535,6 +2652,42 @@
       "heading",
       "sheet",
       "surface"
+    ],
+    "attributes": [
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "dragHandle",
+        "attribute": "drag-handle",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "modal",
+        "attribute": "modal",
+        "type": "Boolean"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "before-close",
+      "closed"
     ]
   },
   "BolleSideSheet": {
@@ -553,6 +2706,42 @@
       "sheet",
       "side-sheet",
       "surface"
+    ],
+    "attributes": [
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "detached",
+        "attribute": "detached",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "modal",
+        "attribute": "modal",
+        "type": "Boolean"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "before-close",
+      "closed"
     ]
   },
   "BolleNavigationDrawer": {
@@ -575,6 +2764,53 @@
       "sheet",
       "side-sheet",
       "surface"
+    ],
+    "attributes": [
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "detached",
+        "attribute": "detached",
+        "type": "Boolean"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "modal",
+        "attribute": "modal",
+        "type": "Boolean"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "before-close",
+      "closed",
+      "navigate"
     ]
   },
   "BolleSnackbar": {
@@ -590,6 +2826,43 @@
       "message",
       "snackbar",
       "surface"
+    ],
+    "attributes": [
+      {
+        "name": "actionLabel",
+        "attribute": "action-label",
+        "type": "string"
+      },
+      {
+        "name": "closeLabel",
+        "attribute": "close-label",
+        "type": "string"
+      },
+      {
+        "name": "duration",
+        "attribute": "duration",
+        "type": "Number"
+      },
+      {
+        "name": "message",
+        "attribute": "message",
+        "type": "string"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "tail",
+        "attribute": "tail",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "action",
+      "closed",
+      "queued"
     ]
   },
   "BolleTooltip": {
@@ -611,7 +2884,40 @@
       "surface",
       "tooltip",
       "trigger"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "persistent",
+        "attribute": "persistent",
+        "type": "Boolean"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "tail",
+        "attribute": "tail",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleFabMenu": {
     "slots": [
@@ -626,6 +2932,36 @@
       "surface",
       "trigger",
       "trigger-icon"
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "tail",
+        "attribute": "tail",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "action"
     ]
   },
   "BolleSplitButton": {
@@ -636,11 +2972,96 @@
       "menu",
       "menu-trigger",
       "primary"
+    ],
+    "attributes": [
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "icon",
+        "attribute": "icon",
+        "type": "Boolean"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "menuLabel",
+        "attribute": "menu-label",
+        "type": "string"
+      },
+      {
+        "name": "size",
+        "attribute": "size",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "action"
     ]
   },
   "BollePagination": {
     "slots": [],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "form",
+        "attribute": "form",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "page",
+        "attribute": "page",
+        "type": "Number"
+      },
+      {
+        "name": "pageSize",
+        "attribute": "page-size",
+        "type": "Number"
+      },
+      {
+        "name": "pageSizes",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "range",
+        "attribute": "range",
+        "type": "string"
+      },
+      {
+        "name": "total",
+        "attribute": "total",
+        "type": "Number"
+      }
+    ],
+    "events": [
+      "page-change"
+    ]
   },
   "BollePicker": {
     "slots": [
@@ -665,6 +3086,132 @@
       "surface",
       "trailing",
       "trigger"
+    ],
+    "attributes": [
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "locale",
+        "attribute": "locale",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleDatePicker": {
@@ -711,6 +3258,147 @@
       "trigger",
       "weekday",
       "year-control"
+    ],
+    "attributes": [
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "endValue",
+        "attribute": "end-value",
+        "type": "string"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "locale",
+        "attribute": "locale",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "selectionMode",
+        "attribute": "selection-mode",
+        "type": "string"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "weekStartsOn",
+        "attribute": "week-starts-on",
+        "type": "Number"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleTimePicker": {
@@ -753,6 +3441,137 @@
       "title",
       "trailing",
       "trigger"
+    ],
+    "attributes": [
+      {
+        "name": "autocapitalize",
+        "attribute": "autocapitalize",
+        "type": "string"
+      },
+      {
+        "name": "autocomplete",
+        "attribute": "autocomplete",
+        "type": "string"
+      },
+      {
+        "name": "counter",
+        "attribute": "counter",
+        "type": "Boolean"
+      },
+      {
+        "name": "enterkeyhint",
+        "attribute": "enterkeyhint",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "hourCycle",
+        "attribute": "hour-cycle",
+        "type": "Number"
+      },
+      {
+        "name": "inputmode",
+        "attribute": "inputmode",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "locale",
+        "attribute": "locale",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "string"
+      },
+      {
+        "name": "maxlength",
+        "attribute": "maxlength",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "string"
+      },
+      {
+        "name": "minlength",
+        "attribute": "minlength",
+        "type": "Number"
+      },
+      {
+        "name": "multiline",
+        "attribute": "multiline",
+        "type": "Boolean"
+      },
+      {
+        "name": "pattern",
+        "attribute": "pattern",
+        "type": "string"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "attribute": "prefix",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "rows",
+        "attribute": "rows",
+        "type": "Number"
+      },
+      {
+        "name": "spellcheck",
+        "attribute": "spellcheck",
+        "type": "string"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "string"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "attribute": "type",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleSelect": {
@@ -770,15 +3589,111 @@
       "supporting",
       "supporting-text",
       "value"
+    ],
+    "attributes": [
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "Boolean"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "placeholder",
+        "attribute": "placeholder",
+        "type": "string"
+      },
+      {
+        "name": "supportingText",
+        "attribute": "supporting-text",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleElement": {
     "slots": [],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "delegatesFocus",
+        "attribute": "delegatesfocus",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "required",
+        "attribute": "required",
+        "type": "Boolean"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleFormElement": {
     "slots": [],
-    "parts": []
+    "parts": [],
+    "attributes": [
+      {
+        "name": "delegatesFocus",
+        "attribute": "delegatesfocus",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "name",
+        "attribute": "name",
+        "type": "string"
+      },
+      {
+        "name": "required",
+        "attribute": "required",
+        "type": "Boolean"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleSidebar": {
     "slots": [
@@ -808,6 +3723,99 @@
       "resize-handle",
       "surface",
       "tree"
+    ],
+    "attributes": [
+      {
+        "name": "collapsed",
+        "attribute": "collapsed",
+        "type": "Boolean"
+      },
+      {
+        "name": "contentStyles",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "context",
+        "attribute": "context",
+        "type": "string"
+      },
+      {
+        "name": "current",
+        "attribute": "current",
+        "type": "string"
+      },
+      {
+        "name": "empty",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "expanded",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "filter",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "item",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "maxWidth",
+        "attribute": "max-width",
+        "type": "Number"
+      },
+      {
+        "name": "minWidth",
+        "attribute": "min-width",
+        "type": "Number"
+      },
+      {
+        "name": "railItem",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "search",
+        "attribute": "search",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "width",
+        "attribute": "width",
+        "type": "Number"
+      }
+    ],
+    "events": [
+      "collapse",
+      "expand",
+      "navigate",
+      "resize"
     ]
   },
   "BolleSlider": {
@@ -833,6 +3841,62 @@
       "thumb-upper",
       "track",
       "value"
+    ],
+    "attributes": [
+      {
+        "name": "compact",
+        "attribute": "compact",
+        "type": "Boolean"
+      },
+      {
+        "name": "icon",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "Number"
+      },
+      {
+        "name": "min",
+        "attribute": "min",
+        "type": "Number"
+      },
+      {
+        "name": "minGap",
+        "attribute": "min-gap",
+        "type": "Number"
+      },
+      {
+        "name": "step",
+        "attribute": "step",
+        "type": "Number"
+      },
+      {
+        "name": "suffix",
+        "attribute": "suffix",
+        "type": "string"
+      },
+      {
+        "name": "upperLabel",
+        "attribute": "upper-label",
+        "type": "string"
+      },
+      {
+        "name": "upperValue",
+        "attribute": "upper-value",
+        "type": "Number"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change",
+      "value-input"
     ]
   },
   "BolleSteps": {
@@ -845,6 +3909,16 @@
       "step-dot",
       "steps",
       "value"
+    ],
+    "attributes": [
+      {
+        "name": "options",
+        "attribute": "options",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "change"
     ]
   },
   "BolleAppBar": {
@@ -868,7 +3942,45 @@
       "title",
       "title-group",
       "trailing"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "alignment",
+        "attribute": "alignment",
+        "type": "string"
+      },
+      {
+        "name": "collapsed",
+        "attribute": "collapsed",
+        "type": "Boolean"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "scrolled",
+        "attribute": "scrolled",
+        "type": "Boolean"
+      },
+      {
+        "name": "sticky",
+        "attribute": "sticky",
+        "type": "Boolean"
+      },
+      {
+        "name": "subtitle",
+        "attribute": "subtitle",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleToolbar": {
     "slots": [
@@ -877,7 +3989,30 @@
     "parts": [
       "toolbar",
       "toolbar-content"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "attribute": "color",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "orientation",
+        "attribute": "orientation",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleCard": {
     "slots": [
@@ -891,7 +4026,35 @@
       "card-link",
       "card-media",
       "content"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "orientation",
+        "attribute": "orientation",
+        "type": "string"
+      },
+      {
+        "name": "tail",
+        "attribute": "tail",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleBadge": {
     "slots": [
@@ -901,13 +4064,59 @@
       "badge",
       "badge-label",
       "label"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "attribute": "max",
+        "type": "Number"
+      },
+      {
+        "name": "small",
+        "attribute": "small",
+        "type": "Boolean"
+      },
+      {
+        "name": "value",
+        "attribute": "value",
+        "type": "string"
+      }
+    ],
+    "events": []
   },
   "BolleDivider": {
     "slots": [],
     "parts": [
       "divider"
-    ]
+    ],
+    "attributes": [
+      {
+        "name": "decorative",
+        "attribute": "decorative",
+        "type": "Boolean"
+      },
+      {
+        "name": "inset",
+        "attribute": "inset",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      },
+      {
+        "name": "vertical",
+        "attribute": "vertical",
+        "type": "Boolean"
+      }
+    ],
+    "events": []
   },
   "BolleList": {
     "slots": [
@@ -927,6 +4136,58 @@
       "list-sublist",
       "list-supporting-text",
       "list-text"
+    ],
+    "attributes": [
+      {
+        "name": "expanded",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "interactive",
+        "attribute": "interactive",
+        "type": "Boolean"
+      },
+      {
+        "name": "itemRenderer",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "items",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "selection",
+        "attribute": "selection",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "action",
+      "change",
+      "expand"
     ]
   },
   "BolleChip": {
@@ -943,6 +4204,53 @@
       "chip-icon",
       "chip-label",
       "chip-remove"
+    ],
+    "attributes": [
+      {
+        "name": "disabled",
+        "attribute": "disabled",
+        "type": "Boolean"
+      },
+      {
+        "name": "elevated",
+        "attribute": "elevated",
+        "type": "Boolean"
+      },
+      {
+        "name": "href",
+        "attribute": "href",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "removable",
+        "attribute": "removable",
+        "type": "Boolean"
+      },
+      {
+        "name": "removeLabel",
+        "attribute": "remove-label",
+        "type": "string"
+      },
+      {
+        "name": "selected",
+        "attribute": "selected",
+        "type": "Boolean"
+      },
+      {
+        "name": "variant",
+        "attribute": "variant",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "action",
+      "change",
+      "remove"
     ]
   }
 }

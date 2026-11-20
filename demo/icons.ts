@@ -25,6 +25,7 @@ import menu from "@tabler/icons/outline/menu-2.svg?raw";
 import moon from "@tabler/icons/outline/moon.svg?raw";
 import packageIcon from "@tabler/icons/outline/package.svg?raw";
 import palette from "@tabler/icons/outline/palette.svg?raw";
+import pin from "@tabler/icons/outline/pin.svg?raw";
 import plus from "@tabler/icons/outline/plus.svg?raw";
 import plane from "@tabler/icons/outline/plane.svg?raw";
 import planeOff from "@tabler/icons/outline/plane-off.svg?raw";
@@ -40,6 +41,7 @@ import underline from "@tabler/icons/outline/underline.svg?raw";
 import users from "@tabler/icons/outline/users.svg?raw";
 import mapPin from "@tabler/icons/outline/map-pin.svg?raw";
 import alertTriangle from "@tabler/icons/outline/alert-triangle.svg?raw";
+import alertCircle from "@tabler/icons/outline/alert-circle.svg?raw";
 import check from "@tabler/icons/outline/check.svg?raw";
 import gauge from "@tabler/icons/outline/gauge.svg?raw";
 import building from "@tabler/icons/outline/building.svg?raw";
@@ -76,6 +78,7 @@ const icons: Record<string, string> = {
   moon,
   package: packageIcon,
   palette,
+  pin,
   plane,
   "plane-off": planeOff,
   plus,
@@ -91,6 +94,7 @@ const icons: Record<string, string> = {
   users,
   "map-pin": mapPin,
   "alert-triangle": alertTriangle,
+  "alert-circle": alertCircle,
   "check": check,
   "gauge": gauge,
   "building": building,

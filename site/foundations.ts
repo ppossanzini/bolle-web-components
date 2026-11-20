@@ -183,7 +183,7 @@ export function renderFoundations(): TemplateResult {
       l("Materiale"),
       l("La pellicola"),
       l(
-        "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus, stato selezionato, FAB. Una sola superficie iridescente per schermata, mai come sfondo.",
+        "Un gradiente conico tenue ricavato dal colore seed: le quattro tinte ruotano attorno alla sua tonalità, così la pellicola segue il tema dinamico. Si usa con misura: anello di focus dei bottoni e del FAB, stato selezionato. I chip restano sul solo contorno pieno, perché a quella dimensione l'anello cade fuori dal controllo e si legge come un difetto. Una sola superficie iridescente per schermata, mai come sfondo.",
       ),
       html`<div class="fd-film-strip" aria-hidden="true"></div>
         <div class="fd-film-stops">
@@ -198,11 +198,6 @@ export function renderFoundations(): TemplateResult {
         <div class="fd-demo-row">
           <div class="fd-live">
             <bolle-button>${l("Premi Tab per il focus")}</bolle-button>
-            <bolle-chip
-              variant="filter"
-              selected
-              label=${l("Selezionato")}
-            ></bolle-chip>
             <bolle-floating-action-button label=${l("Nuovo")}
               >+</bolle-floating-action-button
             >

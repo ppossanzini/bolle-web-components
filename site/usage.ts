@@ -1,4 +1,4 @@
-import { COLOR_ROLES, SHAPE_TOKENS } from "./tokens.js";
+import { COLOR_ROLES, SHAPE_TOKENS, roleVariable } from "./tokens.js";
 
 export interface ComponentTokenUsage {
   colors: string[];
@@ -101,7 +101,8 @@ const collectTokens = (css: string): Set<string> => {
   return seen;
 };
 
-const TYPESCALE = /^--md-sys-typescale-(.+?)-(font|line-height|tracking|size|weight)$/;
+const TYPESCALE =
+  /^--md-sys-typescale-(.+?)-(font|line-height|tracking|size|weight)$/;
 
 const cache = new Map<string, ComponentTokenUsage>();
 
@@ -179,12 +180,7 @@ export const SHORTHAND: Record<string, string> = {
 
 /** Longhands a shorthand can win on: probing only one would miss the others. */
 const LONGHANDS: Record<string, string[]> = {
-  padding: [
-    "padding-top",
-    "padding-right",
-    "padding-bottom",
-    "padding-left",
-  ],
+  padding: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
   "padding-block": ["padding-block-start", "padding-block-end"],
   "padding-inline": ["padding-inline-start", "padding-inline-end"],
   margin: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
@@ -408,9 +404,9 @@ export function componentTokenUsage(
   }
 
   const usage: ComponentTokenUsage = {
-    colors: COLOR_ROLES.filter((role) =>
-      tokens.has(`--md-sys-color-${role.token}`),
-    ).map((role) => role.token),
+    colors: COLOR_ROLES.filter((role) => tokens.has(roleVariable(role))).map(
+      (role) => role.token,
+    ),
     shapes: SHAPE_TOKENS.filter((shape) =>
       tokens.has(`--md-sys-shape-corner-${shape.token}`),
     ).map((shape) => shape.token),

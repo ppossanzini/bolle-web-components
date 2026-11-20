@@ -124,9 +124,10 @@ export const bolleStyles = css`
 
 export const commonStyles = css`
   ${bolleStyles}
-  /* Film ring: decorative halo around the solid focus outline or the selected state. */
-  .button::before,
-  .chip::before {
+  /* Film ring: decorative halo around the solid focus outline of a button. Chips keep
+     only the solid outline: at their size the ring lands 5px outside the shape and the
+     conic gradient reads as an artefact instead of a halo. */
+  .button::before {
     content: "";
     position: absolute;
     inset: calc(-1 * var(--bb-ring-gap));
@@ -142,8 +143,7 @@ export const commonStyles = css`
       opacity var(--md-sys-motion-duration-short3),
       var(--bb-shape-motion);
   }
-  .button:focus-visible::before,
-  .chip:has(:focus-visible)::before {
+  .button:focus-visible::before {
     opacity: 1;
   }
   /* Solid inner ring carries focus; the film ring outside it is only decoration. */
@@ -162,8 +162,7 @@ export const commonStyles = css`
     --md-icon-fill: 1;
   }
   @media (forced-colors: active) {
-    .button::before,
-    .chip::before {
+    .button::before {
       display: none;
     }
   }

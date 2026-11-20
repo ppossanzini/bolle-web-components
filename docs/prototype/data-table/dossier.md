@@ -95,7 +95,7 @@ Promossa su richiesta dell'utente il 16/11/2026, con il perimetro del prototipo 
 
 Differenze rispetto al prototipo, decise in sviluppo:
 
-- I dati li possiede l'applicazione: il componente non ordina, filtra né pagina, e riporta ogni cambio con `sort`, `page-change`, `select`, `expand`, `group`, `column-change`, `row-action`, `row-activate` e `retry`.
+- I dati li possiede l'applicazione, ma ordine, pagina, selezione, apertura riga, raggruppamento e colonne li applica il componente: ordina e pagina le righe che riceve e riporta ogni cambio con `sort`, `page-change`, `select`, `expand`, `group`, `column-change`, `row-action`, `row-activate` e `retry`. Quando i dati stanno su un server `sortHandler`, `pageHandler` e `columnHandler` ricevono la richiesta e la tabella ridisegna a promessa risolta.
 - Il contenuto dei renderer vive nel shadow root, quindi il loro CSS si passa con `contentStyles`; anteprima e intestazioni di gruppo hanno un contenitore interno che resta fermo e copre solo la larghezza visibile.
 - `virtual` richiede un'altezza sul nodo: senza, il contenitore cresce e non c'è finestra da calcolare.
 

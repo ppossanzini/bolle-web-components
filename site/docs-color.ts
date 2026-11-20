@@ -9,6 +9,7 @@ import {
   readableOn,
 } from "./palette.js";
 import { l } from "./i18n.js";
+import { ti } from "../demo/icons.js";
 
 const baseShade = (name: string) => {
   const family = MATERIAL_FAMILIES.find((item) => item.name === name);
@@ -39,6 +40,8 @@ export class DocsColor extends LitElement {
     tile: { type: Boolean },
     token: {},
     previous: {},
+    pinnable: { type: Boolean },
+    pinned: { type: Boolean },
   };
 
   declare label: string;
@@ -50,6 +53,10 @@ export class DocsColor extends LitElement {
   declare token: string;
   /** Previous value, shown as a strip inside the tile after a change. */
   declare previous: string;
+  /** Offer the "fix this colour" switch in the picker. */
+  declare pinnable: boolean;
+  /** The generator keeps this colour and adapts the rest of its family. */
+  declare pinned: boolean;
   private dialog = createRef<BolleDialog>();
 
   constructor() {
@@ -61,6 +68,8 @@ export class DocsColor extends LitElement {
     this.tile = false;
     this.token = "";
     this.previous = "";
+    this.pinnable = false;
+    this.pinned = false;
   }
 
   createRenderRoot() {
@@ -83,6 +92,17 @@ export class DocsColor extends LitElement {
       }),
     );
     this.dialog.value?.close();
+  };
+
+  private togglePin = (pinned: boolean) => {
+    this.pinned = pinned;
+    this.dispatchEvent(
+      new CustomEvent("pin", {
+        detail: { pinned },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   };
 
   private swatch(hex: string, name: string, selected: boolean) {
@@ -155,10 +175,10 @@ export class DocsColor extends LitElement {
         this.tile
           ? html`<button
               type="button"
-              class="color-tile ${changed ? "is-changed" : ""}"
+              class="color-tile ${changed ? "is-changed" : ""} ${this.pinned ? "is-pinned" : ""}"
               style=${`background:${this.value};color:${readableOn(this.value)}`}
               aria-haspopup="dialog"
-              aria-label=${`${this.label}, ${this.token}: ${this.value}${changed ? l(", prima {color}", { color: this.previous }) : ""}`}
+              aria-label=${`${this.label}, ${this.token}: ${this.value}${this.pinned ? l(", fissato") : ""}${changed ? l(", prima {color}", { color: this.previous }) : ""}`}
               @click=${this.open}
             >
               ${
@@ -168,6 +188,13 @@ export class DocsColor extends LitElement {
                       style=${`background:${this.previous};color:${readableOn(this.previous)}`}
                       title=${l("Prima: {color}", { color: this.previous })}
                       >${l("prima")}</span
+                    >`
+                  : ""
+              }
+              ${
+                this.pinned
+                  ? html`<span class="color-tile-pin" aria-hidden="true"
+                      >${ti("pin")}</span
                     >`
                   : ""
               }
@@ -206,6 +233,26 @@ export class DocsColor extends LitElement {
         close-label=${l("Chiudi")}
       >
         <div class="palette-content">
+          ${
+            this.pinnable
+              ? html`<bolle-switch
+                  label=${l("Fissa questo colore")}
+                  supporting-text=${l(
+                    "La generazione lo mantiene e ricalcola gli altri ruoli attorno a lui.",
+                  )}
+                  ?checked=${this.pinned}
+                  @change=${(event: Event) => {
+                    // The switch change is the picker's own business: the parent listens
+                    // for "change" on this element to read a chosen colour.
+                    event.stopPropagation();
+                    this.togglePin(
+                      (event as CustomEvent<{ checked: boolean }>).detail
+                        .checked,
+                    );
+                  }}
+                ></bolle-switch>`
+              : null
+          }
           ${this.renderCustom()}
           <div class="palette-head">
             <span class="palette-caption"

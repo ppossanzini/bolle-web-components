@@ -666,6 +666,63 @@ export function Archivia({ ripristina }) {
 }
 ```
 
+### bolle-tour
+
+Attributes: `index`, `locale`, `open`, `padding`, `placement` · JavaScript properties: `steps` · Slots: - · Events: `finish`, `step-change`
+
+**Tour from the JSON configuration** — The steps are not in the code: parseTourConfig reads the JSON with its version and shouldStartTour compares it with the one the application already showed. The component does no network access and remembers nothing, so the application decides when to start and stores the version on finish.
+
+```jsx
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+export function PrimoAccesso() {
+  const tour = useRef<{ start: (index?: number) => void }>(null);
+  const [steps, setSteps] = useState<TourStep[]>([]);
+  const version = useRef("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/tour.json")
+      .then((response) => response.text())
+      .then((text) => {
+        if (!active) return;
+        const config = parseTourConfig(text);
+        setSteps(config.steps);
+        version.current = config.version;
+        if (shouldStartTour(config, localStorage.getItem("bolle-tour")))
+          tour.current?.start();
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const onFinish = useCallback(
+    (event: CustomEvent<{ completed: boolean }>) => {
+      if (event.detail.completed)
+        localStorage.setItem("bolle-tour", version.current);
+    },
+    [],
+  );
+
+  return (
+    <>
+      <bolle-button variant="tonal" onClick={() => tour.current?.start()}>
+        Rivedi il tour
+      </bolle-button>
+      <bolle-tour ref={tour} steps={steps} onFinish={onFinish} />
+    </>
+  );
+}
+```
+
+More recipes: A step without a target and the closing action · Filter the jobs · The table · That is it · Drive the tour and read the steps
+
 ### bolle-tooltip
 
 Attributes: `label`, `persistent`, `supporting-text`, `tail`, `variant` · JavaScript properties: `labels` · Slots: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · Events: -

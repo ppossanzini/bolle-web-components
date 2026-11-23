@@ -4252,5 +4252,53 @@
       "change",
       "remove"
     ]
+  },
+  "BolleTour": {
+    "slots": [],
+    "parts": [
+      "actions",
+      "body",
+      "card",
+      "counter",
+      "layer",
+      "spotlight",
+      "title"
+    ],
+    "attributes": [
+      {
+        "name": "index",
+        "attribute": "index",
+        "type": "Number"
+      },
+      {
+        "name": "locale",
+        "attribute": "locale",
+        "type": "string"
+      },
+      {
+        "name": "open",
+        "attribute": "open",
+        "type": "Boolean"
+      },
+      {
+        "name": "padding",
+        "attribute": "padding",
+        "type": "Number"
+      },
+      {
+        "name": "placement",
+        "attribute": "placement",
+        "type": "string"
+      },
+      {
+        "name": "steps",
+        "attribute": "",
+        "type": "string"
+      }
+    ],
+    "events": [
+      "finish",
+      "step-change"
+    ]
   }
 }

@@ -651,6 +651,47 @@ const messaggio = ref<HTMLElement | null>(null);
 </template>
 ```
 
+### bolle-tour
+
+Attributes: `index`, `locale`, `open`, `padding`, `placement` · JavaScript properties: `steps` · Slots: - · Events: `finish`, `step-change`
+
+**Tour from the JSON configuration** — The steps are not in the code: parseTourConfig reads the JSON with its version and shouldStartTour compares it with the one the application already showed. The component does no network access and remembers nothing, so the application decides when to start and stores the version on finish.
+
+```vue
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+const tour = ref<{ start: (index?: number) => void }>();
+const steps = ref<TourStep[]>([]);
+let version = "";
+
+const start = () => tour.value?.start();
+
+onMounted(async () => {
+  const config = parseTourConfig(await (await fetch("/tour.json")).text());
+  steps.value = config.steps;
+  version = config.version;
+  if (shouldStartTour(config, localStorage.getItem("bolle-tour"))) start();
+});
+
+const onFinish = (event: CustomEvent<{ completed: boolean }>) => {
+  if (event.detail.completed) localStorage.setItem("bolle-tour", version);
+};
+</script>
+
+<template>
+  <bolle-button variant="tonal" @click="start">Rivedi il tour</bolle-button>
+  <bolle-tour ref="tour" :steps="steps" @finish="onFinish"></bolle-tour>
+</template>
+```
+
+More recipes: A step without a target and the closing action · Filter the jobs · The table · That is it · Drive the tour and read the steps
+
 ### bolle-tooltip
 
 Attributes: `label`, `persistent`, `supporting-text`, `tail`, `variant` · JavaScript properties: `labels` · Slots: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · Events: -

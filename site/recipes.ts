@@ -5148,4 +5148,310 @@ bolle-data-table::part(data-cell) {
       },
     },
   ],
+  "bolle-tour": [
+    {
+      title: "Tour dal JSON di configurazione",
+      description:
+        "I passi non stanno nel codice: parseTourConfig legge il JSON con la versione e shouldStartTour la confronta con quella che l'applicazione ha già mostrato. Il componente non fa rete e non ricorda nulla, quindi è l'applicazione a decidere quando partire e a salvare la versione al finish.",
+      code: {
+        html: `<bolle-button id="tour-start" variant="tonal">Rivedi il tour</bolle-button>
+<bolle-tour id="tour"></bolle-tour>
+
+<script type="module">
+  import { parseTourConfig, shouldStartTour } from "@bolle/web-components";
+
+  const config = parseTourConfig(await (await fetch("/tour.json")).text());
+  const tour = document.getElementById("tour");
+  tour.steps = config.steps;
+  tour.placement = config.placement ?? "auto";
+
+  const seen = localStorage.getItem("bolle-tour");
+  if (shouldStartTour(config, seen)) tour.start();
+
+  document
+    .getElementById("tour-start")
+    .addEventListener("click", () => tour.start());
+
+  tour.addEventListener("finish", (event) => {
+    if (event.detail.completed)
+      localStorage.setItem("bolle-tour", config.version);
+  });
+</script>`,
+        vue: `<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+const tour = ref<{ start: (index?: number) => void }>();
+const steps = ref<TourStep[]>([]);
+let version = "";
+
+const start = () => tour.value?.start();
+
+onMounted(async () => {
+  const config = parseTourConfig(await (await fetch("/tour.json")).text());
+  steps.value = config.steps;
+  version = config.version;
+  if (shouldStartTour(config, localStorage.getItem("bolle-tour"))) start();
+});
+
+const onFinish = (event: CustomEvent<{ completed: boolean }>) => {
+  if (event.detail.completed) localStorage.setItem("bolle-tour", version);
+};
+</script>
+
+<template>
+  <bolle-button variant="tonal" @click="start">Rivedi il tour</bolle-button>
+  <bolle-tour ref="tour" :steps="steps" @finish="onFinish"></bolle-tour>
+</template>`,
+        react: `import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+export function PrimoAccesso() {
+  const tour = useRef<{ start: (index?: number) => void }>(null);
+  const [steps, setSteps] = useState<TourStep[]>([]);
+  const version = useRef("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/tour.json")
+      .then((response) => response.text())
+      .then((text) => {
+        if (!active) return;
+        const config = parseTourConfig(text);
+        setSteps(config.steps);
+        version.current = config.version;
+        if (shouldStartTour(config, localStorage.getItem("bolle-tour")))
+          tour.current?.start();
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const onFinish = useCallback(
+    (event: CustomEvent<{ completed: boolean }>) => {
+      if (event.detail.completed)
+        localStorage.setItem("bolle-tour", version.current);
+    },
+    [],
+  );
+
+  return (
+    <>
+      <bolle-button variant="tonal" onClick={() => tour.current?.start()}>
+        Rivedi il tour
+      </bolle-button>
+      <bolle-tour ref={tour} steps={steps} onFinish={onFinish} />
+    </>
+  );
+}`,
+      },
+    },
+    {
+      title: "Un passo senza bersaglio e l'azione finale",
+      description:
+        "Un passo senza target non ha un elemento da mettere in luce: il riflettore copre tutta la pagina e la scheda resta al centro. actionLabel cambia il testo del bottone dell'ultimo passo, mentre placement decide dove si appoggia la scheda rispetto al bersaglio, con auto che sceglie il primo lato che ci sta.",
+      code: {
+        html: `<bolle-tour id="tour" placement="auto"></bolle-tour>
+
+<script type="module">
+  const tour = document.getElementById("tour");
+  tour.steps = [
+    {
+      target: "#filtri",
+      title: "Filtra le commesse",
+      body: "Stato, cliente e periodo si sommano.",
+    },
+    {
+      target: "#tabella",
+      title: "La tabella",
+      body: "Ordina una colonna cliccando il suo nome.",
+      placement: "top",
+    },
+    {
+      title: "Ci siamo",
+      body: "Da qui parte tutto il resto.",
+      actionLabel: "Apri il cruscotto",
+    },
+  ];
+  tour.addEventListener("finish", (event) => {
+    if (event.detail.completed) location.hash = "#/dashboard";
+  });
+  tour.start();
+</script>`,
+        vue: `<script setup lang="ts">
+import { ref } from "vue";
+import type { TourStep } from "@bolle/web-components";
+
+const tour = ref<{ start: (index?: number) => void }>();
+const steps: TourStep[] = [
+  {
+    target: "#filtri",
+    title: "Filtra le commesse",
+    body: "Stato, cliente e periodo si sommano.",
+  },
+  {
+    target: "#tabella",
+    title: "La tabella",
+    body: "Ordina una colonna cliccando il suo nome.",
+    placement: "top",
+  },
+  {
+    title: "Ci siamo",
+    body: "Da qui parte tutto il resto.",
+    actionLabel: "Apri il cruscotto",
+  },
+];
+
+const onFinish = (event: CustomEvent<{ completed: boolean }>) => {
+  if (event.detail.completed) location.hash = "#/dashboard";
+};
+</script>
+
+<template>
+  <bolle-tour ref="tour" :steps="steps" @finish="onFinish"></bolle-tour>
+</template>`,
+        react: `import { useCallback, useRef } from "react";
+import type { TourStep } from "@bolle/web-components";
+
+const steps: TourStep[] = [
+  {
+    target: "#filtri",
+    title: "Filtra le commesse",
+    body: "Stato, cliente e periodo si sommano.",
+  },
+  {
+    target: "#tabella",
+    title: "La tabella",
+    body: "Ordina una colonna cliccando il suo nome.",
+    placement: "top",
+  },
+  {
+    title: "Ci siamo",
+    body: "Da qui parte tutto il resto.",
+    actionLabel: "Apri il cruscotto",
+  },
+];
+
+export function TourCompleto() {
+  const tour = useRef<{ start: (index?: number) => void }>(null);
+  const onFinish = useCallback(
+    (event: CustomEvent<{ completed: boolean }>) => {
+      if (event.detail.completed) location.hash = "#/dashboard";
+    },
+    [],
+  );
+  return <bolle-tour ref={tour} steps={steps} onFinish={onFinish} />;
+}`,
+      },
+    },
+    {
+      title: "Pilotare il tour e leggere i passi",
+      description:
+        "start accetta l'indice da cui partire, next e back muovono il passo e finish chiude dichiarando se il lettore è arrivato in fondo. step-change porta indice, passo e totale, così l'applicazione può annotare dove si è fermato, e refresh rilegge il bersaglio dopo un cambio di pagina.",
+      code: {
+        html: `<bolle-tour id="tour" placement="bottom"></bolle-tour>
+<bolle-button id="next" variant="tonal">Passo successivo</bolle-button>
+
+<script type="module">
+  const tour = document.getElementById("tour");
+  tour.steps = [
+    { target: "#filtri", title: "Filtra le commesse" },
+    { target: "#tabella", title: "La tabella" },
+    { title: "Ci siamo", actionLabel: "Chiudi" },
+  ];
+
+  tour.addEventListener("step-change", (event) => {
+    const { index, total } = event.detail;
+    console.log(\`Passo \${index + 1} di \${total}\`);
+  });
+
+  tour.start(1);
+  document
+    .getElementById("next")
+    .addEventListener("click", () => tour.next());
+</script>`,
+        vue: `<script setup lang="ts">
+import { ref } from "vue";
+import type { TourStep } from "@bolle/web-components";
+
+const tour = ref<{
+  start: (index?: number) => void;
+  next: () => void;
+  back: () => void;
+  finish: (completed: boolean) => void;
+}>();
+const steps: TourStep[] = [
+  { target: "#filtri", title: "Filtra le commesse" },
+  { target: "#tabella", title: "La tabella" },
+  { title: "Ci siamo", actionLabel: "Chiudi" },
+];
+
+const onStep = (event: CustomEvent<{ index: number; total: number }>) => {
+  const { index, total } = event.detail;
+  console.log(\`Passo \${index + 1} di \${total}\`);
+};
+</script>
+
+<template>
+  <bolle-tour
+    ref="tour"
+    placement="bottom"
+    :steps="steps"
+    @step-change="onStep"
+  ></bolle-tour>
+  <bolle-button variant="tonal" @click="tour?.next()">
+    Passo successivo
+  </bolle-button>
+</template>`,
+        react: `import { useCallback, useRef } from "react";
+import type { TourStep } from "@bolle/web-components";
+
+interface TourHandle {
+  start: (index?: number) => void;
+  next: () => void;
+  back: () => void;
+  finish: (completed: boolean) => void;
+}
+
+const steps: TourStep[] = [
+  { target: "#filtri", title: "Filtra le commesse" },
+  { target: "#tabella", title: "La tabella" },
+  { title: "Ci siamo", actionLabel: "Chiudi" },
+];
+
+export function TourPilotato() {
+  const tour = useRef<TourHandle>(null);
+  const onStep = useCallback(
+    (event: CustomEvent<{ index: number; total: number }>) => {
+      const { index, total } = event.detail;
+      console.log(\`Passo \${index + 1} di \${total}\`);
+    },
+    [],
+  );
+  return (
+    <>
+      <bolle-tour
+        ref={tour}
+        placement="bottom"
+        steps={steps}
+        onStepChange={onStep}
+      />
+      <bolle-button variant="tonal" onClick={() => tour.current?.next()}>
+        Passo successivo
+      </bolle-button>
+    </>
+  );
+}`,
+      },
+    },
+  ],
 };

@@ -664,6 +664,63 @@ export function Archivia({ ripristina }) {
 }
 ```
 
+### bolle-tour
+
+Attributi: `index`, `locale`, `open`, `padding`, `placement` · Proprietà JavaScript: `steps` · Slot: - · Eventi: `finish`, `step-change`
+
+**Tour dal JSON di configurazione** — I passi non stanno nel codice: parseTourConfig legge il JSON con la versione e shouldStartTour la confronta con quella che l'applicazione ha già mostrato. Il componente non fa rete e non ricorda nulla, quindi è l'applicazione a decidere quando partire e a salvare la versione al finish.
+
+```jsx
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+export function PrimoAccesso() {
+  const tour = useRef<{ start: (index?: number) => void }>(null);
+  const [steps, setSteps] = useState<TourStep[]>([]);
+  const version = useRef("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/tour.json")
+      .then((response) => response.text())
+      .then((text) => {
+        if (!active) return;
+        const config = parseTourConfig(text);
+        setSteps(config.steps);
+        version.current = config.version;
+        if (shouldStartTour(config, localStorage.getItem("bolle-tour")))
+          tour.current?.start();
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const onFinish = useCallback(
+    (event: CustomEvent<{ completed: boolean }>) => {
+      if (event.detail.completed)
+        localStorage.setItem("bolle-tour", version.current);
+    },
+    [],
+  );
+
+  return (
+    <>
+      <bolle-button variant="tonal" onClick={() => tour.current?.start()}>
+        Rivedi il tour
+      </bolle-button>
+      <bolle-tour ref={tour} steps={steps} onFinish={onFinish} />
+    </>
+  );
+}
+```
+
+Altre ricette: Un passo senza bersaglio e l'azione finale · Filtra le commesse · La tabella · Ci siamo · Pilotare il tour e leggere i passi
+
 ### bolle-tooltip
 
 Attributi: `label`, `persistent`, `supporting-text`, `tail`, `variant` · Proprietà JavaScript: `labels` · Slot: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · Eventi: -

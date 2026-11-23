@@ -154,13 +154,11 @@ export const dataTableStyles = css`
   .end .head {
     flex-direction: row;
   }
+  /* The options button takes the room it needs at the inline end, for every
+     alignment: the label and the sort mark stop before it instead of under it. */
   th:hover .head .sort,
   th:focus-within .head .sort {
-    padding-inline-end: 34px;
-  }
-  th.end:hover .head .sort,
-  th.end:focus-within .head .sort {
-    padding-inline: 34px 6px;
+    padding-inline-end: 42px;
   }
   .grip {
     position: absolute;
@@ -216,6 +214,15 @@ export const dataTableStyles = css`
     );
     color: var(--md-sys-color-on-surface);
   }
+  /* A flat tint only: the shared corner glint lands where the options button sits,
+     and on a header-sized target it reads as a stray arc. */
+  th .sort:hover,
+  th .sort:active {
+    background-image: linear-gradient(
+      var(--bolle-state-hover),
+      var(--bolle-state-hover)
+    );
+  }
   .sort:focus-visible,
   .resize:focus-visible,
   .group-toggle:focus-visible {
@@ -265,11 +272,11 @@ export const dataTableStyles = css`
     inline-size: 14px;
     block-size: 14px;
   }
+  /* No circle of its own: the button sits on the hovered header, and a solid disc
+     painted a pale notch out of it. The sort button reserves the room it needs. */
   .head-menu {
     position: absolute;
-    inset-inline-end: 6px;
-    border-radius: 50%;
-    background: var(--table-head);
+    inset-inline-end: 10px;
     opacity: 0;
     transition: opacity 120ms;
   }

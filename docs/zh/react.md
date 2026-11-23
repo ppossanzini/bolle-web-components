@@ -627,6 +627,63 @@ export function Archivia({ ripristina }) {
 }
 ```
 
+### bolle-tour
+
+属性: `index`, `locale`, `open`, `padding`, `placement` · JavaScript 属性: `steps` · 插槽: - · 事件: `finish`, `step-change`
+
+**从 JSON 配置生成引导** — 步骤不写在代码里：parseTourConfig 读取带版本的 JSON，shouldStartTour 将其与应用已展示的版本比较。组件不访问网络、不保存状态，由应用决定何时开始，并在 finish 时保存版本。
+
+```jsx
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+export function PrimoAccesso() {
+  const tour = useRef<{ start: (index?: number) => void }>(null);
+  const [steps, setSteps] = useState<TourStep[]>([]);
+  const version = useRef("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/tour.json")
+      .then((response) => response.text())
+      .then((text) => {
+        if (!active) return;
+        const config = parseTourConfig(text);
+        setSteps(config.steps);
+        version.current = config.version;
+        if (shouldStartTour(config, localStorage.getItem("bolle-tour")))
+          tour.current?.start();
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const onFinish = useCallback(
+    (event: CustomEvent<{ completed: boolean }>) => {
+      if (event.detail.completed)
+        localStorage.setItem("bolle-tour", version.current);
+    },
+    [],
+  );
+
+  return (
+    <>
+      <bolle-button variant="tonal" onClick={() => tour.current?.start()}>
+        Rivedi il tour
+      </bolle-button>
+      <bolle-tour ref={tour} steps={steps} onFinish={onFinish} />
+    </>
+  );
+}
+```
+
+更多配方: 没有目标的步骤与结束操作 · 筛选任务 · 表格 · 就这么简单 · 控制引导并读取步骤
+
 ### bolle-tooltip
 
 属性: `label`, `persistent`, `supporting-text`, `tail`, `variant` · JavaScript 属性: `labels` · 插槽: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · 事件: -

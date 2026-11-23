@@ -397,8 +397,8 @@ const messages: Record<string, string> = {
   "Icone Tabler": "Tabler Icons",
   "Il CSS non contiene token Bolle riconosciuti.":
     "The CSS contains no recognized Bolle tokens.",
-  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}.":
-    "The JSON holds light and dark themes, shapes, typography and density, and can be re-imported here. The CSS is ready for your stylesheet: light theme on {light}, dark colors on {dark}.",
+  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità, compresi i token delle dimensioni ridotti per la densità compatta, e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}, dimensioni compatte su {density}.":
+    "The JSON holds light and dark themes, shapes, typography and density, including the dimension tokens scaled for the compact density, and can be re-imported here. The CSS is ready for your stylesheet: light theme on {light}, dark colors on {dark}, compact dimensions on {density}.",
   "Il JSON non è un'esportazione dei token Bolle.":
     "The JSON is not a Bolle token export.",
   "Il colore dinamico di Material 3 genera i ruoli tonali; Bolle ne ricava anche la pellicola. Scegli un seed e guarda cosa cambia: il tema vale per tutto il sito.":
@@ -811,8 +811,8 @@ const messages: Record<string, string> = {
   "sì": "yes",
   "{changed} di {total} ruoli cambiati nell'ultima operazione: a sinistra il colore precedente.":
     "{changed} of {total} roles changed in the last operation: the previous color is on the left.",
-  "{compact} porta a tre quarti spaziature e dimensioni dei componenti.":
-    "{compact} scales component spacing and sizes to three quarters.",
+  "{compact} porta a tre quarti spaziature e dimensioni dei componenti; i token ridotti escono con l'esportazione e si attivano con {attr}.":
+    "{compact} scales component spacing and sizes to three quarters; the scaled tokens are part of the export and turn on with {attr}.",
   "{name} · ispirata a Material 3, non affiliata a Google.":
     "{name} · inspired by Material 3, not affiliated with Google.",
   "{n} componenti": "{n} components",
@@ -1652,6 +1652,56 @@ const messages: Record<string, string> = {
   "Azione critica": "Critical action",
   "In attesa": "Pending",
   "Approvata": "Approved",
+  "Apri il cruscotto": "Open the dashboard",
+  "Archiviate": "Archived",
+  "Avvia il tour": "Start the tour",
+  "Cerca commesse": "Search jobs",
+  "Cerca una commessa": "Find a job",
+  "Ci siamo": "That is it",
+  "Configurazione JSON": "JSON configuration",
+  "Filtra per stato": "Filter by state",
+  "I passi sono dati, non codice: parseTourConfig legge il JSON e shouldStartTour confronta la versione con quella già vista. Il componente non fa rete e non ricorda nulla: si apre quando l'applicazione chiama start(), e dice con finish se il lettore ha visto tutto.":
+    "The steps are data, not code: parseTourConfig reads the JSON and shouldStartTour compares the version with the one already seen. The component does no network access and remembers nothing: it opens when the application calls start(), and reports with finish whether the reader saw everything.",
+  "Il numero o il nome del cliente bastano: la ricerca parte da qui.":
+    "The job number or the client name is enough: the search starts here.",
+  "Il tour non ha slot: il contenuto dei passi è un array, e l'applicazione lo ricava dal JSON con parseTourConfig. Espone i CSS part di ogni pezzo della scheda, dalla layer al singolo testo, per adattarlo alla propria pelle.":
+    "The tour has no slots: the content of the steps is an array, and the application builds it from JSON with parseTourConfig. It exposes the CSS parts of every piece of the card, from the layer to the single line of text, to adapt it to its own skin.",
+  "In corso e archiviate sono due filtri che si sommano.":
+    "In progress and archived are two filters that add up.",
+  "Livello fisso che blocca la pagina e contiene il riflettore e la scheda.":
+    "Fixed layer that blocks the page and holds the spotlight and the card.",
+  "Margine dal bersaglio": "Margin from the target",
+  "Numero o cliente": "Number or client",
+  "Posizione": "Placement",
+  "Questo passo non ha un bersaglio: la scheda resta al centro.":
+    "This step has no target: the card stays in the middle.",
+  "Riga con il numero del passo e il totale.":
+    "Line with the step number and the total.",
+  "Riga dei comandi: salta, indietro, avanti o fine.":
+    "Command row: skip, back, next or done.",
+  "Riquadro che tiene in luce l'elemento del passo e scurisce il resto.":
+    "Box that keeps the step element in the light and dims the rest.",
+  "Scheda del passo, ancorata al bersaglio o centrata.":
+    "Step card, anchored to the target or centred.",
+  "Testo del passo.": "Step text.",
+  "Titolo del passo, usato anche come nome accessibile della scheda.":
+    "Step title, also used as the accessible name of the card.",
+  "Tour di primo accesso: oscura la pagina, lascia in luce un elemento e accompagna il lettore nei passi descritti da una configurazione JSON con versione.":
+    "First-run tour: dims the page, keeps one element in the light and walks the reader through the steps described by a versioned JSON configuration.",
+  "{count} passi. Modifica il JSON e riavvia il tour.":
+    "{count} steps. Edit the JSON and start the tour again.",
+  "Filtra le commesse": "Filter the jobs",
+  "La tabella": "The table",
+  "Pilotare il tour e leggere i passi": "Drive the tour and read the steps",
+  "Tour dal JSON di configurazione": "Tour from the JSON configuration",
+  "Un passo senza bersaglio e l'azione finale":
+    "A step without a target and the closing action",
+  "I passi non stanno nel codice: parseTourConfig legge il JSON con la versione e shouldStartTour la confronta con quella che l'applicazione ha già mostrato. Il componente non fa rete e non ricorda nulla, quindi è l'applicazione a decidere quando partire e a salvare la versione al finish.":
+    "The steps are not in the code: parseTourConfig reads the JSON with its version and shouldStartTour compares it with the one the application already showed. The component does no network access and remembers nothing, so the application decides when to start and stores the version on finish.",
+  "Un passo senza target non ha un elemento da mettere in luce: il riflettore copre tutta la pagina e la scheda resta al centro. actionLabel cambia il testo del bottone dell'ultimo passo, mentre placement decide dove si appoggia la scheda rispetto al bersaglio, con auto che sceglie il primo lato che ci sta.":
+    "A step without a target has no element to highlight: the spotlight covers the whole page and the card stays in the middle. actionLabel changes the label of the last button, while placement decides which side the card takes against the target, with auto picking the first side that fits.",
+  "start accetta l'indice da cui partire, next e back muovono il passo e finish chiude dichiarando se il lettore è arrivato in fondo. step-change porta indice, passo e totale, così l'applicazione può annotare dove si è fermato, e refresh rilegge il bersaglio dopo un cambio di pagina.":
+    "start takes the index to open on, next and back move the step and finish closes declaring whether the reader reached the end. step-change carries index, step and total, so the application can record where the reader stopped, and refresh re-reads the target after the page changed.",
 };
 
 export default messages;

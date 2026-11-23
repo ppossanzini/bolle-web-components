@@ -58,6 +58,7 @@ import {
   BolleLoadingIndicator,
   BolleCarousel,
 } from "./feedback.js";
+import { BolleTour } from "./tour.js";
 
 export {
   BolleAppShell,
@@ -111,7 +112,14 @@ export {
   BolleBreadcrumb,
   BolleEmptyState,
   BollePagination,
+  BolleTour,
 };
+export type { TourPlacement, TourStep } from "./tour.js";
+export {
+  parseTourConfig,
+  shouldStartTour,
+  type TourConfig,
+} from "./tour-config.js";
 export type { BolleItem, SurfaceTail } from "./shared.js";
 export type { CardTail } from "./surfaces.js";
 export type {
@@ -249,6 +257,7 @@ export const catalogue = {
   "bolle-time-picker": BolleTimePicker,
   "bolle-toolbar": BolleToolbar,
   "bolle-tooltip": BolleTooltip,
+  "bolle-tour": BolleTour,
 } as const;
 
 for (const [name, constructor] of Object.entries(catalogue)) {
@@ -308,5 +317,6 @@ declare global {
     "bolle-time-picker": BolleTimePicker;
     "bolle-toolbar": BolleToolbar;
     "bolle-tooltip": BolleTooltip;
+    "bolle-tour": BolleTour;
   }
 }

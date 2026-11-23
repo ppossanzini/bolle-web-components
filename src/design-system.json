@@ -15,9 +15,19 @@
     "high-contrast-dark"
   ],
   "fullConformanceVerified": false,
-  "componentEntries": 51,
+  "componentEntries": 52,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-20",
+      "classification": "fix",
+      "description": "Data table column header, options button: the button no longer paints a pale disc of its own on top of the hovered header, the sort target reserves 42px at the inline end for every alignment so the label and the sort mark stop before the button instead of under it, the button sits 10px from the cell edge inside the header, the shared corner glint is off the header sort target where it landed on the button as a stray arc, and small icon buttons (`size=\"xs\"`) no longer draw the film ring, which at 32px read as an artefact instead of a halo."
+    },
+    {
+      "date": "2026-11-20",
+      "classification": "additive",
+      "description": "New `bolle-tour` component for a first-run tour: the page dims, one element stays in the light and a card anchored to it walks the reader through the steps. The steps are data, not code: `parseTourConfig` in `src/tour-config.ts` reads and validates a versioned JSON configuration, and `shouldStartTour` compares that version with the one the application already showed. The component does no network access and stores nothing, so the application decides when to start and keeps the memory; it applies its own state (`start`, `next`, `back`, `finish`, `refresh`), emits `step-change` and `finish`, traps focus across its shadow roots, closes on Escape, restores focus to the opener and scrolls the target into view only when it is out of sight. Documented with a catalogue page whose JSON field is parsed live, three recipes in HTML/Vue/React, a playground example, the anatomy of its seven CSS parts and the regenerated framework guides."
+    },
     {
       "date": "2026-11-20",
       "classification": "fix",

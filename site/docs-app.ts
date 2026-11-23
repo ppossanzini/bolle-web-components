@@ -1099,6 +1099,52 @@ const ANATOMY_GUIDES: Record<string, AnatomyGuide> = {
   <span aria-current="page">C2026-1000</span>
 </bolle-breadcrumb>`,
   },
+  "bolle-tour": {
+    intro:
+      "Il tour non ha slot: il contenuto dei passi è un array, e l'applicazione lo ricava dal JSON con parseTourConfig. Espone i CSS part di ogni pezzo della scheda, dalla layer al singolo testo, per adattarlo alla propria pelle.",
+    parts: [
+      {
+        name: "layer",
+        purpose:
+          "Livello fisso che blocca la pagina e contiene il riflettore e la scheda.",
+      },
+      {
+        name: "spotlight",
+        purpose:
+          "Riquadro che tiene in luce l'elemento del passo e scurisce il resto.",
+      },
+      {
+        name: "card",
+        purpose: "Scheda del passo, ancorata al bersaglio o centrata.",
+      },
+      { name: "counter", purpose: "Riga con il numero del passo e il totale." },
+      {
+        name: "title",
+        purpose:
+          "Titolo del passo, usato anche come nome accessibile della scheda.",
+      },
+      { name: "body", purpose: "Testo del passo." },
+      {
+        name: "actions",
+        purpose: "Riga dei comandi: salta, indietro, avanti o fine.",
+      },
+    ],
+    example: `<script type="module">
+  import { parseTourConfig, shouldStartTour } from "@bolle/web-components";
+
+  const config = parseTourConfig(await (await fetch("/tour.json")).text());
+  if (shouldStartTour(config, localStorage.getItem("tour-version"))) {
+    const tour = document.querySelector("bolle-tour");
+    tour.steps = config.steps;
+    tour.addEventListener("finish", () => {
+      localStorage.setItem("tour-version", config.version);
+    });
+    tour.start();
+  }
+</script>
+
+<bolle-tour label="Primo accesso"></bolle-tour>`,
+  },
   "bolle-empty-state": {
     intro:
       "Lo stato vuoto centra un'icona, un titolo e un testo, e prende dallo slot actions il comando che fa uscire dallo stato vuoto.",
@@ -2810,10 +2856,11 @@ export class DocsApp extends LitElement {
       <p class="hct-hint">
         ${withParts(
           l(
-            "{compact} porta a tre quarti spaziature e dimensioni dei componenti.",
+            "{compact} porta a tre quarti spaziature e dimensioni dei componenti; i token ridotti escono con l'esportazione e si attivano con {attr}.",
           ),
           {
             compact: html`<em>${l("Compatta")}</em>`,
+            attr: html`<code>data-density="compact"</code>`,
           },
         )}
       </p>
@@ -4192,11 +4239,12 @@ table.refresh();</code></pre>
           <p class="section-lead">
             ${withParts(
               l(
-                "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}.",
+                "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità, compresi i token delle dimensioni ridotti per la densità compatta, e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}, dimensioni compatte su {density}.",
               ),
               {
                 light: html`<code>:root</code>`,
                 dark: html`<code>:root[data-theme="dark"]</code>`,
+                density: html`<code>:root[data-density="compact"]</code>`,
               },
             )}
           </p>

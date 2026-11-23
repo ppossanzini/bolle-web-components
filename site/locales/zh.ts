@@ -392,8 +392,8 @@ const messages: Record<string, string> = {
   "Icone Tabler": "Tabler 图标",
   "Il CSS non contiene token Bolle riconosciuti.":
     "CSS 中没有可识别的 Bolle 令牌。",
-  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}.":
-    "JSON 包含浅色和深色主题、形状、字体和密度，可在此重新导入。CSS 可直接放入你的样式表：浅色主题位于 {light}，深色颜色位于 {dark}。",
+  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità, compresi i token delle dimensioni ridotti per la densità compatta, e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}, dimensioni compatte su {density}.":
+    "JSON 包含浅色和深色主题、形状、字体和密度，以及为紧凑密度缩小的尺寸令牌，可在此重新导入。CSS 可直接放入你的样式表：浅色主题位于 {light}，深色颜色位于 {dark}，紧凑尺寸位于 {density}。",
   "Il JSON non è un'esportazione dei token Bolle.":
     "该 JSON 不是 Bolle 令牌的导出文件。",
   "Il colore dinamico di Material 3 genera i ruoli tonali; Bolle ne ricava anche la pellicola. Scegli un seed e guarda cosa cambia: il tema vale per tutto il sito.":
@@ -794,8 +794,8 @@ const messages: Record<string, string> = {
   "sì": "是",
   "{changed} di {total} ruoli cambiati nell'ultima operazione: a sinistra il colore precedente.":
     "上次操作改变了 {total} 个角色中的 {changed} 个：左侧为之前的颜色。",
-  "{compact} porta a tre quarti spaziature e dimensioni dei componenti.":
-    "{compact} 会将组件的间距和尺寸缩小到四分之三。",
+  "{compact} porta a tre quarti spaziature e dimensioni dei componenti; i token ridotti escono con l'esportazione e si attivano con {attr}.":
+    "{compact} 会将组件的间距和尺寸缩小到四分之三；缩小后的令牌会包含在导出中，并通过 {attr} 启用。",
   "{name} · ispirata a Material 3, non affiliata a Google.":
     "{name} · 受 Material 3 启发，与 Google 无关联。",
   "{n} componenti": "{n} 个组件",
@@ -1602,6 +1602,54 @@ const messages: Record<string, string> = {
   "Azione critica": "关键操作",
   "In attesa": "待处理",
   "Approvata": "已批准",
+  "Apri il cruscotto": "打开仪表板",
+  "Archiviate": "已归档",
+  "Avvia il tour": "开始引导",
+  "Cerca commesse": "搜索任务",
+  "Cerca una commessa": "查找任务",
+  "Ci siamo": "就这么简单",
+  "Configurazione JSON": "JSON 配置",
+  "Filtra per stato": "按状态筛选",
+  "I passi sono dati, non codice: parseTourConfig legge il JSON e shouldStartTour confronta la versione con quella già vista. Il componente non fa rete e non ricorda nulla: si apre quando l'applicazione chiama start(), e dice con finish se il lettore ha visto tutto.":
+    "步骤是数据而不是代码：parseTourConfig 读取 JSON，shouldStartTour 将版本与已看过的版本进行比较。组件不访问网络，也不保存任何状态：应用调用 start() 时才打开，并通过 finish 事件告知读者是否看完全部步骤。",
+  "Il numero o il nome del cliente bastano: la ricerca parte da qui.":
+    "任务编号或客户名称即可：搜索从这里开始。",
+  "Il tour non ha slot: il contenuto dei passi è un array, e l'applicazione lo ricava dal JSON con parseTourConfig. Espone i CSS part di ogni pezzo della scheda, dalla layer al singolo testo, per adattarlo alla propria pelle.":
+    "引导没有 slot：步骤内容是数组，应用通过 parseTourConfig 从 JSON 构建。它暴露卡片各部分的 CSS part，从图层到单行文字，便于按自己的皮肤调整。",
+  "In corso e archiviate sono due filtri che si sommano.":
+    "进行中与已归档是两个叠加的筛选条件。",
+  "Livello fisso che blocca la pagina e contiene il riflettore e la scheda.":
+    "固定层，遮挡页面并容纳聚光区与卡片。",
+  "Margine dal bersaglio": "与目标的间距",
+  "Numero o cliente": "编号或客户",
+  "Posizione": "位置",
+  "Questo passo non ha un bersaglio: la scheda resta al centro.":
+    "此步骤没有目标元素：卡片居中显示。",
+  "Riga con il numero del passo e il totale.": "显示步骤序号与总数的行。",
+  "Riga dei comandi: salta, indietro, avanti o fine.":
+    "命令行：跳过、上一步、下一步或完成。",
+  "Riquadro che tiene in luce l'elemento del passo e scurisce il resto.":
+    "保持步骤元素明亮并压暗其余部分的方框。",
+  "Scheda del passo, ancorata al bersaglio o centrata.":
+    "步骤卡片，锚定目标或居中。",
+  "Testo del passo.": "步骤文字。",
+  "Titolo del passo, usato anche come nome accessibile della scheda.":
+    "步骤标题，同时作为卡片的无障碍名称。",
+  "Tour di primo accesso: oscura la pagina, lascia in luce un elemento e accompagna il lettore nei passi descritti da una configurazione JSON con versione.":
+    "首次访问引导：压暗页面，突出一个元素，并按带版本的 JSON 配置逐步引导读者。",
+  "{count} passi. Modifica il JSON e riavvia il tour.":
+    "{count} 个步骤。修改 JSON 后可重新开始引导。",
+  "Filtra le commesse": "筛选任务",
+  "La tabella": "表格",
+  "Pilotare il tour e leggere i passi": "控制引导并读取步骤",
+  "Tour dal JSON di configurazione": "从 JSON 配置生成引导",
+  "Un passo senza bersaglio e l'azione finale": "没有目标的步骤与结束操作",
+  "I passi non stanno nel codice: parseTourConfig legge il JSON con la versione e shouldStartTour la confronta con quella che l'applicazione ha già mostrato. Il componente non fa rete e non ricorda nulla, quindi è l'applicazione a decidere quando partire e a salvare la versione al finish.":
+    "步骤不写在代码里：parseTourConfig 读取带版本的 JSON，shouldStartTour 将其与应用已展示的版本比较。组件不访问网络、不保存状态，由应用决定何时开始，并在 finish 时保存版本。",
+  "Un passo senza target non ha un elemento da mettere in luce: il riflettore copre tutta la pagina e la scheda resta al centro. actionLabel cambia il testo del bottone dell'ultimo passo, mentre placement decide dove si appoggia la scheda rispetto al bersaglio, con auto che sceglie il primo lato che ci sta.":
+    "没有目标的步骤没有需要突出的元素：聚光区覆盖整页，卡片保持居中。actionLabel 修改最后一步按钮的文字，placement 决定卡片相对目标的位置，auto 会选第一个放得下的方向。",
+  "start accetta l'indice da cui partire, next e back muovono il passo e finish chiude dichiarando se il lettore è arrivato in fondo. step-change porta indice, passo e totale, così l'applicazione può annotare dove si è fermato, e refresh rilegge il bersaglio dopo un cambio di pagina.":
+    "start 接受起始索引，next 与 back 切换步骤，finish 关闭并说明读者是否走到最后。step-change 携带索引、步骤与总数，应用可记录读者停在哪里；refresh 在页面变化后重新读取目标。",
 };
 
 export default messages;

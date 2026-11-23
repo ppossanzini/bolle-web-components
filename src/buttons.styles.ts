@@ -201,6 +201,11 @@ export const buttonStyles = css`
   :host([icon-only][size="xs"]) .button {
     min-inline-size: var(--md-comp-button-xs-height);
   }
+  /* On a small icon button the film ring lands 5px outside a 32px target and reads as
+     an artefact: the solid outline keeps focus visible on its own. */
+  :host([icon-only][size="xs"]) .button::before {
+    display: none;
+  }
   :host([icon-only][width="wide"]) .button {
     min-inline-size: calc(
       var(--md-comp-action-target) + var(--md-comp-button-padding)

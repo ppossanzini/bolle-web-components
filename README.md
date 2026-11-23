@@ -224,8 +224,12 @@ families (Figtree by default), and
 the base text size. A preset regenerates both the light and the dark palette;
 the selector is available on the tokens page and at the top of the component
 configuration drawer. Values are kept separately for light and dark themes,
-apply to the whole site, and are exported as a CSS `:root` snippet. Example
-icons come from Tabler Icons.
+apply to the whole site, and are exported as a CSS `:root` snippet. The compact
+density scales every `--md-comp-*` length token to three quarters; the export
+carries those values in a `:root[data-density="compact"]` block, and the JSON
+adds them under `dimensions`. An application reproduces the compact UI by
+setting `data-density="compact"` on the root, or by copying the block into its
+own `:root`. Example icons come from Tabler Icons.
 
 Each component page also shows the tokens that component consumes, detected
 from the rules its shadow DOM actually matches for the current attribute set.

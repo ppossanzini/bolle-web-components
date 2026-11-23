@@ -851,13 +851,17 @@ export function applyTokens(set: TokenSet, density: Density = "airy"): void {
   root.style.setProperty("--md-ref-typeface-brand", FONT_STACKS[set.brandFont]);
   root.style.setProperty("--md-ref-typeface-plain", FONT_STACKS[set.plainFont]);
   root.style.fontSize = `${set.baseSize}px`;
-  applyDensity(densityPreset(density).scale);
+  applyDensity(density);
 }
+
+const DENSITY_STYLE_ID = "bolle-density-preset";
 
 /** Component length tokens in the loaded token sheet, read from `:root`. */
 function componentTokens(): Record<string, string> {
   const found: Record<string, string> = {};
   for (const sheet of Array.from(document.styleSheets)) {
+    // The preset block writes `--md-comp-*` too and must not feed the scaling.
+    if ((sheet.ownerNode as Element | null)?.id === DENSITY_STYLE_ID) continue;
     let rules: CSSRuleList;
     try {
       rules = sheet.cssRules;
@@ -896,27 +900,49 @@ function scaleLengths(value: string, scale: number): string | null {
     .join(" ");
 }
 
-let densityKeys: string[] = [];
-
-/** Applies the density preset to every component length token on the root. */
-function applyDensity(scale: number, attempt = 0): void {
-  const root = document.documentElement;
-  for (const name of densityKeys) root.style.removeProperty(name);
-  densityKeys = [];
-  if (scale === 1) return;
-  const tokens = componentTokens();
-  if (Object.keys(tokens).length === 0) {
-    if (attempt < 3)
-      requestAnimationFrame(() => applyDensity(scale, attempt + 1));
-    return;
-  }
-  for (const [name, value] of Object.entries(tokens)) {
+/** Component length tokens scaled for a density, as a delta over `tokens.css`. */
+export function densityOverrides(density: Density): Record<string, string> {
+  const scale = densityPreset(density).scale;
+  const overrides: Record<string, string> = {};
+  if (scale === 1) return overrides;
+  for (const [name, value] of Object.entries(componentTokens())) {
     if (EXCLUDED_TOKEN.test(name) || !SPACING_TOKEN.test(name)) continue;
     const scaled = scaleLengths(value, scale);
-    if (!scaled) continue;
-    root.style.setProperty(name, scaled);
-    densityKeys.push(name);
+    if (scaled && scaled !== value) overrides[name] = scaled;
   }
+  return overrides;
+}
+
+/** Override block of a density preset; the exported stylesheet appends the compact one. */
+export function densityCss(density: Density): string {
+  const overrides = densityOverrides(density);
+  const names = Object.keys(overrides);
+  if (names.length === 0) return "";
+  return [
+    `/* ${density}: three quarters of the base component spacing; opt in with data-density="${density}" */`,
+    `:root[data-density="${density}"] {`,
+    ...names.map((name) => `  ${name}: ${overrides[name]};`),
+    "}",
+  ].join("\n");
+}
+
+/** Applies a density preset by toggling `data-density` and writing its override block. */
+function applyDensity(density: Density, attempt = 0): void {
+  const block = densityCss(density);
+  if (density !== "airy" && !block && attempt < 3) {
+    requestAnimationFrame(() => applyDensity(density, attempt + 1));
+    return;
+  }
+  document.documentElement.dataset.density = density;
+  let style = document.getElementById(
+    DENSITY_STYLE_ID,
+  ) as HTMLStyleElement | null;
+  if (!style) {
+    style = document.createElement("style");
+    style.id = DENSITY_STYLE_ID;
+    document.head.append(style);
+  }
+  style.textContent = block;
 }
 
 export function tokensCss(set: TokenSet): string {
@@ -937,13 +963,15 @@ export function tokensCss(set: TokenSet): string {
   return lines.join("\n");
 }
 
-/** File format of an exported theme: both colour schemes plus shared shape and type. */
+/** File format of an exported theme: both colour schemes plus shared shape, type and density. */
 export interface ThemeFile {
   format: "bolle-tokens";
-  version: 1;
+  version: 2;
   density: Density;
   light: TokenSet;
   dark: TokenSet;
+  /** Compact `--md-comp-*` lengths, relative to the base values in `tokens.css`. */
+  dimensions: Record<string, string>;
 }
 
 export function exportThemeJson(
@@ -952,15 +980,16 @@ export function exportThemeJson(
 ): string {
   const file: ThemeFile = {
     format: "bolle-tokens",
-    version: 1,
+    version: 2,
     density,
     light: palettes.light,
     dark: palettes.dark,
+    dimensions: densityOverrides("compact"),
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 }
 
-/** Light values on :root, dark colours under [data-theme="dark"]; ready for a stylesheet. */
+/** Light values on :root, dark colours under [data-theme], compact lengths under [data-density]; ready for a stylesheet. */
 export function exportThemeCss(palettes: Record<ThemeName, TokenSet>): string {
   const dark = [
     ':root[data-theme="dark"] {',
@@ -969,7 +998,12 @@ export function exportThemeCss(palettes: Record<ThemeName, TokenSet>): string {
     ),
     "}",
   ];
-  return `${tokensCss(palettes.light)}\n\n${dark.join("\n")}\n`;
+  const sections = [
+    tokensCss(palettes.light),
+    dark.join("\n"),
+    densityCss("compact"),
+  ];
+  return `${sections.filter(Boolean).join("\n\n")}\n`;
 }
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;

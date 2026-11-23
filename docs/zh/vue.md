@@ -596,6 +596,47 @@ const messaggio = ref<HTMLElement | null>(null);
 </template>
 ```
 
+### bolle-tour
+
+属性: `index`, `locale`, `open`, `padding`, `placement` · JavaScript 属性: `steps` · 插槽: - · 事件: `finish`, `step-change`
+
+**从 JSON 配置生成引导** — 步骤不写在代码里：parseTourConfig 读取带版本的 JSON，shouldStartTour 将其与应用已展示的版本比较。组件不访问网络、不保存状态，由应用决定何时开始，并在 finish 时保存版本。
+
+```vue
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import {
+  parseTourConfig,
+  shouldStartTour,
+  type TourStep,
+} from "@bolle/web-components";
+
+const tour = ref<{ start: (index?: number) => void }>();
+const steps = ref<TourStep[]>([]);
+let version = "";
+
+const start = () => tour.value?.start();
+
+onMounted(async () => {
+  const config = parseTourConfig(await (await fetch("/tour.json")).text());
+  steps.value = config.steps;
+  version = config.version;
+  if (shouldStartTour(config, localStorage.getItem("bolle-tour"))) start();
+});
+
+const onFinish = (event: CustomEvent<{ completed: boolean }>) => {
+  if (event.detail.completed) localStorage.setItem("bolle-tour", version);
+};
+</script>
+
+<template>
+  <bolle-button variant="tonal" @click="start">Rivedi il tour</bolle-button>
+  <bolle-tour ref="tour" :steps="steps" @finish="onFinish"></bolle-tour>
+</template>
+```
+
+更多配方: 没有目标的步骤与结束操作 · 筛选任务 · 表格 · 就这么简单 · 控制引导并读取步骤
+
 ### bolle-tooltip
 
 属性: `label`, `persistent`, `supporting-text`, `tail`, `variant` · JavaScript 属性: `labels` · 插槽: `actions`, `content`, `default`, `dismiss`, `label`, `supporting`, `trigger` · 事件: -

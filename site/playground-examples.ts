@@ -33,7 +33,78 @@ const TASKS = `const tasks = [
 ];`;
 const importLine = `import "@bolle/web-components";`;
 
+const TOUR_PAGE = `<div class="tour-page">
+  <div class="tour-target" id="tour-filters">
+    <bolle-search label="Cerca commesse" placeholder="Numero o cliente"></bolle-search>
+  </div>
+  <div class="tour-target" id="tour-chips">
+    <bolle-chip label="In corso" variant="filter" selected></bolle-chip>
+    <bolle-chip label="Archiviate"></bolle-chip>
+  </div>
+</div>
+<bolle-button id="tour-start" variant="tonal">Rivedi il tour</bolle-button>
+<bolle-tour id="tour" placement="auto"></bolle-tour>`;
+
 export const PLAYGROUND_EXAMPLES: Record<string, ExamplePanels> = {
+  "Tour dal JSON di configurazione": {
+    title: "bolle-tour · tour dal JSON di configurazione",
+    html: TOUR_PAGE,
+    css: `.tour-page {
+  display: grid;
+  gap: 12px;
+  margin-block-end: 12px;
+}
+
+.tour-target {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+}`,
+    js: `${importLine}
+import { parseTourConfig, shouldStartTour } from "@bolle/web-components";
+
+// The configuration the application would fetch from /tour.json.
+const config = parseTourConfig(
+  JSON.stringify({
+    version: "2",
+    steps: [
+      {
+        target: "#tour-filters",
+        title: "Cerca una commessa",
+        body: "Il numero o il nome del cliente bastano: la ricerca parte da qui.",
+      },
+      {
+        target: "#tour-chips",
+        title: "Filtra per stato",
+        body: "In corso e archiviate sono due filtri che si sommano.",
+        placement: "top",
+      },
+      {
+        title: "Ci siamo",
+        body: "Questo passo non ha un bersaglio: la scheda resta al centro.",
+        actionLabel: "Apri il cruscotto",
+      },
+    ],
+  }),
+);
+
+const tour = document.querySelector("#tour");
+tour.steps = config.steps;
+tour.placement = config.placement ?? "auto";
+
+// The application owns the memory: it keeps the version it already showed.
+if (shouldStartTour(config, localStorage.getItem("bolle-tour"))) tour.start();
+
+document.querySelector("#tour-start").addEventListener("click", () => tour.start());
+
+tour.addEventListener("finish", (event) => {
+  if (event.detail.completed)
+    localStorage.setItem("bolle-tour", config.version);
+});`,
+  },
   "Tabella minima": {
     title: "bolle-data-table · tabella minima",
     html: TABLE,

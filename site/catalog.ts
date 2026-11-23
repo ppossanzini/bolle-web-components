@@ -6,6 +6,7 @@ import type {
   MenuEntry,
   SidebarItem,
 } from "../src/index.js";
+import { parseTourConfig } from "../src/index.js";
 import type { AttrSpec, SnippetSpec } from "./codegen.js";
 import "./data-table-demo.js";
 import "./app-shell-demo.js";
@@ -17,6 +18,7 @@ import { l, libraryLocale, m } from "./i18n.js";
 
 export type Group =
   | "App bars"
+  | "Tours"
   | "Avatars"
   | "Badges"
   | "Breadcrumb"
@@ -141,6 +143,35 @@ const lt = (
   fallback: string,
   rows = 3,
 ): Control => ({ kind: "longtext", prop, label, default: fallback, rows });
+
+/** Steps shown by the tour page, valid against the demo markup below. */
+const TOUR_DEMO_JSON = JSON.stringify(
+  {
+    version: "1",
+    steps: [
+      {
+        target: "#tour-filters",
+        title: m("Cerca una commessa"),
+        body: m(
+          "Il numero o il nome del cliente bastano: la ricerca parte da qui.",
+        ),
+      },
+      {
+        target: "#tour-filters-chips",
+        title: m("Filtra per stato"),
+        body: m("In corso e archiviate sono due filtri che si sommano."),
+        placement: "top",
+      },
+      {
+        title: m("Ci siamo"),
+        body: m("Questo passo non ha un bersaglio: la scheda resta al centro."),
+        actionLabel: m("Apri il cruscotto"),
+      },
+    ],
+  },
+  null,
+  2,
+);
 
 const s = (state: State, prop: string) => String(state[prop] ?? "");
 const b = (state: State, prop: string) => Boolean(state[prop]);
@@ -1154,6 +1185,95 @@ export const entries: Entry[] = [
         a("closeLabel", s(state, "closeLabel")),
         a("duration", n(state, "duration")),
         a("tail", s(state, "tail") === "auto" ? undefined : s(state, "tail")),
+      ],
+    }),
+  },
+  {
+    tag: "bolle-tour",
+    title: "Tour",
+    group: "Tours",
+    section: "Schiuma",
+    summary: m(
+      "Tour di primo accesso: oscura la pagina, lascia in luce un elemento e accompagna il lettore nei passi descritti da una configurazione JSON con versione.",
+    ),
+    note: m(
+      "I passi sono dati, non codice: parseTourConfig legge il JSON e shouldStartTour confronta la versione con quella già vista. Il componente non fa rete e non ricorda nulla: si apre quando l'applicazione chiama start(), e dice con finish se il lettore ha visto tutto.",
+    ),
+    controls: [
+      en(
+        "placement",
+        m("Posizione"),
+        ["auto", "top", "bottom", "start", "end"],
+        "auto",
+      ),
+      rg("padding", m("Margine dal bersaglio"), 0, 24, 8),
+      lt("json", m("Configurazione JSON"), TOUR_DEMO_JSON, 10),
+    ],
+    variants: false,
+    render: (state) => {
+      let steps = [];
+      let error = "";
+      try {
+        steps = parseTourConfig(s(state, "json")).steps;
+      } catch (caught) {
+        error = caught instanceof Error ? caught.message : String(caught);
+      }
+      return html`<div class="tour-demo">
+        <div class="tour-demo-bar">
+          <bolle-button
+            ?disabled=${Boolean(error)}
+            @click=${() =>
+              (
+                document.getElementById("pv-tour") as {
+                  start?: () => void;
+                } | null
+              )?.start?.()}
+            >${l("Avvia il tour")}</bolle-button
+          >
+          ${
+            error
+              ? html`<p class="tour-demo-error" role="alert">${error}</p>`
+              : html`<span class="hint"
+                  >${l("{count} passi. Modifica il JSON e riavvia il tour.", {
+                    count: steps.length,
+                  })}</span
+                >`
+          }
+        </div>
+        <div class="tour-demo-target" id="tour-filters">
+          <bolle-search
+            label=${l("Cerca commesse")}
+            placeholder=${l("Numero o cliente")}
+          ></bolle-search>
+        </div>
+        <div class="tour-demo-target" id="tour-filters-chips">
+          <bolle-chip
+            label=${l("In corso")}
+            variant="filter"
+            selected
+          ></bolle-chip>
+          <bolle-chip label=${l("Archiviate")}></bolle-chip>
+        </div>
+        <bolle-tour
+          id="pv-tour"
+          placement=${s(state, "placement")}
+          .padding=${n(state, "padding")}
+          .steps=${steps}
+        ></bolle-tour>
+      </div>`;
+    },
+    code: (state) => ({
+      attrs: [
+        a(".steps", "steps"),
+        a(
+          "placement",
+          s(state, "placement") === "auto" ? undefined : s(state, "placement"),
+        ),
+        a("padding", n(state, "padding")),
+      ],
+      vuePreamble: [`const steps = ${code(JSON.parse(TOUR_DEMO_JSON).steps)};`],
+      reactPreamble: [
+        `const steps = ${code(JSON.parse(TOUR_DEMO_JSON).steps)};`,
       ],
     }),
   },
@@ -3042,6 +3162,7 @@ export const groups: Group[] = [
   "Text fields",
   "Toolbars",
   "Tooltips",
+  "Tours",
 ];
 
 export const entryByTag = (tag: string) =>

@@ -986,3 +986,47 @@ export function sidebarLabels(
     ...overrides,
   };
 }
+
+/** Built-in texts of the tour. `{current}` and `{total}` are filled at runtime. */
+export const tourMessages = {
+  en: {
+    counter: "Step {current} of {total}",
+    back: "Back",
+    next: "Next",
+    done: "Done",
+    skip: "Skip the tour",
+  },
+  it: {
+    counter: "Passo {current} di {total}",
+    back: "Indietro",
+    next: "Avanti",
+    done: "Fine",
+    skip: "Salta il tour",
+  },
+  fr: {
+    counter: "Étape {current} sur {total}",
+    back: "Retour",
+    next: "Suivant",
+    done: "Terminer",
+    skip: "Ignorer la visite",
+  },
+  zh: {
+    counter: "第 {current} 步，共 {total} 步",
+    back: "上一步",
+    next: "下一步",
+    done: "完成",
+    skip: "跳过引导",
+  },
+} as const;
+
+export type TourLabels = { [K in keyof typeof tourMessages.en]: string };
+
+export function tourLabels(
+  locale: string,
+  overrides: Partial<TourLabels> = {},
+): TourLabels {
+  return {
+    ...tourMessages[supportedLocale(locale || document.documentElement.lang)],
+    ...overrides,
+  };
+}

@@ -403,8 +403,8 @@ const messages: Record<string, string> = {
   "Icone Tabler": "Icônes Tabler",
   "Il CSS non contiene token Bolle riconosciuti.":
     "Le CSS ne contient aucun token Bolle reconnu.",
-  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}.":
-    "Le JSON contient les thèmes clair et sombre, les formes, la typographie et la densité, et se réimporte ici. Le CSS est prêt pour votre feuille de style : thème clair sur {light}, couleurs sombres sur {dark}.",
+  "Il JSON contiene tema chiaro e scuro, forme, tipografia e densità, compresi i token delle dimensioni ridotti per la densità compatta, e si reimporta qui. Il CSS è pronto per il tuo foglio di stile: tema chiaro su {light}, colori scuri su {dark}, dimensioni compatte su {density}.":
+    "Le JSON contient les thèmes clair et sombre, les formes, la typographie et la densité, y compris les tokens de dimension réduits pour la densité compacte, et se réimporte ici. Le CSS est prêt pour votre feuille de style : thème clair sur {light}, couleurs sombres sur {dark}, dimensions compactes sur {density}.",
   "Il JSON non è un'esportazione dei token Bolle.":
     "Le JSON n'est pas un export des tokens Bolle.",
   "Il colore dinamico di Material 3 genera i ruoli tonali; Bolle ne ricava anche la pellicola. Scegli un seed e guarda cosa cambia: il tema vale per tutto il sito.":
@@ -822,8 +822,8 @@ const messages: Record<string, string> = {
   "sì": "oui",
   "{changed} di {total} ruoli cambiati nell'ultima operazione: a sinistra il colore precedente.":
     "{changed} rôles sur {total} modifiés lors de la dernière opération : à gauche, la couleur précédente.",
-  "{compact} porta a tre quarti spaziature e dimensioni dei componenti.":
-    "{compact} réduit aux trois quarts les espacements et les dimensions des composants.",
+  "{compact} porta a tre quarti spaziature e dimensioni dei componenti; i token ridotti escono con l'esportazione e si attivano con {attr}.":
+    "{compact} réduit aux trois quarts les espacements et les dimensions des composants ; les tokens réduits font partie de l'export et s'activent avec {attr}.",
   "{name} · ispirata a Material 3, non affiliata a Google.":
     "{name} · inspirée de Material 3, non affiliée à Google.",
   "{n} componenti": "{n} composants",
@@ -1671,6 +1671,56 @@ const messages: Record<string, string> = {
   "Azione critica": "Action critique",
   "In attesa": "En attente",
   "Approvata": "Approuvée",
+  "Apri il cruscotto": "Ouvrir le tableau de bord",
+  "Archiviate": "Archivées",
+  "Avvia il tour": "Lancer la visite",
+  "Cerca commesse": "Rechercher des commandes",
+  "Cerca una commessa": "Trouver une commande",
+  "Ci siamo": "C’est terminé",
+  "Configurazione JSON": "Configuration JSON",
+  "Filtra per stato": "Filtrer par état",
+  "I passi sono dati, non codice: parseTourConfig legge il JSON e shouldStartTour confronta la versione con quella già vista. Il componente non fa rete e non ricorda nulla: si apre quando l'applicazione chiama start(), e dice con finish se il lettore ha visto tutto.":
+    "Les étapes sont des données, pas du code : parseTourConfig lit le JSON et shouldStartTour compare la version avec celle déjà vue. Le composant ne fait aucun appel réseau et ne mémorise rien : il s’ouvre quand l’application appelle start() et indique avec finish si le lecteur a tout vu.",
+  "Il numero o il nome del cliente bastano: la ricerca parte da qui.":
+    "Le numéro de la commande ou le nom du client suffit : la recherche part d’ici.",
+  "Il tour non ha slot: il contenuto dei passi è un array, e l'applicazione lo ricava dal JSON con parseTourConfig. Espone i CSS part di ogni pezzo della scheda, dalla layer al singolo testo, per adattarlo alla propria pelle.":
+    "La visite n’a pas de slots : le contenu des étapes est un tableau et l’application le construit à partir du JSON avec parseTourConfig. Elle expose les CSS part de chaque élément de la carte, de la couche au simple texte, pour l’adapter à sa propre peau.",
+  "In corso e archiviate sono due filtri che si sommano.":
+    "En cours et archivées sont deux filtres qui s’additionnent.",
+  "Livello fisso che blocca la pagina e contiene il riflettore e la scheda.":
+    "Couche fixe qui bloque la page et contient le projecteur et la carte.",
+  "Margine dal bersaglio": "Marge par rapport à la cible",
+  "Numero o cliente": "Numéro ou client",
+  "Posizione": "Position",
+  "Questo passo non ha un bersaglio: la scheda resta al centro.":
+    "Cette étape n’a pas de cible : la carte reste au centre.",
+  "Riga con il numero del passo e il totale.":
+    "Ligne avec le numéro de l’étape et le total.",
+  "Riga dei comandi: salta, indietro, avanti o fine.":
+    "Ligne de commandes : ignorer, retour, suivant ou terminer.",
+  "Riquadro che tiene in luce l'elemento del passo e scurisce il resto.":
+    "Cadre qui garde l’élément de l’étape en lumière et assombrit le reste.",
+  "Scheda del passo, ancorata al bersaglio o centrata.":
+    "Carte de l’étape, ancrée à la cible ou centrée.",
+  "Testo del passo.": "Texte de l’étape.",
+  "Titolo del passo, usato anche come nome accessibile della scheda.":
+    "Titre de l’étape, utilisé aussi comme nom accessible de la carte.",
+  "Tour di primo accesso: oscura la pagina, lascia in luce un elemento e accompagna il lettore nei passi descritti da una configurazione JSON con versione.":
+    "Visite de première connexion : assombrit la page, laisse un élément en lumière et guide le lecteur dans les étapes décrites par une configuration JSON versionnée.",
+  "{count} passi. Modifica il JSON e riavvia il tour.":
+    "{count} étapes. Modifiez le JSON et relancez la visite.",
+  "Filtra le commesse": "Filtrer les commandes",
+  "La tabella": "Le tableau",
+  "Pilotare il tour e leggere i passi": "Piloter la visite et lire les étapes",
+  "Tour dal JSON di configurazione": "Visite depuis la configuration JSON",
+  "Un passo senza bersaglio e l'azione finale":
+    "Une étape sans cible et l’action finale",
+  "I passi non stanno nel codice: parseTourConfig legge il JSON con la versione e shouldStartTour la confronta con quella che l'applicazione ha già mostrato. Il componente non fa rete e non ricorda nulla, quindi è l'applicazione a decidere quando partire e a salvare la versione al finish.":
+    "Les étapes ne sont pas dans le code : parseTourConfig lit le JSON avec sa version et shouldStartTour la compare à celle déjà montrée par l’application. Le composant ne fait aucun appel réseau et ne mémorise rien : c’est l’application qui décide du démarrage et enregistre la version au finish.",
+  "Un passo senza target non ha un elemento da mettere in luce: il riflettore copre tutta la pagina e la scheda resta al centro. actionLabel cambia il testo del bottone dell'ultimo passo, mentre placement decide dove si appoggia la scheda rispetto al bersaglio, con auto che sceglie il primo lato che ci sta.":
+    "Une étape sans cible n’a aucun élément à mettre en lumière : le projecteur couvre toute la page et la carte reste au centre. actionLabel change le libellé du dernier bouton, tandis que placement décide du côté de la carte par rapport à la cible, auto choisissant le premier côté qui tient.",
+  "start accetta l'indice da cui partire, next e back muovono il passo e finish chiude dichiarando se il lettore è arrivato in fondo. step-change porta indice, passo e totale, così l'applicazione può annotare dove si è fermato, e refresh rilegge il bersaglio dopo un cambio di pagina.":
+    "start accepte l’index de départ, next et back déplacent l’étape et finish ferme en déclarant si le lecteur est allé au bout. step-change porte l’index, l’étape et le total, pour que l’application note où le lecteur s’est arrêté, et refresh relit la cible après un changement de page.",
 };
 
 export default messages;

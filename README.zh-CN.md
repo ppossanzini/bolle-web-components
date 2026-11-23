@@ -218,8 +218,11 @@ primary 完整 HCT 生成配色方案，支持标准/中等/高对比度；圆�
 基础文字大小。预设会同时重新生成浅色和深色调色板；
 该选择器在 token 页面和组件
 配置抽屉顶部都可用。浅色和深色主题的值分别保存，
-作用于整个站点，并可导出为 CSS `:root` 代码片段。示例
-图标来自 Tabler Icons。
+作用于整个站点，并可导出为 CSS `:root` 代码片段。紧凑密度会将所有
+`--md-comp-*` 长度令牌缩小到四分之三；导出文件将这些值写入
+`:root[data-density="compact"]` 块，JSON 则把它们列在 `dimensions` 下。
+应用在根元素上设置 `data-density="compact"`，或把这些声明复制到自己的
+`:root`，即可复现紧凑界面。示例图标来自 Tabler Icons。
 
 每个组件页面还会显示该组件使用的 token，检测方式是
 查看其 shadow DOM 在当前 attribute 组合下实际匹配的规则。

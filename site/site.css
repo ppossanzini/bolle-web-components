@@ -2635,6 +2635,40 @@ docs-select bolle-button {
   block-size: 14px;
 }
 
+/* Tour page: a small page the tour can point at. */
+.tour-demo {
+  display: grid;
+  gap: 12px;
+  inline-size: 100%;
+  max-inline-size: 520px;
+}
+
+.tour-demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.tour-demo-error {
+  margin: 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-error);
+}
+
+.tour-demo-target {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+}
+
+.tour-demo-target bolle-search {
+  flex: 1 1 220px;
+}
+
 /* States example: the semantic roles in use, one block per meaning. */
 .token-status {
   display: grid;

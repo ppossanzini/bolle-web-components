@@ -2998,7 +2998,7 @@ export function Navigation({ items }) {
     {
       title: "Contenuto di una voce",
       description:
-        "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. Le regole CSS del markup si passano in contentStyles.",
+        "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. item riceve anche active, current ed expanded, quindi la riga attiva si veste senza chiudere lo stato nell'handler. Le regole CSS del markup si passano in contentStyles.",
       code: {
         html: `<bolle-sidebar id="nav" label="Navigazione" style="block-size: 520px"></bolle-sidebar>
 

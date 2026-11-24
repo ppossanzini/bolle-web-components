@@ -165,6 +165,23 @@ export const sidebarStyles = css`
     background: var(--md-sys-color-outline-variant);
     pointer-events: none;
   }
+  /* Opt-in guide line under every group, aligned with the parent icon column. */
+  :host([guide]) .tree > li > .branch {
+    position: relative;
+  }
+  :host([guide]) .tree > li > .branch::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset-block: 0;
+    inset-inline-start: var(
+      --md-comp-sidebar-guide-inset,
+      calc(16px + var(--md-sys-icon-size) / 2)
+    );
+    inline-size: 1px;
+    background: var(--md-sys-color-outline-variant);
+    pointer-events: none;
+  }
   .row:hover,
   .rail-item:hover .indicator {
     background-image:

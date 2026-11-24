@@ -1431,7 +1431,7 @@ const suggerimenti = [
 
 ### bolle-sidebar
 
-Attributi: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · Proprietà JavaScript: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slot: `empty`, `filter`, `footer`, `header` · Eventi: `collapse`, `expand`, `navigate`, `resize`
+Attributi: `collapsed`, `collapsible`, `context`, `current`, `guide`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · Proprietà JavaScript: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slot: `empty`, `filter`, `footer`, `header` · Eventi: `collapse`, `expand`, `navigate`, `resize`
 
 **Albero di navigazione** — items dichiara le voci e i loro figli: il componente costruisce l'albero fino a tre livelli, apre il ramo della voce scelta e riporta il percorso con navigate. La voce corrente si imposta con current, il percorso delle voci separate da barra.
 

@@ -2787,7 +2787,7 @@ export const entries: Entry[] = [
       "Navigazione di un'applicazione gestionale: albero fino a tre livelli, filtro, contatori, rail compatta e larghezza regolabile.",
     ),
     note: m(
-      "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto.",
+      "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto. `collapsible` mostra o nasconde il comando che comprime la barra; `guide` disegna una linea guida sotto ogni gruppo. Le parti `item-current`, `item-active`, `item-group` e `level-1`, `level-2`, `level-3` vestono una riga per stato e per livello.",
     ),
     controls: [
       en("variant", m("Variante"), ["edge", "card"], "edge"),
@@ -2798,6 +2798,8 @@ export const entries: Entry[] = [
         "field",
       ),
       fl("collapsed", m("Compressa"), false),
+      fl("collapsible", m("Comprimibile"), true),
+      fl("guide", m("Linea guida"), false),
       rg("width", m("Larghezza"), 220, 480, 300, 4),
       tx("label", m("Etichetta"), m("Navigazione principale")),
       tx("header", m("Intestazione"), "Cantieri Rossi"),
@@ -2807,6 +2809,8 @@ export const entries: Entry[] = [
         .variant=${s(state, "variant")}
         .search=${s(state, "search")}
         ?collapsed=${b(state, "collapsed")}
+        ?collapsible=${b(state, "collapsible")}
+        ?guide=${b(state, "guide")}
         .width=${n(state, "width")}
         .label=${s(state, "label")}
         .items=${sidebarItems()}
@@ -2819,6 +2823,8 @@ export const entries: Entry[] = [
         a("variant", s(state, "variant")),
         a("search", s(state, "search")),
         a("collapsed", b(state, "collapsed")),
+        a("collapsible", b(state, "collapsible")),
+        a("guide", b(state, "guide")),
         a("width", n(state, "width")),
         a("label", s(state, "label")),
         { name: "items", raw: "items" },

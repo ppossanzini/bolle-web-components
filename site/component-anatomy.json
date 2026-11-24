@@ -3711,8 +3711,11 @@
       "footer",
       "header",
       "item",
+      "item-active",
       "item-chevron",
       "item-count",
+      "item-current",
+      "item-group",
       "item-icon",
       "item-label",
       "rail",
@@ -3728,6 +3731,11 @@
       {
         "name": "collapsed",
         "attribute": "collapsed",
+        "type": "Boolean"
+      },
+      {
+        "name": "collapsible",
+        "attribute": "collapsible",
         "type": "Boolean"
       },
       {
@@ -3759,6 +3767,11 @@
         "name": "filter",
         "attribute": "",
         "type": "string"
+      },
+      {
+        "name": "guide",
+        "attribute": "guide",
+        "type": "Boolean"
       },
       {
         "name": "item",

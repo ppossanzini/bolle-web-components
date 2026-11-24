@@ -4,6 +4,9 @@ const messages: Record<string, string> = {
     "Vibrant n'est disponible qu'avec le menu vertical. Le menu s'ouvre avec show(anchor). tail=\"none\" dessine le menu sans queue, avec quatre angles égaux. Avec filterable le menu affiche un champ de filtre ; sous 480px le menu vertical devient une feuille par le bas.",
   "## Aggiornamento dei dati": "## Mise à jour des données",
   "Aggiornamento dei dati": "Mise à jour des données",
+  "Comprimibile": "Rétractable",
+  "Gruppo che contiene la pagina corrente, aperto o chiuso che sia.":
+    "Groupe qui contient la page courante, qu'il soit ouvert ou fermé.",
   "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti. La tabella riporta i casi misurati.":
     "Le composant redessine quand il reçoit une nouvelle propriété. Il n'observe pas les mutations internes au tableau : une valeur réaffectée avec la même référence ne produit aucune mise à jour. Le tableau liste les cas mesurés.",
   "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti.":
@@ -12,6 +15,13 @@ const messages: Record<string, string> = {
   "Vue, stato derivato": "Vue, état dérivé",
   "La proprietà è un array dell'applicazione: il componente lo legge e non lo modifica. Il riferimento resta l'unico segnale di cambiamento, tranne la chiamata esplicita a refresh().":
     "La propriété est un tableau de l'application : le composant le lit sans le modifier. La référence reste le seul signal de changement, sauf l'appel explicite à refresh().",
+  "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. item riceve anche active, current ed expanded, quindi la riga attiva si veste senza chiudere lo stato nell'handler. Le regole CSS del markup si passano in contentStyles.":
+    "L'entrée n'est pas composée avec un slot : le composant appelle item pour chaque entrée de l'arbre et railItem quand la barre est étroite, le contenu n'est donc déclaré qu'une fois. item reçoit aussi active, current et expanded, la ligne active s'habille donc sans capturer l'état dans le gestionnaire. Le CSS de ce balisage va dans contentStyles.",
+  "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto. `collapsible` mostra o nasconde il comando che comprime la barra; `guide` disegna una linea guida sotto ogni gruppo. Le parti `item-current`, `item-active`, `item-group` e `level-1`, `level-2`, `level-3` vestono una riga per stato e per livello.":
+    "Les libellés trop longs finissent par des points de suspension et affichent le texte entier dans une infobulle. Dans le rail, les groupes s'ouvrent dans un menu à côté. `collapsible` affiche ou masque la commande qui replie la barre ; `guide` trace une ligne de guide sous chaque groupe. Les parties `item-current`, `item-active`, `item-group` et `level-1`, `level-2`, `level-3` habillent une ligne par état et par niveau.",
+  "Linea guida": "Ligne de guide",
+  "Maniglia che regola la larghezza della barra.":
+    "Poignée qui règle la largeur de la barre.",
   "Non ridisegna: l'array è lo stesso oggetto e il confronto è per riferimento.":
     "Ne redessine pas : le tableau est le même objet et la comparaison se fait par référence.",
   "Operazione": "Opération",
@@ -21,6 +31,18 @@ const messages: Record<string, string> = {
   "Ridisegna con i dati mutati.": "Redessine avec les données mutées.",
   "Ridisegna: il riferimento è nuovo.":
     "Redessine : la référence est nouvelle.",
+  "Riga che corrisponde alla pagina corrente.":
+    "Ligne qui correspond à la page courante.",
+  "Riga della navigazione, uguale per voce semplice e gruppo; porta anche il livello e lo stato con le parti qui sotto.":
+    "Ligne de navigation, identique pour une entrée simple et pour un groupe ; elle porte aussi le niveau et l'état par les parties ci-dessous.",
+  "Riga di primo livello.": "Ligne de premier niveau.",
+  "Riga di secondo livello, dentro un gruppo.":
+    "Ligne de deuxième niveau, dans un groupe.",
+  "Riga di terzo livello, dentro un gruppo annidato.":
+    "Ligne de troisième niveau, dans un groupe imbriqué.",
+  "Riga di un gruppo che apre un sottoelenco.":
+    "Ligne d'un groupe qui ouvre une sous-liste.",
+  "Sottoelenco aperto da un gruppo.": "Sous-liste ouverte par un groupe.",
   "Vue assegna una nuova proprietà a ogni cambio, quindi ridisegna.":
     "Vue affecte une nouvelle propriété à chaque changement, donc il redessine.",
   "non ridisegna, il riferimento è lo stesso":
@@ -855,8 +877,6 @@ const messages: Record<string, string> = {
   "In attesa di avvio": "En attente de démarrage",
   "Intestazione": "En-tête",
   "Inventario": "Inventaire",
-  "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto.":
-    "Les libellés trop longs se terminent par des points de suspension et affichent le texte complet dans une infobulle. Dans le rail, les groupes s’ouvrent dans un menu à côté.",
   "Magazzino": "Entrepôt",
   "Manutenzione straordinaria": "Maintenance extraordinaire",
   "Manutenzioni": "Maintenances",
@@ -1551,8 +1571,6 @@ const messages: Record<string, string> = {
     "La select enveloppe un élément select natif : les options restent dans le balisage et la valeur arrive avec change. Le menu qui s'ouvre est celui du composant, avec la même forme que les champs de texte.",
   "La variante decide la forma: filled per l'azione principale, tonal per la secondaria, outlined e text per le altre. Lo slot predefinito porta il testo, icon l'icona iniziale e trailing-icon quella finale.":
     "La variante décide la forme : filled pour l'action principale, tonal pour la secondaire, outlined et text pour les autres. Le slot par défaut porte le texte, icon l'icône initiale et trailing-icon la finale.",
-  "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. Le regole CSS del markup si passano in contentStyles.":
-    "L'entrée ne se compose pas avec un slot : le composant appelle item pour chaque entrée de l'arbre et railItem quand la barre est réduite, ainsi le contenu se déclare une seule fois. Les règles CSS de ce balisage vont dans contentStyles.",
   "Lo slot icon sostituisce il simbolo predefinito e align sposta il blocco a sinistra, utile quando lo stato vuoto riempie una colonna di contenuto.":
     "Le slot icon remplace le symbole par défaut et align déplace le bloc à gauche, utile quand l'état vide remplit une colonne de contenu.",
   "Lo slot icon sostituisce le iniziali: serve per un account generico o per un'immagine non disponibile. Lo slot badge sovrappone una segnalazione all'angolo.":

@@ -1459,7 +1459,7 @@ export function Comune() {
 
 ### bolle-sidebar
 
-属性: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · JavaScript 属性: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · 插槽: `empty`, `filter`, `footer`, `header` · 事件: `collapse`, `expand`, `navigate`, `resize`
+属性: `collapsed`, `collapsible`, `context`, `current`, `guide`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · JavaScript 属性: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · 插槽: `empty`, `filter`, `footer`, `header` · 事件: `collapse`, `expand`, `navigate`, `resize`
 
 **导航树** — items 声明条目及其子项：组件构建最多三层的树，展开所选条目的分支，并通过 navigate 报告路径。当前条目用 current 设定，路径由条目以斜线分隔。
 

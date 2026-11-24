@@ -42,6 +42,19 @@ export interface SidebarResizeDetail {
   width: number;
 }
 
+/** State of one tree row, passed to the `item` renderer. */
+export interface SidebarRowContext {
+  path: string;
+  level: number;
+  group: boolean;
+  /** The row leads to the current page, as the row itself or as its ancestor. */
+  active: boolean;
+  /** The row is the current page. */
+  current: boolean;
+  /** A group is open; always false for a leaf. */
+  expanded: boolean;
+}
+
 export const SIDEBAR_MIN_WIDTH = 220;
 export const SIDEBAR_MAX_WIDTH = 480;
 const MAX_DEPTH = 3;
@@ -86,6 +99,8 @@ export class BolleSidebar extends BolleElement {
     current: {},
     expanded: { attribute: false },
     collapsed: { type: Boolean, reflect: true },
+    collapsible: { type: Boolean, reflect: true },
+    guide: { type: Boolean, reflect: true },
     width: { type: Number },
     variant: { reflect: true },
     search: { reflect: true },
@@ -108,6 +123,10 @@ export class BolleSidebar extends BolleElement {
   current = "";
   expanded: string[] = [];
   collapsed = false;
+  /** Shows the control that folds the sidebar into the rail. */
+  collapsible = true;
+  /** Draws a guide line under every group, in line with the parent icon. */
+  guide = false;
   width = 360;
   minWidth = SIDEBAR_MIN_WIDTH;
   maxWidth = SIDEBAR_MAX_WIDTH;
@@ -115,10 +134,7 @@ export class BolleSidebar extends BolleElement {
   /** `field` is the text field, `contained` and `divided` use `bolle-search`, `none` hides the filter. */
   search: "field" | "contained" | "divided" | "none" = "field";
   labels: Partial<SidebarLabels> = {};
-  item?: (
-    item: SidebarItem,
-    context: { path: string; level: number; group: boolean },
-  ) => unknown;
+  item?: (item: SidebarItem, context: SidebarRowContext) => unknown;
   railItem?: (
     item: SidebarItem,
     context: { active: boolean; current: boolean },
@@ -256,23 +272,30 @@ export class BolleSidebar extends BolleElement {
     return html`${label.slice(0, start)}<mark>${label.slice(start, end)}</mark>${label.slice(end)}`;
   }
 
-  private rowContent(item: SidebarItem, path: string, group: boolean) {
+  private rowContent(item: SidebarItem, context: SidebarRowContext) {
     if (this.item)
-      return this.item(item, { path, level: path.split("/").length, group });
+      return this.item(item, {
+        path: context.path,
+        level: context.level,
+        group: context.group,
+        active: context.active,
+        current: context.current,
+        expanded: context.expanded,
+      });
     return html`${
         item.icon
           ? html`<span class="icon" part="item-icon" aria-hidden="true"
               >${item.icon}</span
             >`
           : nothing
-      }<span class="label" part="item-label" data-path=${path}
+      }<span class="label" part="item-label" data-path=${context.path}
         >${this.highlight(item.label)}</span
       >${
         item.count
           ? html`<span class="count" part="item-count">${item.count}</span>`
           : nothing
       }${
-        group
+        context.group
           ? html`<span class="chevron" part="item-chevron" aria-hidden="true"
               >${chevronDownIcon()}</span
             >`
@@ -296,44 +319,63 @@ export class BolleSidebar extends BolleElement {
       .filter((item) => this.matchesQuery(item))
       .map((item) => {
         const path = [...parents, item.id].join("/");
-        if (!item.children)
+        const current = this.current === path;
+        const active = current || this.current.startsWith(`${path}/`);
+        const levelPart = `level-${level}`;
+        if (!item.children) {
+          const context: SidebarRowContext = {
+            path,
+            level,
+            group: false,
+            active,
+            current,
+            expanded: false,
+          };
           return html`<li>
             ${this.withTooltip(
               path,
               item.label,
               item.href
                 ? html`<a
-                    part="item"
+                    part=${"item " + levelPart + (current ? " item-current" : "")}
                     class="row level-${level}"
                     href=${item.href}
-                    aria-current=${this.current === path ? "page" : nothing}
+                    aria-current=${current ? "page" : nothing}
                     @click=${(event: Event) => this.navigate(event, path, item)}
-                    >${this.rowContent(item, path, false)}</a
+                    >${this.rowContent(item, context)}</a
                   >`
                 : html`<button
-                    part="item"
+                    part=${"item " + levelPart + (current ? " item-current" : "")}
                     class="row level-${level}"
-                    aria-current=${this.current === path ? "page" : nothing}
+                    aria-current=${current ? "page" : nothing}
                     @click=${(event: Event) => this.navigate(event, path, item)}
                   >
-                    ${this.rowContent(item, path, false)}
+                    ${this.rowContent(item, context)}
                   </button>`,
             )}
           </li>`;
+        }
         const open = filtering || this.expanded.includes(path);
-        const inCurrent = this.current.startsWith(`${path}/`);
+        const context: SidebarRowContext = {
+          path,
+          level,
+          group: true,
+          active,
+          current,
+          expanded: open,
+        };
         return html`<li>
           ${this.withTooltip(
             path,
             item.label,
             html`<button
-              part="item"
-              class="row group level-${level} ${inCurrent && !open ? "in-current" : ""}"
+              part=${"item " + levelPart + " item-group" + (active ? " item-active" : "")}
+              class="row group level-${level} ${active && !open ? "in-current" : ""}"
               aria-expanded=${String(open)}
               aria-controls=${`branch-${path}`}
               @click=${() => this.toggle(path)}
             >
-              ${this.rowContent(item, path, true)}
+              ${this.rowContent(item, context)}
             </button>`,
           )}
           <ul
@@ -568,15 +610,23 @@ export class BolleSidebar extends BolleElement {
         aria-label=${this.label || nothing}
         style=${this.collapsed ? "" : `inline-size: ${width}px`}
       >
-        <header class="header" part="header">
-          ${this.collapsed ? nothing : html`<div class="brand" part="brand"><slot name="header"></slot></div>`}
-          <bolle-icon-button
-            variant="standard"
-            label=${this.collapsed ? this.text.expand : this.text.collapse}
-            @click=${() => this.setCollapsed(!this.collapsed)}
-            >${this.collapsed ? sidebarExpandIcon() : sidebarCollapseIcon()}</bolle-icon-button
-          >
-        </header>
+        ${
+          this.collapsed && !this.collapsible
+            ? nothing
+            : html`<header class="header" part="header">
+                ${this.collapsed ? nothing : html`<div class="brand" part="brand"><slot name="header"></slot></div>`}
+                ${
+                  this.collapsible
+                    ? html`<bolle-icon-button
+                        variant="standard"
+                        label=${this.collapsed ? this.text.expand : this.text.collapse}
+                        @click=${() => this.setCollapsed(!this.collapsed)}
+                        >${this.collapsed ? sidebarExpandIcon() : sidebarCollapseIcon()}</bolle-icon-button
+                      >`
+                    : nothing
+                }
+              </header>`
+        }
         <div class="body" part="body">
           ${this.collapsed ? this.renderRail() : this.renderTreePanel()}
         </div>

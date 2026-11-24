@@ -1039,6 +1039,46 @@ const ANATOMY_GUIDES: Record<string, AnatomyGuide> = {
   "bolle-sidebar": {
     intro:
       "Il contenuto della navigazione non passa dagli slot: il componente legge items, groups e actions e chiama item e railItem per il contenuto di una voce. Gli slot coprono l'intestazione, il filtro, il piè di pagina e lo stato vuoto.",
+    parts: [
+      {
+        name: "item",
+        purpose:
+          "Riga della navigazione, uguale per voce semplice e gruppo; porta anche il livello e lo stato con le parti qui sotto.",
+      },
+      {
+        name: "item-current",
+        purpose: "Riga che corrisponde alla pagina corrente.",
+      },
+      {
+        name: "item-group",
+        purpose: "Riga di un gruppo che apre un sottoelenco.",
+      },
+      {
+        name: "item-active",
+        purpose:
+          "Gruppo che contiene la pagina corrente, aperto o chiuso che sia.",
+      },
+      {
+        name: "level-1",
+        purpose: "Riga di primo livello.",
+      },
+      {
+        name: "level-2",
+        purpose: "Riga di secondo livello, dentro un gruppo.",
+      },
+      {
+        name: "level-3",
+        purpose: "Riga di terzo livello, dentro un gruppo annidato.",
+      },
+      {
+        name: "branch",
+        purpose: "Sottoelenco aperto da un gruppo.",
+      },
+      {
+        name: "resize-handle",
+        purpose: "Maniglia che regola la larghezza della barra.",
+      },
+    ],
     example: `<bolle-sidebar label="Navigazione" collapsed-label="Espandi">
   <bolle-search slot="filter" label="Filtra"></bolle-search>
   <span slot="footer">Versione 0.3.3</span>

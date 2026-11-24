@@ -4,6 +4,9 @@ const messages: Record<string, string> = {
     'Vibrant 仅适用于垂直菜单。菜单通过 show(anchor) 打开。tail="none" 绘制无尾角的菜单，四角相同。启用 filterable 后菜单显示筛选输入框；宽度低于 480px 时垂直菜单变为底部面板。',
   "## Aggiornamento dei dati": "## 数据更新",
   "Aggiornamento dei dati": "数据更新",
+  "Comprimibile": "可折叠",
+  "Gruppo che contiene la pagina corrente, aperto o chiuso che sia.":
+    "包含当前页面的分组，无论打开还是关闭。",
   "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti. La tabella riporta i casi misurati.":
     "组件在收到新属性时重绘。它不观察数组内部的变更：用相同引用重新赋值不会产生更新。表格列出实测情况。",
   "Il componente ridisegna quando riceve una nuova proprietà. Non osserva le mutazioni interne all'array: un valore riassegnato con lo stesso riferimento non produce aggiornamenti.":
@@ -12,6 +15,12 @@ const messages: Record<string, string> = {
   "Vue, stato derivato": "Vue，派生状态",
   "La proprietà è un array dell'applicazione: il componente lo legge e non lo modifica. Il riferimento resta l'unico segnale di cambiamento, tranne la chiamata esplicita a refresh().":
     "该属性是应用拥有的数组：组件只读取，不修改。除显式调用 refresh() 外，引用是唯一的变化信号。",
+  "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. item riceve anche active, current ed expanded, quindi la riga attiva si veste senza chiudere lo stato nell'handler. Le regole CSS del markup si passano in contentStyles.":
+    "条目不使用插槽组合：组件为树中的每个条目调用 item，栏变窄时调用 railItem，因此内容只声明一次。item 还会收到 active、current 和 expanded，活动行无需在处理函数中捕获状态即可装扮。这些标记的 CSS 放在 contentStyles 中。",
+  "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto. `collapsible` mostra o nasconde il comando che comprime la barra; `guide` disegna una linea guida sotto ogni gruppo. Le parti `item-current`, `item-active`, `item-group` e `level-1`, `level-2`, `level-3` vestono una riga per stato e per livello.":
+    "过长的标签以省略号结尾，并在工具提示中显示完整文本。在窄栏中，分组在旁边的菜单里打开。`collapsible` 显示或隐藏折叠该栏的命令；`guide` 在每个分组下方绘制一条参考线。部件 `item-current`、`item-active`、`item-group` 以及 `level-1`、`level-2`、`level-3` 按状态和层级装扮一行。",
+  "Linea guida": "参考线",
+  "Maniglia che regola la larghezza della barra.": "调整栏宽的手柄。",
   "Non ridisegna: l'array è lo stesso oggetto e il confronto è per riferimento.":
     "不重绘：数组是同一对象，比较基于引用。",
   "Operazione": "操作",
@@ -20,6 +29,15 @@ const messages: Record<string, string> = {
     "React 每次变化都赋新属性，因此会重绘。",
   "Ridisegna con i dati mutati.": "用修改后的数据重绘。",
   "Ridisegna: il riferimento è nuovo.": "重绘：引用是新的。",
+  "Riga che corrisponde alla pagina corrente.": "与当前页面对应的行。",
+  "Riga della navigazione, uguale per voce semplice e gruppo; porta anche il livello e lo stato con le parti qui sotto.":
+    "导航行，普通条目和分组相同；它还通过下面的部件带上层级和状态。",
+  "Riga di primo livello.": "第一级行。",
+  "Riga di secondo livello, dentro un gruppo.": "第二级行，位于分组内。",
+  "Riga di terzo livello, dentro un gruppo annidato.":
+    "第三级行，位于嵌套分组内。",
+  "Riga di un gruppo che apre un sottoelenco.": "打开子列表的分组行。",
+  "Sottoelenco aperto da un gruppo.": "由分组打开的子列表。",
   "Vue assegna una nuova proprietà a ogni cambio, quindi ridisegna.":
     "Vue 每次变化都赋新属性，因此会重绘。",
   "non ridisegna, il riferimento è lo stesso": "不重绘，引用相同",
@@ -827,8 +845,6 @@ const messages: Record<string, string> = {
   "In attesa di avvio": "待启动",
   "Intestazione": "页眉",
   "Inventario": "盘点",
-  "Le voci troppo lunghe finiscono con i puntini e mostrano il testo intero in un tooltip. Nella rail i gruppi si aprono in un menu accanto.":
-    "过长的标签以省略号结尾，并在 tooltip 中显示全文。在 rail 中，分组会在旁边的菜单里打开。",
   "Magazzino": "仓库",
   "Manutenzione straordinaria": "特殊维护",
   "Manutenzioni": "维护",
@@ -1485,8 +1501,6 @@ const messages: Record<string, string> = {
     "select 包装原生 select 元素：选项留在标记中，值通过 change 返回。展开的菜单由组件提供，与文本字段样式一致。",
   "La variante decide la forma: filled per l'azione principale, tonal per la secondaria, outlined e text per le altre. Lo slot predefinito porta il testo, icon l'icona iniziale e trailing-icon quella finale.":
     "变体决定形状：filled 用于主要操作，tonal 用于次要操作，outlined 与 text 用于其他。默认插槽提供文本，icon 提供起始图标，trailing-icon 提供末尾图标。",
-  "La voce non si compone con uno slot: il componente chiama item per ogni voce dell'albero e railItem quando la barra è ridotta, così il contenuto si dichiara una volta sola. Le regole CSS del markup si passano in contentStyles.":
-    "条目不通过插槽组合：组件为树中每个条目调用 item，栏变窄时调用 railItem，因此内容只需声明一次。这些标记的 CSS 放在 contentStyles 中。",
   "Lo slot icon sostituisce il simbolo predefinito e align sposta il blocco a sinistra, utile quando lo stato vuoto riempie una colonna di contenuto.":
     "icon 插槽替换默认符号，align 将区块左移，适合空状态填充一列内容的场景。",
   "Lo slot icon sostituisce le iniziali: serve per un account generico o per un'immagine non disponibile. Lo slot badge sovrappone una segnalazione all'angolo.":

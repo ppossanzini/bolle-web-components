@@ -128,6 +128,7 @@ export type {
   SidebarExpandDetail,
   SidebarCollapseDetail,
   SidebarResizeDetail,
+  SidebarRowContext,
 } from "./sidebar.js";
 export { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from "./sidebar.js";
 export type {

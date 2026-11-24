@@ -1498,7 +1498,7 @@ export function Comune() {
 
 ### bolle-sidebar
 
-Attributes: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · JavaScript properties: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slots: `empty`, `filter`, `footer`, `header` · Events: `collapse`, `expand`, `navigate`, `resize`
+Attributes: `collapsed`, `collapsible`, `context`, `current`, `guide`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · JavaScript properties: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slots: `empty`, `filter`, `footer`, `header` · Events: `collapse`, `expand`, `navigate`, `resize`
 
 **Navigation tree** — items declares the entries and their children: the component builds the tree up to three levels, opens the branch of the chosen entry and reports the path with navigate. The current entry is set with current, the path of the entries separated by a slash.
 

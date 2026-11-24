@@ -89,7 +89,7 @@ export const navigationStyles = css`
     gap: var(--md-comp-navigation-rail-collapsed-item-gap);
   }
   :host([rail][expanded]) .destinations {
-    gap: 0;
+    gap: var(--md-comp-navigation-rail-expanded-item-gap, 4px);
   }
   /* A 96px la label non ci sta: senza troncamento esce dal binario e invade il contenuto. */
   :host([rail]) .destination {

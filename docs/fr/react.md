@@ -1503,7 +1503,7 @@ export function Comune() {
 
 ### bolle-sidebar
 
-Attributs: `collapsed`, `context`, `current`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · Propriétés JavaScript: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slots: `empty`, `filter`, `footer`, `header` · Événements: `collapse`, `expand`, `navigate`, `resize`
+Attributs: `collapsed`, `collapsible`, `context`, `current`, `guide`, `label`, `max-width`, `min-width`, `search`, `variant`, `width` · Propriétés JavaScript: `contentStyles`, `empty`, `expanded`, `filter`, `item`, `items`, `labels`, `railItem` · Slots: `empty`, `filter`, `footer`, `header` · Événements: `collapse`, `expand`, `navigate`, `resize`
 
 **Arborescence de navigation** — items déclare les entrées et leurs enfants : le composant construit l'arbre jusqu'à trois niveaux, ouvre la branche de l'entrée choisie et rapporte le chemin avec navigate. L'entrée courante se règle avec current, le chemin des entrées séparées par une barre.
 

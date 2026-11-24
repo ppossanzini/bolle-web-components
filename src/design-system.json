@@ -19,6 +19,16 @@
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
     {
+      "date": "2026-11-24",
+      "classification": "fix",
+      "description": "Expanded navigation rail: the destinations are 4px apart, set by `--md-comp-navigation-rail-expanded-item-gap`, so two adjacent pills no longer touch. The Material 3 measurement for the expanded rail draws the items at a 56dp pitch with no gap; the token starts at 4px and an application that wants the strict pitch sets it to `0`. The collapsed rail keeps its 8px gap and 70dp pitch, which matches the same measurement figure."
+    },
+    {
+      "date": "2026-11-24",
+      "classification": "additive",
+      "description": "`bolle-sidebar` can now be re-skinned from the outside: every row exposes the parts `level-1`, `level-2` and `level-3` together with `item-current` for the page, `item-group` for a group and `item-active` for the group that holds the page, so an application styles the active row and each level with `::part()` instead of a custom `item` renderer. The `item` renderer receives `active`, `current` and `expanded` in its context, so it no longer closes over the current page and re-runs only when the tree re-renders. Two attributes close the gap with hand-built admin menus: `collapsible` (default on) hides the control that folds the sidebar into the rail, and `guide` draws a guide line under every group, positioned by `--md-comp-sidebar-guide-inset`. The parts, the new context and the two attributes are documented in the anatomy guide of the catalogue page."
+    },
+    {
       "date": "2026-11-20",
       "classification": "fix",
       "description": "Data table column header, options button: the button no longer paints a pale disc of its own on top of the hovered header, the sort target reserves 42px at the inline end for every alignment so the label and the sort mark stop before the button instead of under it, the button sits 10px from the cell edge inside the header, the shared corner glint is off the header sort target where it landed on the button as a stray arc, and small icon buttons (`size=\"xs\"`) no longer draw the film ring, which at 32px read as an artefact instead of a halo."

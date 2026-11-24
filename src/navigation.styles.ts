@@ -14,7 +14,7 @@ export const navigationStyles = css`
     display: flex;
     gap: var(--md-comp-action-gap);
     background: var(--md-sys-color-surface-container);
-    padding: var(--md-comp-action-gap);
+    padding: 0;
     overflow-x: auto;
   }
   nav {
@@ -65,14 +65,19 @@ export const navigationStyles = css`
     color: var(--md-sys-color-on-secondary-container);
     background: var(--md-sys-color-secondary-container);
   }
+  [aria-current="page"] .nav-label {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+  }
   :host([rail]) {
     background: var(--md-sys-color-surface);
   }
+  /* The item target area spans the full rail width, so the rail has no inline padding. */
   :host([rail]) nav {
     flex-direction: column;
     inline-size: var(--md-comp-navigation-rail-width);
     block-size: auto;
-    padding: var(--md-comp-navigation-rail-top-space) var(--md-comp-action-gap)
+    padding: var(--md-comp-navigation-rail-top-space) 0
       var(--md-comp-navigation-rail-item-vertical-space);
     background: transparent;
   }
@@ -81,22 +86,23 @@ export const navigationStyles = css`
     padding-block-end: var(--md-comp-navigation-rail-expanded-trailing-space);
   }
   :host([rail]) .destinations {
-    gap: var(--md-comp-navigation-rail-item-vertical-space-collapsed);
+    gap: var(--md-comp-navigation-rail-collapsed-item-gap);
   }
   :host([rail][expanded]) .destinations {
-    gap: var(--md-comp-navigation-rail-item-vertical-space);
+    gap: 0;
   }
   /* A 96px la label non ci sta: senza troncamento esce dal binario e invade il contenuto. */
   :host([rail]) .destination {
     min-block-size: var(--md-comp-navigation-rail-item-height);
-    padding-inline: 0;
+    padding: var(--md-comp-navigation-rail-item-block-start-space) 0
+      var(--md-comp-navigation-rail-item-block-end-space);
     white-space: nowrap;
     max-inline-size: 100%;
     overflow: hidden;
   }
-  :host([rail]) .destination > span:not(.indicator) {
+  :host([rail]) .item-content > span:not(.indicator) {
     display: block;
-    max-inline-size: 100%;
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -104,12 +110,54 @@ export const navigationStyles = css`
     inline-size: var(--md-comp-navigation-rail-indicator-width);
     block-size: var(--md-comp-navigation-rail-indicator-height);
   }
+  /* Expanded rail: the active indicator is a pill that wraps icon and label. */
   :host([rail][expanded]) .destination {
     flex-direction: row;
     justify-content: start;
+    padding-block: 0;
+    padding-inline: var(--md-comp-navigation-rail-expanded-item-leading-space)
+      var(--md-comp-navigation-rail-item-trailing-space);
+  }
+  :host([rail][expanded]) .item-content {
+    display: flex;
+    align-items: center;
     gap: var(--md-comp-navigation-rail-item-gap);
-    padding-inline-start: var(--md-comp-navigation-rail-item-leading-space);
-    padding-inline-end: var(--md-comp-navigation-rail-item-trailing-space);
+    max-inline-size: 100%;
+    block-size: var(--md-comp-navigation-rail-item-height);
+    padding-inline: var(--md-comp-navigation-rail-item-leading-space)
+      var(--md-comp-navigation-rail-item-trailing-space);
+    border-radius: var(--md-sys-shape-corner-full);
+  }
+  :host([rail][expanded]) .indicator {
+    background: transparent;
+    inline-size: auto;
+    block-size: auto;
+  }
+  :host([rail][expanded]) .destination[aria-current="page"] .item-content {
+    background-color: var(--md-sys-color-secondary-container);
+  }
+  :host([rail][expanded]) .destination[aria-current="page"] .indicator {
+    color: var(--md-sys-color-on-secondary-container);
+  }
+  /* The state layer follows the pill, not the full-width target area. */
+  :host([rail][expanded]) .destination:not(:disabled):hover,
+  :host([rail][expanded]) .destination:active {
+    background-image: none;
+  }
+  :host([rail][expanded]) .destination:not(:disabled):hover .item-content {
+    background-image: linear-gradient(
+      var(--bolle-state-hover),
+      var(--bolle-state-hover)
+    );
+  }
+  :host([rail][expanded]) .destination:active .item-content {
+    background-image: linear-gradient(
+      var(--bolle-state-pressed),
+      var(--bolle-state-pressed)
+    );
+  }
+  .item-content {
+    display: contents;
   }
   [role="tab"] {
     flex-direction: row;
@@ -171,7 +219,6 @@ export const navigationStyles = css`
     min-inline-size: 0;
     scroll-behavior: smooth;
     scrollbar-width: none;
-    padding-inline-start: var(--md-comp-tabs-scroll-leading-space, 52px);
   }
   .tab-scroller [role="tablist"]::-webkit-scrollbar {
     display: none;

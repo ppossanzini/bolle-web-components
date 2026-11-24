@@ -192,6 +192,10 @@
   --md-comp-navigation-rail-item-height: 56px;
   --md-comp-navigation-rail-item-vertical-space: 6px;
   --md-comp-navigation-rail-item-vertical-space-collapsed: 4px;
+  --md-comp-navigation-rail-collapsed-item-gap: 8px;
+  --md-comp-navigation-rail-item-block-start-space: 6px;
+  --md-comp-navigation-rail-item-block-end-space: 4px;
+  --md-comp-navigation-rail-expanded-item-leading-space: 36px;
   --md-comp-navigation-rail-item-leading-space: 16px;
   --md-comp-navigation-rail-item-trailing-space: 16px;
   --md-comp-navigation-rail-item-gap: 8px;

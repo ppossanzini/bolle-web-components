@@ -20,9 +20,13 @@ export class BolleNavigationBar extends BolleElement {
   variant = "standard";
   layout = "vertical";
   protected content(item: BolleItem) {
-    return html`<span class="indicator" part="indicator navigation-indicator"
+    return html`<span class="item-content"
+      ><span class="indicator" part="indicator navigation-indicator"
         >${item.icon ? html`<span class="icon" part="icon navigation-icon" aria-hidden="true">${item.icon}</span>` : nothing}</span
-      ><span part="label navigation-label">${item.label}</span>`;
+      ><span class="nav-label" part="label navigation-label"
+        >${item.label}</span
+      ></span
+    >`;
   }
   protected select(item: BolleItem) {
     this.value = item.id;

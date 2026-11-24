@@ -65,14 +65,13 @@ export const kanbanStyles = css`
     gap: var(--kanban-column-gap);
     align-items: stretch;
     min-block-size: var(--bb-kanban-column-min-height, 200px);
-    overflow-x: auto;
-    overflow-y: hidden;
+    /* Every lane overflows into the board: one horizontal scrollbar for all lanes. */
+    overflow: visible;
     padding-block-end: 2px;
   }
   :host([lanes]) .columns {
     flex: 0 0 auto;
     min-block-size: 0;
-    overflow-y: clip;
   }
   .column {
     display: flex;
@@ -337,28 +336,24 @@ export const kanbanStyles = css`
   }
   /* Bolle scrollbars: no arrow buttons, round track and thumb. */
   .board::-webkit-scrollbar,
-  .columns::-webkit-scrollbar,
   .list::-webkit-scrollbar {
     inline-size: 10px;
     block-size: 10px;
     background: transparent;
   }
   .board::-webkit-scrollbar-button,
-  .columns::-webkit-scrollbar-button,
   .list::-webkit-scrollbar-button {
     display: none;
     inline-size: 0;
     block-size: 0;
   }
   .board::-webkit-scrollbar-track,
-  .columns::-webkit-scrollbar-track,
   .list::-webkit-scrollbar-track {
     margin: 4px;
     border-radius: 9999px;
     background: transparent;
   }
   .board::-webkit-scrollbar-thumb,
-  .columns::-webkit-scrollbar-thumb,
   .list::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 9999px;

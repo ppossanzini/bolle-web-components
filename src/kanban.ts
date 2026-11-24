@@ -373,12 +373,18 @@ export class BolleKanban extends BolleElement {
       /* A pointer without an active capture still tracks through the listeners below. */
     }
     const lane = this.laneOf(card);
-    const place = (column: string, index: number, x: number, y: number) => {
+    const place = (
+      column: string,
+      targetLane: string,
+      index: number,
+      x: number,
+      y: number,
+    ) => {
       const verdict = this.canDrop(card, column);
       this.drag = {
         card,
         column,
-        lane,
+        lane: targetLane,
         index,
         refused: verdict.ok ? "" : (verdict.reason ?? ""),
         x,
@@ -391,18 +397,18 @@ export class BolleKanban extends BolleElement {
     };
     place(
       card.column,
+      lane,
       this.cardsIn(card.column, lane).findIndex((item) => item.id === card.id),
       event.clientX,
       event.clientY,
     );
 
     const board = this.renderRoot.querySelector<HTMLElement>(".board");
-    const strip = this.renderRoot.querySelector<HTMLElement>(".columns");
     let frame = 0;
     const scrollSideways = (delta: number) => {
-      if (strip && strip.scrollWidth > strip.clientWidth)
-        strip.scrollLeft += delta;
-      else if (board) board.scrollLeft += delta;
+      if (board && board.scrollWidth > board.clientWidth) {
+        board.scrollLeft += delta;
+      }
     };
     const verticalScroller = (x: number, y: number) => {
       const under = this.hitStack(x, y)[0];
@@ -452,6 +458,7 @@ export class BolleKanban extends BolleElement {
       }
       place(
         under.dataset.column ?? "",
+        under.dataset.lane ?? this.drag?.lane ?? lane,
         index,
         moveEvent.clientX,
         moveEvent.clientY,
@@ -704,6 +711,7 @@ export class BolleKanban extends BolleElement {
         class="column collapsed"
         part="column column-collapsed"
         data-column=${column.id}
+        data-lane=${lane}
       >
         <button
           class="collapse-strip"

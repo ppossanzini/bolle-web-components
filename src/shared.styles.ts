@@ -267,13 +267,27 @@ export const commonStyles = css`
   :host {
     --bolle-state-hover: color-mix(in srgb, currentColor 8%, transparent);
     --bolle-state-pressed: color-mix(in srgb, currentColor 10%, transparent);
-    /* Corner radius the hover sheen follows. A control whose corner is not the
-       large shape sets this next to its border-radius. */
+    /* Corner radius the hover reflection keeps between itself and the corner.
+       A control whose corner is not the large shape sets this next to its
+       border-radius. */
     --bb-glint-radius: var(--md-sys-shape-corner-large);
+    /* The hover mark floats inside the corner: a gap from the border and a
+       thickness, both fixed, so the arc stays clear of the edge and of the label. */
+    --bb-glint-gap: 5px;
+    --bb-glint-width: 2.5px;
+    /* Reflection of --bb-highlight, resolved on the host so a component can set
+       --bb-shine-inset to its own corner radius. Keep in sync with tokens.css. */
+    --bb-highlight: radial-gradient(
+      ellipse calc(var(--bb-shine-size) / 2) calc(var(--bb-shine-size) * 0.31)
+        at calc(100% - var(--bb-shine-inset) - var(--bb-shine-size) / 2)
+        calc(var(--bb-shine-inset) + var(--bb-shine-size) * 0.31),
+      var(--bb-shine-color) 0 99%,
+      rgb(255 255 255 / 0) 100%
+    );
   }
-  /* Hard-edged quarter arc, concentric with the element's own corner: the arc box
-     is as wide as the corner radius, so the sheen follows any curvature. Declared
-     on the element so the radius of the current state applies. */
+  /* Hover reflection: an arc concentric with the top-right corner, held a gap
+     inside the border and cut sharp, with no fade. Declared on the element so the
+     radius of the current state applies. */
   button,
   a,
   label:has(> input) {
@@ -281,10 +295,16 @@ export const commonStyles = css`
     --bb-glint-position: right 0 top 0;
     --bb-hover-glint: radial-gradient(
       circle at 0 100%,
-      transparent 0 calc(var(--bb-glint-radius) - 2.5px),
+      transparent 0
+        calc(
+          var(--bb-glint-radius) - var(--bb-glint-gap) - var(--bb-glint-width)
+        ),
       var(--bb-glint-color, rgb(255 255 255 / 0.4))
-        calc(var(--bb-glint-radius) - 2px) calc(var(--bb-glint-radius) + 1px),
-      transparent calc(var(--bb-glint-radius) + 1px)
+        calc(
+          var(--bb-glint-radius) - var(--bb-glint-gap) - var(--bb-glint-width)
+        )
+        calc(var(--bb-glint-radius) - var(--bb-glint-gap)),
+      transparent calc(var(--bb-glint-radius) - var(--bb-glint-gap))
     );
   }
   .support {

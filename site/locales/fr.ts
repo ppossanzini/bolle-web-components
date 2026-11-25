@@ -141,6 +141,7 @@ const messages: Record<string, string> = {
   "Lavori in ritardo": "Travaux en retard",
   "Ogni riquadro dichiara la propria ampiezza con span e un minimo con min-span. Il riquadro si sposta trascinando la maniglia, con Alt e le frecce o dal menu, e si allarga trascinando l'angolo o con le frecce. Ogni modifica arriva con layout-change.":
     "Chaque tuile déclare sa largeur avec span et un minimum avec min-span. Une tuile se déplace en faisant glisser sa poignée, avec Alt et les flèches ou depuis son menu, et se redimensionne en tirant le coin ou avec les flèches. Chaque changement arrive avec layout-change.",
+  "Pacchetto su npm": "Paquet sur npm",
   "Pannello secondario": "Panneau secondaire",
   "Personale": "Personnel",
   "Regioni di un'applicazione gestionale: barra superiore, navigazione, contenuto, pannello secondario e barra di stato, con la forma che cambia secondo la larghezza.":
@@ -650,10 +651,16 @@ const messages: Record<string, string> = {
     "Recherche avec suggestions filtrables, combobox ARIA et zone de résultats.",
   "Riflessa": "Reflétée",
   "Riflesso e galleggiamento": "Reflet et flottement",
-  "Riflesso in alto a destra, all'hover e sul FAB":
-    "Reflet en haut à droite, au survol et sur le FAB",
-  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
-    "Rayon d'angle suivi par le reflet : à aligner sur la courbure du contrôle",
+  "Raggio d'angolo del controllo: l'arco del riflesso all'hover lo segue":
+    "Rayon d'angle du contrôle : l'arc du reflet au survol le suit",
+  "Distanza del riflesso dal bordo del controllo":
+    "Écart entre le reflet et le bord du contrôle",
+  "Riflesso netto in alto a destra, sul FAB e sulle superfici in rilievo":
+    "Reflet net en haut à droite, sur le FAB et sur les surfaces en relief",
+  "Distanza del riflesso dall'angolo: uguale al border-radius della superficie":
+    "Écart entre le reflet et l'angle : à aligner sur le border-radius de la surface",
+  "Larghezza del riflesso; l'altezza vale 0,62 di questa misura":
+    "Largeur du reflet ; la hauteur vaut 0,62 de cette mesure",
   "Righe": "Lignes",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "Lignes avec icônes, texte d'aide, liens, développement et sélection simple ou multiple.",

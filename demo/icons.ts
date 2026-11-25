@@ -10,6 +10,8 @@ import arrowDown from "@tabler/icons/outline/arrow-down.svg?raw";
 import arrowUp from "@tabler/icons/outline/arrow-up.svg?raw";
 import bold from "@tabler/icons/outline/bold.svg?raw";
 import briefcase from "@tabler/icons/outline/briefcase.svg?raw";
+import brandGithub from "@tabler/icons/outline/brand-github.svg?raw";
+import externalLink from "@tabler/icons/outline/external-link.svg?raw";
 import chevronDown from "@tabler/icons/outline/chevron-down.svg?raw";
 import clipboard from "@tabler/icons/outline/clipboard.svg?raw";
 import copy from "@tabler/icons/outline/copy.svg?raw";
@@ -63,6 +65,8 @@ const icons: Record<string, string> = {
   "arrow-up": arrowUp,
   bold,
   briefcase,
+  "brand-github": brandGithub,
+  "external-link": externalLink,
   "chevron-down": chevronDown,
   clipboard,
   copy,

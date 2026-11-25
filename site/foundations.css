@@ -116,24 +116,19 @@
   place-items: end start;
   block-size: 96px;
   padding: 12px;
-  border-radius: 22px 22px 22px 6px;
-  background: var(--md-sys-color-surface-container-lowest);
+  /* Corner radius of the FAB, so the reflection gap below equals it. */
+  border-radius: var(--md-sys-shape-corner-large)
+    var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large)
+    var(--bb-tail);
+  /* The same reflection token the FAB uses, at the default 16px gap. */
+  background-color: var(--md-sys-color-primary-container);
+  background-image: var(--bb-highlight);
+  color: var(--md-sys-color-on-primary-container);
 }
 
 .fd-float code {
   font-family: var(--md-ref-typeface-code);
   font-size: 0.75rem;
-}
-
-.fd-float-shine {
-  position: absolute;
-  inset-block-start: 10px;
-  inset-inline-end: 12px;
-  inline-size: 18px;
-  block-size: 10px;
-  border-radius: 50%;
-  background: var(--md-sys-color-primary-container);
-  rotate: 35deg;
 }
 
 .fd-motion {

@@ -13,6 +13,8 @@ export interface LandingContext {
 }
 
 const INSTALL = "npm install bolle-web-components";
+export const REPO_URL = "https://github.com/ppossanzini/bolle-web-components";
+export const NPM_URL = "https://www.npmjs.com/package/bolle-web-components";
 const SEEDS = THEME_PRESETS.slice(0, 4);
 
 /** The tailed bolle mark; `small` drops the film, as the identity requires below 24px. */
@@ -66,6 +68,13 @@ export function renderLanding(ctx: LandingContext): TemplateResult {
         <a href=${routeHref("foundations")}>Foundations</a>
         <a href="#temi" @click=${scrollTo("temi")}>${l("Temi")}</a>
         <a href=${routeHref("tokens")}>${l("Token")}</a>
+        <a
+          class="landing-gh"
+          href=${REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+          >${ti("brand-github")}<span>GitHub</span></a
+        >
         ${ctx.localeSelect}
         <bolle-button variant="filled" class="landing-ink" @click=${scrollTo("codice")}
           >${l("Inizia")}</bolle-button
@@ -252,6 +261,22 @@ export function renderLanding(ctx: LandingContext): TemplateResult {
           <li><strong>${l("Movimento rispettoso")}</strong> · ${l("prefers-reduced-motion spegne dondolio e scoppio.")}</li>
           <li><strong>${l("Leggera quando serve")}</strong> · ${l("sfocature e trasparenze si disattivano su dispositivi lenti.")}</li>
         </ul>
+        <div class="landing-install-row">
+          <button
+            type="button"
+            class="landing-install"
+            aria-label=${l("Copia il comando di installazione")}
+            @click=${() => ctx.copy(INSTALL)}
+          >
+            <code>$ ${INSTALL}</code>${ti("copy")}
+          </button>
+          <a class="landing-link" href=${NPM_URL} target="_blank" rel="noreferrer"
+            >${l("Pacchetto su npm")}${ti("external-link")}</a
+          >
+          <a class="landing-link" href=${REPO_URL} target="_blank" rel="noreferrer"
+            >${ti("brand-github")}GitHub</a
+          >
+        </div>
       </div>
       <pre class="landing-code"><code><span class="c-comment">/* tema.css */</span>
 :root {

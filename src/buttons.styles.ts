@@ -271,18 +271,17 @@ export const buttonStyles = css`
     box-shadow: var(--bb-float-3, var(--md-sys-elevation-level3));
   }
   :host([fab]) .button:hover {
+    /* The hover mark replaces the rest reflection: two marks would read as two bubbles. */
     background-image:
       linear-gradient(var(--bolle-state-hover), var(--bolle-state-hover)),
-      var(--bb-hover-glint), var(--bb-highlight), var(--bb-film-wash);
+      var(--bb-hover-glint), var(--bb-film-wash);
     background-size:
       100% 100%,
       var(--bb-glint-box) var(--bb-glint-box),
-      100% 100%,
       100% 100%;
     background-position:
       0 0,
       var(--bb-glint-position),
-      0 0,
       0 0;
     background-repeat: no-repeat;
     box-shadow: var(--bb-float-4, var(--md-sys-elevation-level4));

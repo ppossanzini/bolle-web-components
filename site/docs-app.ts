@@ -56,7 +56,13 @@ import {
 } from "./i18n.js";
 import { componentQuotes, shortTokenName, type Quote } from "./quotes.js";
 import { adaptText, pinnedPairs } from "./token-pins.js";
-import { bolleLogo, bolleMark, renderLanding } from "./landing.js";
+import {
+  bolleLogo,
+  bolleMark,
+  NPM_URL,
+  renderLanding,
+  REPO_URL,
+} from "./landing.js";
 import { FOUNDATION_SECTIONS, renderFoundations } from "./foundations.js";
 import {
   applyTokens,
@@ -4486,6 +4492,13 @@ table.refresh();</code></pre>
               href=${routeHref("tokens")}
               aria-current=${isTokens ? "page" : nothing}
               >${l("Token")}</a
+            >
+            <a
+              class="landing-gh"
+              href=${REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              >${ti("brand-github")}<span>GitHub</span></a
             >
           </nav>
           <span class="topbar-actions">

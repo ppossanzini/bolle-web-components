@@ -227,7 +227,6 @@ export function renderFoundations(): TemplateResult {
                 class="fd-float"
                 style=${`box-shadow: var(--bb-float-${level})`}
               >
-                <span class="fd-float-shine" aria-hidden="true"></span>
                 <code>--bb-float-${level}</code>
               </div>`,
           )}
@@ -247,12 +246,28 @@ export function renderFoundations(): TemplateResult {
           [
             "--bb-glint-radius",
             l(
-              "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo",
+              "Raggio d'angolo del controllo: l'arco del riflesso all'hover lo segue",
             ),
           ],
           [
+            "--bb-glint-gap",
+            l("Distanza del riflesso dal bordo del controllo"),
+          ],
+          [
             "--bb-highlight",
-            l("Riflesso in alto a destra, all'hover e sul FAB"),
+            l(
+              "Riflesso netto in alto a destra, sul FAB e sulle superfici in rilievo",
+            ),
+          ],
+          [
+            "--bb-shine-inset",
+            l(
+              "Distanza del riflesso dall'angolo: uguale al border-radius della superficie",
+            ),
+          ],
+          [
+            "--bb-shine-size",
+            l("Larghezza del riflesso; l'altezza vale 0,62 di questa misura"),
           ],
           ["--bb-float-2", l("Menu, tooltip ricco, card elevate")],
           ["--bb-float-3", l("Snackbar, FAB")],

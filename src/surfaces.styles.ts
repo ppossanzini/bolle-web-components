@@ -276,7 +276,6 @@ export const surfaceStyles = css`
     border-radius: var(--md-sys-shape-corner-full);
     border-end-start-radius: var(--bb-tail);
     background-color: var(--md-sys-color-error);
-    background-image: var(--bb-highlight);
     color: var(--md-sys-color-on-error);
     font: var(--md-sys-typescale-label-small-font);
     box-shadow:

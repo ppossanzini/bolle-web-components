@@ -162,6 +162,9 @@
 }
 
 .landing-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 14px;
   border-radius: var(--md-sys-shape-corner-full);
   color: var(--landing-ink);
@@ -169,8 +172,44 @@
   text-decoration: none;
 }
 
+.landing-nav a svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
 .landing-nav a:hover {
   background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* Install reference on the landing page: the npm command, the package page, the repository. */
+.landing-install-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.landing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.landing-link svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.landing-link:hover {
+  text-decoration: underline;
+}
+
+.landing-link:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 3px;
 }
 
 .landing-ink {

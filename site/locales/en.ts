@@ -139,6 +139,7 @@ const messages: Record<string, string> = {
   "Lavori in ritardo": "Late jobs",
   "Ogni riquadro dichiara la propria ampiezza con span e un minimo con min-span. Il riquadro si sposta trascinando la maniglia, con Alt e le frecce o dal menu, e si allarga trascinando l'angolo o con le frecce. Ogni modifica arriva con layout-change.":
     "Each tile declares its width with span and a minimum with min-span. A tile moves by dragging its handle, with Alt and the arrow keys or from its menu, and resizes by dragging the corner or with the arrow keys. Every change arrives as layout-change.",
+  "Pacchetto su npm": "Package on npm",
   "Pannello secondario": "Supporting pane",
   "Personale": "People",
   "Regioni di un'applicazione gestionale: barra superiore, navigazione, contenuto, pannello secondario e barra di stato, con la forma che cambia secondo la larghezza.":
@@ -642,10 +643,16 @@ const messages: Record<string, string> = {
     "Search with filterable suggestions, ARIA combobox and results area.",
   "Riflessa": "Reflects",
   "Riflesso e galleggiamento": "Highlight and floating",
-  "Riflesso in alto a destra, all'hover e sul FAB":
-    "Highlight at the top right, on hover and on the FAB",
-  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
-    "Corner radius the reflection follows: match it to the control's curvature",
+  "Raggio d'angolo del controllo: l'arco del riflesso all'hover lo segue":
+    "Control corner radius: the hover arc follows it",
+  "Distanza del riflesso dal bordo del controllo":
+    "Gap between the reflection and the control border",
+  "Riflesso netto in alto a destra, sul FAB e sulle superfici in rilievo":
+    "Crisp highlight at the top right, on the FAB and on raised surfaces",
+  "Distanza del riflesso dall'angolo: uguale al border-radius della superficie":
+    "Gap between the highlight and the corner: match the border-radius of the surface",
+  "Larghezza del riflesso; l'altezza vale 0,62 di questa misura":
+    "Highlight width; the height is 0.62 of it",
   "Righe": "Rows",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "Rows with icons, supporting text, links, expansion and single or multiple selection.",

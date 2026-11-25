@@ -132,6 +132,7 @@ const messages: Record<string, string> = {
   "Lavori in ritardo": "逾期工程",
   "Ogni riquadro dichiara la propria ampiezza con span e un minimo con min-span. Il riquadro si sposta trascinando la maniglia, con Alt e le frecce o dal menu, e si allarga trascinando l'angolo o con le frecce. Ogni modifica arriva con layout-change.":
     "每个块用 span 声明宽度，用 min-span 声明最小值。拖动把手、Alt 加方向键或通过菜单移动，拖动角或用方向键调整宽度。每次变更都以 layout-change 返回。",
+  "Pacchetto su npm": "npm 上的包",
   "Pannello secondario": "辅助面板",
   "Personale": "人员",
   "Regioni di un'applicazione gestionale: barra superiore, navigazione, contenuto, pannello secondario e barra di stato, con la forma che cambia secondo la larghezza.":
@@ -628,10 +629,15 @@ const messages: Record<string, string> = {
     "带可筛选建议、ARIA combobox 和结果区域的搜索。",
   "Riflessa": "反映",
   "Riflesso e galleggiamento": "高光与漂浮",
-  "Riflesso in alto a destra, all'hover e sul FAB":
-    "右上角高光，悬停时及 FAB 上显示",
-  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
-    "高光跟随的圆角半径：与控件的曲率一致",
+  "Raggio d'angolo del controllo: l'arco del riflesso all'hover lo segue":
+    "控件圆角半径：悬停弧光跟随该曲率",
+  "Distanza del riflesso dal bordo del controllo": "反射与控件边框之间的距离",
+  "Riflesso netto in alto a destra, sul FAB e sulle superfici in rilievo":
+    "右上角清晰的反射，用于 FAB 和抬升表面",
+  "Distanza del riflesso dall'angolo: uguale al border-radius della superficie":
+    "反射与角之间的距离：等于表面的 border-radius",
+  "Larghezza del riflesso; l'altezza vale 0,62 di questa misura":
+    "反射宽度；高度为其 0.62",
   "Righe": "行数",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "带图标、辅助文字、链接、展开和单选或多选的列表行。",

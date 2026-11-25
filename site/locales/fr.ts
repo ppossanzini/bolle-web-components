@@ -652,6 +652,8 @@ const messages: Record<string, string> = {
   "Riflesso e galleggiamento": "Reflet et flottement",
   "Riflesso in alto a destra, all'hover e sul FAB":
     "Reflet en haut à droite, au survol et sur le FAB",
+  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
+    "Rayon d'angle suivi par le reflet : à aligner sur la courbure du contrôle",
   "Righe": "Lignes",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "Lignes avec icônes, texte d'aide, liens, développement et sélection simple ou multiple.",

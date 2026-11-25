@@ -181,6 +181,7 @@ export const menuStyles = css`
       var(--md-comp-menu-item-horizontal-padding);
     border: 0;
     border-radius: var(--menu-item-radius);
+    --bb-glint-radius: var(--menu-item-radius);
     background: transparent;
     color: inherit;
     text-decoration: none;

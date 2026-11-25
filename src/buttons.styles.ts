@@ -3,6 +3,9 @@ export const buttonStyles = css`
   :host {
     display: inline-block;
     vertical-align: middle;
+    /* Height the pill clamp works against, so the hover sheen follows the corner
+       the browser actually uses. */
+    --bb-button-height: var(--md-comp-button-small-height);
   }
   .button {
     position: relative;
@@ -12,6 +15,15 @@ export const buttonStyles = css`
     gap: var(--md-comp-action-gap);
     min-block-size: var(--md-comp-button-small-height);
     padding-inline: var(--md-comp-button-padding);
+    /* Sheen curvature: the same corner source as border-radius, with a pill
+       clamped on half the height like the browser clamps it. */
+    --bb-glint-radius: min(
+      var(
+        --bolle-button-corner-start-end,
+        var(--bolle-button-shape, var(--md-sys-shape-corner-full))
+      ),
+      calc(var(--bb-button-height) / 2)
+    );
     border-start-start-radius: var(
       --bolle-button-corner-start-start,
       var(--bolle-button-shape, var(--md-sys-shape-corner-full))
@@ -47,23 +59,29 @@ export const buttonStyles = css`
   }
   :host([shape="square"]) .button {
     border-radius: var(--md-sys-shape-corner-medium);
+    --bb-glint-radius: var(--md-sys-shape-corner-medium);
   }
   :host([shape="square"][size="medium"]) .button {
     border-radius: var(--md-sys-shape-corner-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-large);
   }
   :host([shape="square"][size="large"]) .button,
   :host([shape="square"][size="xl"]) .button {
     border-radius: var(--md-sys-shape-corner-extra-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-extra-large);
   }
   :host(:not([grouped])) .button:active {
     border-radius: var(--md-sys-shape-corner-small);
+    --bb-glint-radius: var(--md-sys-shape-corner-small);
   }
   :host([size="medium"]) .button:active {
     border-radius: var(--md-sys-shape-corner-medium);
+    --bb-glint-radius: var(--md-sys-shape-corner-medium);
   }
   :host([size="large"]) .button:active,
   :host([size="xl"]) .button:active {
     border-radius: var(--md-sys-shape-corner-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-large);
   }
   :host([icon-only]) .button::after,
   :host([size="xs"]) .button::after {
@@ -120,6 +138,18 @@ export const buttonStyles = css`
   :host([size="xl"]) .button {
     min-block-size: var(--md-comp-button-xl-height);
   }
+  :host([size="xs"]) {
+    --bb-button-height: var(--md-comp-button-xs-height);
+  }
+  :host([size="medium"]) {
+    --bb-button-height: var(--md-comp-button-medium-height);
+  }
+  :host([size="large"]) {
+    --bb-button-height: var(--md-comp-button-large-height);
+  }
+  :host([size="xl"]) {
+    --bb-button-height: var(--md-comp-button-xl-height);
+  }
   :host([toggle]:not([selected])) .button {
     background-color: var(--md-sys-color-surface-container);
     color: var(--md-sys-color-on-surface-variant);
@@ -144,16 +174,20 @@ export const buttonStyles = css`
     color: var(--md-sys-color-on-primary);
     border-color: transparent;
     border-radius: var(--md-sys-shape-corner-medium);
+    --bb-glint-radius: var(--md-sys-shape-corner-medium);
   }
   :host([selected]:not([grouped])[size="medium"]) .button {
     border-radius: var(--md-sys-shape-corner-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-large);
   }
   :host([selected]:not([grouped])[size="large"]) .button,
   :host([selected]:not([grouped])[size="xl"]) .button {
     border-radius: var(--md-sys-shape-corner-extra-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-extra-large);
   }
   :host([selected]:not([grouped])[shape="square"]) .button {
     border-radius: var(--md-sys-shape-corner-full);
+    --bb-glint-radius: calc(var(--bb-button-height) / 2);
   }
   :host([selected][grouped]) .button {
     background-color: var(--md-sys-color-primary);
@@ -233,6 +267,7 @@ export const buttonStyles = css`
     background-image: var(--bb-highlight), var(--bb-film-wash);
     color: var(--md-sys-color-on-primary-container);
     border-radius: var(--md-sys-shape-corner-large);
+    --bb-glint-radius: var(--md-sys-shape-corner-large);
     box-shadow: var(--bb-float-3, var(--md-sys-elevation-level3));
   }
   :host([fab]) .button:hover {

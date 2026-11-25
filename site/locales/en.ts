@@ -644,6 +644,8 @@ const messages: Record<string, string> = {
   "Riflesso e galleggiamento": "Highlight and floating",
   "Riflesso in alto a destra, all'hover e sul FAB":
     "Highlight at the top right, on hover and on the FAB",
+  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
+    "Corner radius the reflection follows: match it to the control's curvature",
   "Righe": "Rows",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "Rows with icons, supporting text, links, expansion and single or multiple selection.",

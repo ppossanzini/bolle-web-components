@@ -630,6 +630,8 @@ const messages: Record<string, string> = {
   "Riflesso e galleggiamento": "高光与漂浮",
   "Riflesso in alto a destra, all'hover e sul FAB":
     "右上角高光，悬停时及 FAB 上显示",
+  "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo":
+    "高光跟随的圆角半径：与控件的曲率一致",
   "Righe": "行数",
   "Righe con icone, testo di supporto, link, espansione e selezione singola o multipla.":
     "带图标、辅助文字、链接、展开和单选或多选的列表行。",

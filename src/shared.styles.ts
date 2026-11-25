@@ -267,14 +267,24 @@ export const commonStyles = css`
   :host {
     --bolle-state-hover: color-mix(in srgb, currentColor 8%, transparent);
     --bolle-state-pressed: color-mix(in srgb, currentColor 10%, transparent);
-    /* Hard-edged quarter arc in a corner box, curving with the rounded corner; declared on the host to read its --bb-glint-color. */
-    --bb-glint-box: 14px;
+    /* Corner radius the hover sheen follows. A control whose corner is not the
+       large shape sets this next to its border-radius. */
+    --bb-glint-radius: var(--md-sys-shape-corner-large);
+  }
+  /* Hard-edged quarter arc, concentric with the element's own corner: the arc box
+     is as wide as the corner radius, so the sheen follows any curvature. Declared
+     on the element so the radius of the current state applies. */
+  button,
+  a,
+  label:has(> input) {
+    --bb-glint-box: var(--bb-glint-radius);
     --bb-glint-position: right 0 top 0;
     --bb-hover-glint: radial-gradient(
       circle at 0 100%,
-      transparent 0 7px,
-      var(--bb-glint-color, rgb(255 255 255 / 0.4)) 7.5px 10.5px,
-      transparent 11px
+      transparent 0 calc(var(--bb-glint-radius) - 2.5px),
+      var(--bb-glint-color, rgb(255 255 255 / 0.4))
+        calc(var(--bb-glint-radius) - 2px) calc(var(--bb-glint-radius) + 1px),
+      transparent calc(var(--bb-glint-radius) + 1px)
     );
   }
   .support {

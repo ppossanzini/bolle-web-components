@@ -130,6 +130,7 @@ export const sidebarStyles = css`
     padding-inline: var(--md-comp-sidebar-item-inline-padding, 16px);
     border: 0;
     border-radius: var(--bb-inset-radius, var(--md-sys-shape-corner-full));
+    --bb-glint-radius: calc(var(--md-comp-sidebar-item-height, 48px) / 2);
     background: transparent;
     color: var(--md-sys-color-on-surface-variant);
     font: var(--md-sys-typescale-label-large-font);

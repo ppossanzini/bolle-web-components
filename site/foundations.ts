@@ -245,6 +245,12 @@ export function renderFoundations(): TemplateResult {
         </div>
         ${tokenTable([
           [
+            "--bb-glint-radius",
+            l(
+              "Raggio d'angolo che il riflesso segue: uguale alla curvatura del controllo",
+            ),
+          ],
+          [
             "--bb-highlight",
             l("Riflesso in alto a destra, all'hover e sul FAB"),
           ],

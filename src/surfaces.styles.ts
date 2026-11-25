@@ -415,6 +415,7 @@ export const surfaceStyles = css`
   a.list-item {
     cursor: pointer;
     border-radius: var(--bb-list-item-shape, var(--md-sys-shape-corner-full));
+    --bb-glint-radius: calc(var(--md-comp-list-item-height) / 2);
     transition:
       background-color var(--md-sys-motion-duration-short2)
         var(--md-sys-motion-easing-standard),
@@ -486,6 +487,7 @@ export const surfaceStyles = css`
     );
     padding-inline: var(--md-comp-chip-inset);
     border-radius: inherit;
+    --bb-glint-radius: var(--md-sys-shape-corner-small);
     color: inherit;
     text-decoration: none;
     font: var(--md-sys-typescale-label-large-font);

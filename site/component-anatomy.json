@@ -836,6 +836,94 @@
       "selection-change"
     ]
   },
+  "BolleDag": {
+    "slots": [
+      "node-{id}"
+    ],
+    "parts": [
+      "canvas",
+      "edge",
+      "minimap",
+      "node",
+      "palette",
+      "port",
+      "toolbar"
+    ],
+    "attributes": [
+      {
+        "name": "constraints",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "edges",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "error",
+        "attribute": "error",
+        "type": "string"
+      },
+      {
+        "name": "kinds",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "label",
+        "attribute": "label",
+        "type": "string"
+      },
+      {
+        "name": "labels",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "loading",
+        "attribute": "loading",
+        "type": "Boolean"
+      },
+      {
+        "name": "minimap",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "nodes",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "orientation",
+        "attribute": "orientation",
+        "type": "string"
+      },
+      {
+        "name": "overrides",
+        "attribute": "",
+        "type": "string"
+      },
+      {
+        "name": "readonly",
+        "attribute": "readonly",
+        "type": "Boolean"
+      },
+      {
+        "name": "snap",
+        "attribute": "snap",
+        "type": "Number"
+      }
+    ],
+    "events": [
+      "dag-change",
+      "dag-connection-rejected",
+      "dag-node-activate",
+      "dag-retry",
+      "dag-selection-change"
+    ]
+  },
   "BolleWidget": {
     "slots": [
       "actions",

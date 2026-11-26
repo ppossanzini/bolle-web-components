@@ -29,6 +29,16 @@ const LAYOUT_ROWS = ["M4 4h16v6h-16z", "M4 14h16v6h-16z"];
 const DENSITY_MEDIUM = ["M4 6h16", "M4 12h16", "M4 18h16"];
 const DENSITY_SMALL = ["M4 8h16", "M4 16h16"];
 const PLUS = ["M12 5v14", "M5 12h14"];
+const ZOOM_IN = ["M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0", "M7 10l6 0", "M10 7l0 6", "M21 21l-6 -6"];
+const ZOOM_OUT = ["M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0", "M7 10l6 0", "M21 21l-6 -6"];
+const FOCUS_CENTERED = ["M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "M4 8v-2a2 2 0 0 1 2 -2h2", "M4 16v2a2 2 0 0 0 2 2h2", "M16 4h2a2 2 0 0 1 2 2v2", "M16 20h2a2 2 0 0 0 2 -2v-2"];
+const ARROW_BACK_UP = ["M9 14l-4 -4l4 -4", "M5 10h11a4 4 0 1 1 0 8h-1"];
+const ARROW_FORWARD_UP = ["M15 14l4 -4l-4 -4", "M19 10h-11a4 4 0 1 0 0 8h1"];
+const HIERARCHY_2 = ["M10 3h4v4h-4l0 -4", "M3 17h4v4h-4l0 -4", "M17 17h4v4h-4l0 -4", "M7 17l5 -4l5 4", "M12 7l0 6"];
+const KEYBOARD = ["M2 8a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2l0 -8", "M6 10l0 .01", "M10 10l0 .01", "M14 10l0 .01", "M18 10l0 .01", "M6 14l0 .01", "M18 14l0 .01", "M10 14l4 .01"];
+const LOCK = ["M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6", "M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0", "M8 11v-4a4 4 0 1 1 8 0v4"];
+const TOPOLOGY_STAR_3 = ["M10 19a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M18 5a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M10 5a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M6 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M18 19a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M14 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M22 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0", "M6 12h4", "M14 12h4", "M15 7l-2 3", "M9 7l2 3", "M11 14l-2 3", "M13 14l2 3"];
+const BOX = ["M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5", "M12 12l8 -4.5", "M12 12l0 9", "M12 12l-8 -4.5"];
 
 const SIDEBAR_COLLAPSE = [...SIDEBAR_FRAME, "M15 10l-2 2l2 2"];
 const SIDEBAR_EXPAND = [...SIDEBAR_FRAME, "M14 10l2 2l-2 2"];
@@ -74,6 +84,16 @@ export const densityComfortableIcon = () => tabler(DENSITY_MEDIUM);
 export const densityCompactIcon = () => tabler(DENSITY_SMALL);
 export const plusIcon = () => tabler(PLUS);
 export const refreshIcon = () => tabler(REFRESH);
+export const zoomInIcon = () => tabler(ZOOM_IN);
+export const zoomOutIcon = () => tabler(ZOOM_OUT);
+export const fitViewIcon = () => tabler(FOCUS_CENTERED);
+export const undoIcon = () => tabler(ARROW_BACK_UP);
+export const redoIcon = () => tabler(ARROW_FORWARD_UP);
+export const layoutIcon = () => tabler(HIERARCHY_2);
+export const keyboardIcon = () => tabler(KEYBOARD);
+export const lockIcon = () => tabler(LOCK);
+export const graphIcon = () => tabler(TOPOLOGY_STAR_3);
+export const boxIcon = () => tabler(BOX);
 
 /** Tabler check as a CSS mask, for ::before content painted with currentColor. */
 export const checkMask = unsafeCSS(

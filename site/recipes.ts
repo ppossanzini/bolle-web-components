@@ -3957,6 +3957,326 @@ export function Plan() {
       },
     },
   ],
+  "bolle-dag": [
+    {
+      title: "Grafo minimo",
+      description:
+        "L'editor riceve nodes ed edges, applica da sé ogni modifica e la riporta con dag-change, che porta il grafo nuovo e la causa. Un nodo senza porte dichiarate ha un ingresso e un'uscita generici. L'altezza del host è obbligatoria.",
+      code: {
+        html: `<bolle-dag id="flow" label="Pipeline di rilascio" style="block-size: 420px"></bolle-dag>
+
+<script type="module">
+  const flow = document.querySelector("#flow");
+
+  flow.nodes = [
+    { id: "build", label: "Build", x: 0, y: 0 },
+    { id: "test", label: "Test", x: 328, y: -48 },
+    { id: "lint", label: "Analisi statica", x: 328, y: 48 },
+    { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+  ];
+  flow.edges = [
+    { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+    { id: "e-2", source: "build", sourcePort: "out", target: "lint", targetPort: "in" },
+    { id: "e-3", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+  ];
+
+  flow.addEventListener("dag-change", (event) => {
+    const { nodes, edges, cause } = event.detail;
+    console.log(cause, nodes.length, edges.length);
+  });
+</script>`,
+        vue: `<script setup lang="ts">
+import { ref } from "vue";
+import type { DagChangeDetail, DagEdge, DagNode } from "@bolle/web-components";
+
+const nodes = ref<DagNode[]>([
+  { id: "build", label: "Build", x: 0, y: 0 },
+  { id: "test", label: "Test", x: 328, y: -48 },
+  { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+]);
+const edges = ref<DagEdge[]>([
+  { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+  { id: "e-2", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+]);
+
+const onChange = (event: CustomEvent<DagChangeDetail>) => {
+  nodes.value = event.detail.nodes;
+  edges.value = event.detail.edges;
+};
+</script>
+
+<template>
+  <bolle-dag
+    label="Pipeline di rilascio"
+    style="block-size: 420px"
+    :nodes="nodes"
+    :edges="edges"
+    @dag-change="onChange"
+  ></bolle-dag>
+</template>`,
+        react: `import { useEffect, useRef } from "react";
+import type { BolleDag, DagChangeDetail } from "@bolle/web-components";
+
+export function Pipeline() {
+  const ref = useRef<BolleDag>(null);
+
+  useEffect(() => {
+    const flow = ref.current;
+    if (!flow) return;
+    flow.nodes = [
+      { id: "build", label: "Build", x: 0, y: 0 },
+      { id: "test", label: "Test", x: 328, y: -48 },
+      { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+    ];
+    flow.edges = [
+      { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+      { id: "e-2", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+    ];
+    const onChange = (event: Event) =>
+      console.log((event as CustomEvent<DagChangeDetail>).detail.cause);
+    flow.addEventListener("dag-change", onChange);
+    return () => flow.removeEventListener("dag-change", onChange);
+  }, []);
+
+  return <bolle-dag ref={ref} label="Pipeline di rilascio" style={{ blockSize: "420px" }} />;
+}`,
+      },
+    },
+    {
+      title: "Porte tipizzate e vincoli",
+      description:
+        "Una porta con type entra solo in una porta dello stesso tipo, o di uno compatibile secondo typeCompatible; max limita i suoi collegamenti. constraints aggiunge le regole dell'applicazione: ogni funzione restituisce true oppure il motivo del rifiuto, che l'editor mostra durante il trascinamento, nel menu e con dag-connection-rejected.",
+      code: {
+        html: `<bolle-dag id="flow" label="Flusso dati" style="block-size: 420px"></bolle-dag>
+
+<script type="module">
+  const flow = document.querySelector("#flow");
+
+  flow.kinds = [
+    {
+      kind: "clean",
+      label: "Pulizia",
+      inputs: [{ id: "rows", label: "Righe", type: "tabella", max: 1 }],
+      outputs: [{ id: "rows", label: "Righe pulite", type: "tabella" }],
+    },
+    {
+      kind: "dwh",
+      label: "Data warehouse",
+      inputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+      outputs: [],
+    },
+  ];
+  flow.nodes = [
+    {
+      id: "orders",
+      label: "Ordini 2026",
+      x: 0,
+      y: 0,
+      inputs: [],
+      outputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+    },
+  ];
+  flow.constraints = {
+    maxNodes: 40,
+    canConnect: ({ source, target }) =>
+      target.kind === "dwh" && source.kind !== "clean"
+        ? "Il data warehouse accetta solo righe passate da «Pulizia»"
+        : true,
+    canDelete: (node) => (node.id === "orders" ? "Sorgente gestita dall'amministratore" : true),
+  };
+
+  flow.addEventListener("dag-connection-rejected", (event) => {
+    console.log("Rifiutato:", event.detail.reason);
+  });
+</script>`,
+        vue: `<script setup lang="ts">
+import type { DagConstraints, DagNodeKind } from "@bolle/web-components";
+
+const kinds: DagNodeKind[] = [
+  {
+    kind: "clean",
+    label: "Pulizia",
+    inputs: [{ id: "rows", label: "Righe", type: "tabella", max: 1 }],
+    outputs: [{ id: "rows", label: "Righe pulite", type: "tabella" }],
+  },
+  {
+    kind: "dwh",
+    label: "Data warehouse",
+    inputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+    outputs: [],
+  },
+];
+
+const constraints: DagConstraints = {
+  maxNodes: 40,
+  canConnect: ({ source, target }) =>
+    target.kind === "dwh" && source.kind !== "clean"
+      ? "Il data warehouse accetta solo righe passate da «Pulizia»"
+      : true,
+};
+</script>
+
+<template>
+  <bolle-dag
+    label="Flusso dati"
+    style="block-size: 420px"
+    :kinds="kinds"
+    :constraints="constraints"
+    @dag-connection-rejected="(event) => console.log(event.detail.reason)"
+  ></bolle-dag>
+</template>`,
+        react: `import { useEffect, useRef } from "react";
+import type { BolleDag, DagRejectedDetail } from "@bolle/web-components";
+
+export function DataFlow() {
+  const ref = useRef<BolleDag>(null);
+
+  useEffect(() => {
+    const flow = ref.current;
+    if (!flow) return;
+    flow.kinds = [
+      {
+        kind: "clean",
+        label: "Pulizia",
+        inputs: [{ id: "rows", label: "Righe", type: "tabella", max: 1 }],
+        outputs: [{ id: "rows", label: "Righe pulite", type: "tabella" }],
+      },
+      {
+        kind: "dwh",
+        label: "Data warehouse",
+        inputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+        outputs: [],
+      },
+    ];
+    flow.constraints = {
+      maxNodes: 40,
+      canConnect: ({ source, target }) =>
+        target.kind === "dwh" && source.kind !== "clean"
+          ? "Il data warehouse accetta solo righe passate da «Pulizia»"
+          : true,
+    };
+    const onRejected = (event: Event) =>
+      console.log((event as CustomEvent<DagRejectedDetail>).detail.reason);
+    flow.addEventListener("dag-connection-rejected", onRejected);
+    return () => flow.removeEventListener("dag-connection-rejected", onRejected);
+  }, []);
+
+  return <bolle-dag ref={ref} label="Flusso dati" style={{ blockSize: "420px" }} />;
+}`,
+      },
+    },
+    {
+      title: "Sostituire un'operazione",
+      description:
+        "overrides sostituisce il comportamento di un'operazione: add, connect, move, arrange, duplicate e delete. La funzione riceve la richiesta e apply, che esegue la modifica predefinita; se apply non viene chiamata il grafo resta com'è, e l'applicazione può aggiornarlo da sé.",
+      code: {
+        html: `<bolle-dag id="flow" label="Pipeline di rilascio" style="block-size: 420px"></bolle-dag>
+
+<script type="module">
+  const flow = document.querySelector("#flow");
+
+  flow.nodes = [
+    { id: "build", label: "Build", x: 0, y: 0 },
+    { id: "deploy", label: "Rilascio", x: 328, y: 0 },
+  ];
+  flow.edges = [
+    { id: "e-1", source: "build", sourcePort: "out", target: "deploy", targetPort: "in" },
+  ];
+
+  flow.overrides = {
+    // L'eliminazione passa da una conferma.
+    delete: (request, apply) => {
+      if (confirm(\`Eliminare \${request.nodes.length} nodi e \${request.edges.length} collegamenti?\`)) apply();
+    },
+    // Il collegamento si salva prima sul server.
+    connect: async ({ edge }, apply) => {
+      const response = await fetch("/api/links", { method: "POST", body: JSON.stringify(edge) });
+      if (response.ok) apply();
+    },
+  };
+</script>`,
+        vue: `<script setup lang="ts">
+import type { DagOverrides } from "@bolle/web-components";
+
+const overrides: Partial<DagOverrides> = {
+  delete: (request, apply) => {
+    if (confirm(\`Eliminare \${request.nodes.length} nodi?\`)) apply();
+  },
+  connect: async ({ edge }, apply) => {
+    const response = await fetch("/api/links", { method: "POST", body: JSON.stringify(edge) });
+    if (response.ok) apply();
+  },
+};
+</script>
+
+<template>
+  <bolle-dag label="Pipeline di rilascio" style="block-size: 420px" :overrides="overrides"></bolle-dag>
+</template>`,
+        react: `import { useEffect, useRef } from "react";
+import type { BolleDag } from "@bolle/web-components";
+
+export function GuardedPipeline() {
+  const ref = useRef<BolleDag>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    ref.current.overrides = {
+      delete: (request, apply) => {
+        if (confirm(\`Eliminare \${request.nodes.length} nodi?\`)) apply();
+      },
+      connect: async ({ edge }, apply) => {
+        const response = await fetch("/api/links", { method: "POST", body: JSON.stringify(edge) });
+        if (response.ok) apply();
+      },
+    };
+  }, []);
+
+  return <bolle-dag ref={ref} label="Pipeline di rilascio" style={{ blockSize: "420px" }} />;
+}`,
+      },
+    },
+    {
+      title: "Contenuto del nodo",
+      description:
+        "Lo slot node-{id} aggiunge contenuto al nodo con quell'id, sotto l'intestazione e le righe delle porte. Il nodo cresce per contenerlo e le porte seguono la nuova altezza; un pulsante nello slot riceve i propri clic senza avviare il trascinamento.",
+      code: {
+        html: `<bolle-dag id="flow" label="Flusso dati" style="block-size: 420px">
+  <span slot="node-orders">1.240.512 righe</span>
+  <bolle-button slot="node-clean" variant="text">Vedi gli scarti</bolle-button>
+</bolle-dag>
+
+<script type="module">
+  const flow = document.querySelector("#flow");
+
+  flow.nodes = [
+    { id: "orders", label: "Ordini 2026", x: 0, y: 0 },
+    { id: "clean", label: "Pulizia ordini", x: 328, y: 0 },
+  ];
+  flow.edges = [
+    { id: "e-1", source: "orders", sourcePort: "out", target: "clean", targetPort: "in" },
+  ];
+</script>`,
+        vue: `<template>
+  <bolle-dag label="Flusso dati" style="block-size: 420px" :nodes="nodes" :edges="edges">
+    <span v-for="node in nodes" :key="node.id" :slot="\`node-\${node.id}\`">
+      {{ node.data?.rows }} righe
+    </span>
+  </bolle-dag>
+</template>`,
+        react: `export function DataFlow({ nodes }: { nodes: { id: string; data?: { rows?: string } }[] }) {
+  return (
+    <bolle-dag label="Flusso dati" style={{ blockSize: "420px" }}>
+      {nodes.map((node) => (
+        <span key={node.id} slot={\`node-\${node.id}\`}>
+          {node.data?.rows} righe
+        </span>
+      ))}
+    </bolle-dag>
+  );
+}`,
+      },
+    },
+  ],
   "bolle-data-table": [
     {
       title: "Slot del framework tramite wrapper",

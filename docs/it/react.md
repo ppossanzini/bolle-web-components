@@ -1660,6 +1660,43 @@ export function Plan() {
 
 Altre ricette: Colonne e contenuto delle celle · Spostare e ridimensionare · Contenuto della barra · Stati e slot
 
+### bolle-dag
+
+Attributi: `error`, `label`, `loading`, `orientation`, `readonly`, `snap` · Proprietà JavaScript: `constraints`, `edges`, `kinds`, `labels`, `minimap`, `nodes`, `overrides` · Slot: `node-{id}` · Eventi: `dag-change`, `dag-connection-rejected`, `dag-node-activate`, `dag-retry`, `dag-selection-change`
+
+**Grafo minimo** — L'editor riceve nodes ed edges, applica da sé ogni modifica e la riporta con dag-change, che porta il grafo nuovo e la causa. Un nodo senza porte dichiarate ha un ingresso e un'uscita generici. L'altezza del host è obbligatoria.
+
+```jsx
+import { useEffect, useRef } from "react";
+import type { BolleDag, DagChangeDetail } from "@bolle/web-components";
+
+export function Pipeline() {
+  const ref = useRef<BolleDag>(null);
+
+  useEffect(() => {
+    const flow = ref.current;
+    if (!flow) return;
+    flow.nodes = [
+      { id: "build", label: "Build", x: 0, y: 0 },
+      { id: "test", label: "Test", x: 328, y: -48 },
+      { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+    ];
+    flow.edges = [
+      { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+      { id: "e-2", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+    ];
+    const onChange = (event: Event) =>
+      console.log((event as CustomEvent<DagChangeDetail>).detail.cause);
+    flow.addEventListener("dag-change", onChange);
+    return () => flow.removeEventListener("dag-change", onChange);
+  }, []);
+
+  return <bolle-dag ref={ref} label="Pipeline di rilascio" style={{ blockSize: "420px" }} />;
+}
+```
+
+Altre ricette: Porte tipizzate e vincoli · Sostituire un'operazione · Contenuto del nodo
+
 ### bolle-data-table
 
 Attributi: `compact-row-height`, `default-column-width`, `density`, `empty-label`, `error`, `expandable`, `group-by`, `group-height`, `header-height`, `label`, `loading`, `max-column-width`, `min-column-width`, `overscan`, `page`, `page-size`, `row-height`, `row-key`, `selectable`, `total`, `updating`, `variant`, `virtual` · Proprietà JavaScript: `columnHandler`, `columns`, `contentStyles`, `detail`, `emptyRenderer`, `errorRenderer`, `expanded`, `footerRenderer`, `groupRenderer`, `groupSummary`, `headerRenderer`, `labels`, `loadingRenderer`, `pageHandler`, `rowActions`, `rowRenderer`, `rows`, `selected`, `sort`, `sortHandler` · Slot: `empty`, `empty-state`, `error`, `footer`, `header`, `loading` · Eventi: `column-change`, `expand`, `group`, `retry`, `row-action`, `row-activate`, `select`, `sort`

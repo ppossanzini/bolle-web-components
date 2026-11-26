@@ -1623,6 +1623,43 @@ export function Plan() {
 
 更多配方: 列与单元格内容 · 移动与调整长度 · 条形内容 · 状态与插槽
 
+### bolle-dag
+
+属性: `error`, `label`, `loading`, `orientation`, `readonly`, `snap` · JavaScript 属性: `constraints`, `edges`, `kinds`, `labels`, `minimap`, `nodes`, `overrides` · 插槽: `node-{id}` · 事件: `dag-change`, `dag-connection-rejected`, `dag-node-activate`, `dag-retry`, `dag-selection-change`
+
+**最简图** — 编辑器接收 nodes 与 edges，自行应用每次修改，并通过携带新图与原因的 dag-change 报告。未声明端口的节点有一个通用输入和一个通用输出。宿主必须有高度。
+
+```jsx
+import { useEffect, useRef } from "react";
+import type { BolleDag, DagChangeDetail } from "@bolle/web-components";
+
+export function Pipeline() {
+  const ref = useRef<BolleDag>(null);
+
+  useEffect(() => {
+    const flow = ref.current;
+    if (!flow) return;
+    flow.nodes = [
+      { id: "build", label: "Build", x: 0, y: 0 },
+      { id: "test", label: "Test", x: 328, y: -48 },
+      { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+    ];
+    flow.edges = [
+      { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+      { id: "e-2", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+    ];
+    const onChange = (event: Event) =>
+      console.log((event as CustomEvent<DagChangeDetail>).detail.cause);
+    flow.addEventListener("dag-change", onChange);
+    return () => flow.removeEventListener("dag-change", onChange);
+  }, []);
+
+  return <bolle-dag ref={ref} label="Pipeline di rilascio" style={{ blockSize: "420px" }} />;
+}
+```
+
+更多配方: 类型化端口与约束 · 替换操作 · 节点内容
+
 ### bolle-data-table
 
 属性: `compact-row-height`, `default-column-width`, `density`, `empty-label`, `error`, `expandable`, `group-by`, `group-height`, `header-height`, `label`, `loading`, `max-column-width`, `min-column-width`, `overscan`, `page`, `page-size`, `row-height`, `row-key`, `selectable`, `total`, `updating`, `variant`, `virtual` · JavaScript 属性: `columnHandler`, `columns`, `contentStyles`, `detail`, `emptyRenderer`, `errorRenderer`, `expanded`, `footerRenderer`, `groupRenderer`, `groupSummary`, `headerRenderer`, `labels`, `loadingRenderer`, `pageHandler`, `rowActions`, `rowRenderer`, `rows`, `selected`, `sort`, `sortHandler` · 插槽: `empty`, `empty-state`, `error`, `footer`, `header`, `loading` · 事件: `column-change`, `expand`, `group`, `retry`, `row-action`, `row-activate`, `select`, `sort`

@@ -344,6 +344,43 @@ demo-pagination .readout {
   box-shadow: var(--bb-float-1);
 }
 
+/* The graph editor is a whole panel too: full stage, its own surface and a height. */
+.preview-surface:has(> demo-dag) {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.preview-surface > demo-dag {
+  flex: 1 1 100%;
+  inline-size: 100%;
+  block-size: 640px;
+}
+demo-dag {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-inline-size: 0;
+  padding: 16px;
+  border-radius: 22px;
+  box-shadow: var(--bb-float-1);
+  background: var(--md-sys-color-surface);
+}
+.variant-grid.is-panel:has(demo-dag) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.variant-grid.is-panel .variant-stage > demo-dag {
+  inline-size: 100%;
+  block-size: 480px;
+  padding: 10px;
+}
+.overview-stage > demo-dag {
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 8px;
+  border-radius: 16px;
+}
+.overview-stage.is-wide:has(> demo-dag) {
+  block-size: 400px;
+}
+
 /* The plan is a whole panel: full stage, its own surface and a height. */
 .preview-surface:has(> demo-gantt) {
   justify-content: flex-start;
@@ -1600,6 +1637,7 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="Dashboard"]),
 .playground-stage:has(.preview-surface[data-group="Kanban"]),
 .playground-stage:has(.preview-surface[data-group="Gantt"]),
+.playground-stage:has(.preview-surface[data-group="DAG"]),
 .playground-stage:has(.preview-surface[data-group="Pagination"]),
 .playground-stage:has(.preview-surface[data-group="App bars"]) {
   grid-template-columns: minmax(0, 1fr);
@@ -1612,6 +1650,7 @@ docs-select bolle-button {
   .playground-side,
 .playground-stage:has(.preview-surface[data-group="Kanban"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Gantt"]) .playground-side,
+.playground-stage:has(.preview-surface[data-group="DAG"]) .playground-side,
 .playground-stage:has(.preview-surface[data-group="Pagination"])
   .playground-side,
 .playground-stage:has(.preview-surface[data-group="App bars"])
@@ -1625,6 +1664,7 @@ docs-select bolle-button {
 .playground-stage:has(.preview-surface[data-group="Dashboard"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Kanban"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Gantt"]) .side-body,
+.playground-stage:has(.preview-surface[data-group="DAG"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="Pagination"]) .side-body,
 .playground-stage:has(.preview-surface[data-group="App bars"]) .side-body {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

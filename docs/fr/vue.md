@@ -1604,6 +1604,58 @@ const tasks = ref<GanttTask[]>([
 
 Autres recettes: Colonnes et contenu des cellules · Déplacer et redimensionner · Contenu de la barre · États et slots
 
+### bolle-dag
+
+Attributs: `error`, `label`, `loading`, `orientation`, `readonly`, `snap` · Propriétés JavaScript: `constraints`, `edges`, `kinds`, `labels`, `minimap`, `nodes`, `overrides` · Slots: `node-{id}` · Événements: `dag-change`, `dag-connection-rejected`, `dag-node-activate`, `dag-retry`, `dag-selection-change`
+
+**Graphe minimal** — L'éditeur reçoit nodes et edges, applique lui-même chaque modification et la signale avec dag-change, qui porte le nouveau graphe et la cause. Un nœud sans ports déclarés a une entrée et une sortie génériques. L'hôte doit avoir une hauteur.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { DagChangeDetail, DagEdge, DagNode } from "@bolle/web-components";
+
+const nodes = ref<DagNode[]>([
+  { id: "build", label: "Build", x: 0, y: 0 },
+  { id: "test", label: "Test", x: 328, y: -48 },
+  { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+]);
+const edges = ref<DagEdge[]>([
+  {
+    id: "e-1",
+    source: "build",
+    sourcePort: "out",
+    target: "test",
+    targetPort: "in",
+  },
+  {
+    id: "e-2",
+    source: "test",
+    sourcePort: "out",
+    target: "deploy",
+    targetPort: "in",
+  },
+]);
+
+const onChange = (event: CustomEvent<DagChangeDetail>) => {
+  nodes.value = event.detail.nodes;
+  edges.value = event.detail.edges;
+};
+</script>
+
+<template>
+  <bolle-dag
+    label="Pipeline di rilascio"
+    style="block-size: 420px"
+    :nodes="nodes"
+    :edges="edges"
+    @dag-change="onChange"
+  ></bolle-dag>
+</template>
+```
+
+Autres recettes: Ports typés et contraintes · Remplacer une opération · Contenu du nœud
+
 ### bolle-data-table
 
 Attributs: `compact-row-height`, `default-column-width`, `density`, `empty-label`, `error`, `expandable`, `group-by`, `group-height`, `header-height`, `label`, `loading`, `max-column-width`, `min-column-width`, `overscan`, `page`, `page-size`, `row-height`, `row-key`, `selectable`, `total`, `updating`, `variant`, `virtual` · Propriétés JavaScript: `columnHandler`, `columns`, `contentStyles`, `detail`, `emptyRenderer`, `errorRenderer`, `expanded`, `footerRenderer`, `groupRenderer`, `groupSummary`, `headerRenderer`, `labels`, `loadingRenderer`, `pageHandler`, `rowActions`, `rowRenderer`, `rows`, `selected`, `sort`, `sortHandler` · Slots: `empty`, `empty-state`, `error`, `footer`, `header`, `loading` · Événements: `column-change`, `expand`, `group`, `retry`, `row-action`, `row-activate`, `select`, `sort`

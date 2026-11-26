@@ -45,6 +45,7 @@ import { BolleSidebar } from "./sidebar.js";
 import { BolleDataTable } from "./data-table.js";
 import { BolleKanban } from "./kanban.js";
 import { BolleGantt } from "./gantt.js";
+import { BolleDag } from "./dag.js";
 import { BolleBottomAppBar } from "./bottom-app-bar.js";
 import { BolleAvatar } from "./avatar.js";
 import { BolleEmptyState } from "./empty-state.js";
@@ -67,6 +68,7 @@ export {
   BolleDataTable,
   BolleKanban,
   BolleGantt,
+  BolleDag,
   BolleBottomAppBar,
   BolleSidebar,
   BolleButton,
@@ -172,8 +174,33 @@ export type {
   GanttColumnsDetail,
 } from "./gantt.js";
 export type {
+  DagNode,
+  DagPort,
+  DagEdge,
+  DagNodeKind,
+  DagGraph,
+  DagConnection,
+  DagVerdict,
+  DagConstraints,
+  DagOrientation,
+  DagTone,
+  DagPosition,
+  DagAddRequest,
+  DagConnectRequest,
+  DagMoveRequest,
+  DagDuplicateRequest,
+  DagDeleteRequest,
+  DagOverrides,
+  DagChangeCause,
+  DagChangeDetail,
+  DagSelectionDetail,
+  DagRejectedDetail,
+  DagNodeDetail,
+} from "./dag.js";
+export type {
   AvatarGroupLabels,
   ControlLabels,
+  DagLabels,
   GanttLabels,
   ListLabels,
   MenuLabels,
@@ -241,6 +268,7 @@ export const catalogue = {
   "bolle-data-table": BolleDataTable,
   "bolle-kanban": BolleKanban,
   "bolle-gantt": BolleGantt,
+  "bolle-dag": BolleDag,
   "bolle-bottom-app-bar": BolleBottomAppBar,
   "bolle-avatar": BolleAvatar,
   "bolle-avatar-group": BolleAvatarGroup,
@@ -301,6 +329,7 @@ declare global {
     "bolle-data-table": BolleDataTable;
     "bolle-kanban": BolleKanban;
     "bolle-gantt": BolleGantt;
+    "bolle-dag": BolleDag;
     "bolle-bottom-app-bar": BolleBottomAppBar;
     "bolle-avatar": BolleAvatar;
     "bolle-avatar-group": BolleAvatarGroup;

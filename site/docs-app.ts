@@ -134,6 +134,7 @@ interface DocSection {
 const WIDE_GROUPS = new Set<string>([
   "App bars",
   "Gantt",
+  "DAG",
   "Cards",
   "Carousel",
   "Date & time pickers",
@@ -157,6 +158,7 @@ const PANEL_GROUPS = new Set<string>([
   "Dashboard",
   "Kanban",
   "Gantt",
+  "DAG",
   "Pagination",
   "App bars",
   "Breadcrumb",
@@ -170,6 +172,7 @@ const SCHIUMA_ORDER = [
   "bolle-dashboard",
   "bolle-kanban",
   "bolle-gantt",
+  "bolle-dag",
   "bolle-data-table",
   "bolle-avatar",
   "bolle-avatar-group",
@@ -704,6 +707,30 @@ const PART_PURPOSES: Record<string, { purpose: string }> = {
 };
 
 const ANATOMY_GUIDES: Record<string, AnatomyGuide> = {
+  "bolle-dag": {
+    intro:
+      "Nodi, porte e collegamenti arrivano dalle proprietà nodes, edges e kinds. Lo slot node-{id} aggiunge contenuto sotto l'intestazione del nodo con quell'id; il nodo cresce per contenerlo e le porte seguono la nuova altezza.",
+    slots: [
+      {
+        name: "node-{id}",
+        purpose:
+          "Contenuto aggiuntivo del nodo con quell'id, sotto l'intestazione e le righe delle porte.",
+        example: '<span slot="node-orders">1.240.512 righe</span>',
+      },
+    ],
+    parts: [
+      { name: "canvas", purpose: "Area di lavoro con la griglia, la vista e lo zoom." },
+      { name: "node", purpose: "Riquadro di un nodo." },
+      { name: "port", purpose: "Punto di collegamento di un nodo." },
+      { name: "edge", purpose: "Collegamento fra due porte." },
+      { name: "palette", purpose: "Tavolozza dei tipi di nodo." },
+      { name: "toolbar", purpose: "Barra dei comandi: annulla, zoom, adatta, disponi." },
+      { name: "minimap", purpose: "Mappa del grafo." },
+    ],
+    example: `<bolle-dag label="Flusso dati vendite" style="block-size: 480px">
+  <span slot="node-orders">1.240.512 righe</span>
+</bolle-dag>`,
+  },
   "bolle-gantt": {
     intro:
       "Il contenuto delle righe non passa dagli slot: il componente chiama column.render per una cella e barRenderer per la barra, e groupLabel per il nome di un gruppo. Gli slot coprono gli stati, quando al posto delle righe non c'è nulla da mostrare.",

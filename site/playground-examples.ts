@@ -25,6 +25,8 @@ const PLAN = `<bolle-gantt
   style="block-size: 380px"
 ></bolle-gantt>`;
 
+const FLOW = `<bolle-dag id="flow" label="Pipeline di rilascio" style="block-size: 380px"></bolle-dag>`;
+
 const TASKS = `const tasks = [
   { id: "p-1", code: "C2026-1000", name: "Ristrutturazione scuola", start: "2026-09-07", end: "2027-03-12" },
   { id: "p-1-1", parent: "p-1", code: "C2026-1000.01", name: "Impianto elettrico", start: "2026-09-14", end: "2026-10-02", progress: 30, resource: "Giulia Ferraro" },
@@ -320,6 +322,100 @@ plan.addEventListener("task-change", (event) => {
 plan.addEventListener("task-select", (event) => {
   console.log("Attività scelta:", event.detail.task.code);
 });`,
+  },
+  "Grafo minimo": {
+    title: "bolle-dag · grafo minimo",
+    html: FLOW,
+    css: "",
+    js: `${importLine}
+
+const flow = document.querySelector("#flow");
+
+flow.nodes = [
+  { id: "build", label: "Build", x: 0, y: 0 },
+  { id: "test", label: "Test", x: 328, y: -48 },
+  { id: "lint", label: "Analisi statica", x: 328, y: 48 },
+  { id: "deploy", label: "Rilascio", x: 656, y: 0 },
+];
+flow.edges = [
+  { id: "e-1", source: "build", sourcePort: "out", target: "test", targetPort: "in" },
+  { id: "e-2", source: "build", sourcePort: "out", target: "lint", targetPort: "in" },
+  { id: "e-3", source: "test", sourcePort: "out", target: "deploy", targetPort: "in" },
+];
+
+// L'editor ha già applicato la modifica: qui la si legge.
+flow.addEventListener("dag-change", (event) => {
+  const { nodes, edges, cause } = event.detail;
+  console.log(cause, nodes.length, "nodi,", edges.length, "collegamenti");
+});`,
+  },
+  "Porte tipizzate e vincoli": {
+    title: "bolle-dag · vincoli",
+    html: FLOW,
+    css: "",
+    js: `${importLine}
+
+const flow = document.querySelector("#flow");
+
+flow.kinds = [
+  {
+    kind: "clean",
+    label: "Pulizia",
+    inputs: [{ id: "rows", label: "Righe", type: "tabella", max: 1 }],
+    outputs: [{ id: "rows", label: "Righe pulite", type: "tabella" }],
+  },
+  {
+    kind: "dwh",
+    label: "Data warehouse",
+    inputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+    outputs: [],
+  },
+];
+flow.nodes = [
+  {
+    id: "orders",
+    label: "Ordini 2026",
+    x: 0,
+    y: 0,
+    inputs: [],
+    outputs: [{ id: "rows", label: "Righe", type: "tabella" }],
+  },
+];
+flow.constraints = {
+  maxNodes: 40,
+  canConnect: ({ source, target }) =>
+    target.kind === "dwh" && source.kind !== "clean"
+      ? "Il data warehouse accetta solo righe passate da «Pulizia»"
+      : true,
+  canDelete: (node) => (node.id === "orders" ? "Sorgente gestita dall'amministratore" : true),
+};
+
+flow.addEventListener("dag-connection-rejected", (event) => {
+  console.log("Rifiutato:", event.detail.reason);
+});`,
+  },
+  "Sostituire un'operazione": {
+    title: "bolle-dag · overrides",
+    html: FLOW,
+    css: "",
+    js: `${importLine}
+
+const flow = document.querySelector("#flow");
+
+flow.nodes = [
+  { id: "build", label: "Build", x: 0, y: 0 },
+  { id: "deploy", label: "Rilascio", x: 328, y: 0 },
+];
+flow.edges = [
+  { id: "e-1", source: "build", sourcePort: "out", target: "deploy", targetPort: "in" },
+];
+
+flow.overrides = {
+  // L'eliminazione passa da una conferma; senza apply() il grafo resta com'è.
+  delete: (request, apply) => {
+    if (confirm(\`Eliminare \${request.nodes.length} nodi e \${request.edges.length} collegamenti?\`)) apply();
+  },
+};`,
   },
   "Caricamento, errore e vuoto": {
     title: "bolle-data-table · stati",

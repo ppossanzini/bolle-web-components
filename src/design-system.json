@@ -15,9 +15,14 @@
     "high-contrast-dark"
   ],
   "fullConformanceVerified": false,
-  "componentEntries": 52,
+  "componentEntries": 53,
   "geometryPolicy": "48 CSS pixel minimum action targets; project adaptations and unsupported variants documented in README",
   "changes": [
+    {
+      "date": "2026-11-26",
+      "classification": "additive",
+      "description": "`bolle-dag` adds a directed acyclic graph editor to the Schiuma group: nodes with an icon, label, description, badge and free or typed ports, curved links with arrowheads, a palette of node types declared in `kinds`, a layered layout in horizontal or vertical orientation, a map, zoom and view movement, rectangle selection, duplication, deletion and history. The editor applies every change to its own `nodes` and `edges` and reports it with `dag-change`. A loop is always refused; `constraints` adds the rules of the application — port types and limits, node limits, `canConnect`, `canAdd`, `canDelete`, `canDeleteEdge` — and every refusal shows its reason while dragging, in the menu and with `dag-connection-rejected`. `overrides` replaces the default behaviour of an operation through a function that receives the request and `apply`; the `node-{id}` slot adds content to a node. Every action has a keyboard path, including linking from the node menu. Texts in English, Italian, French and Simplified Chinese."
+    },
     {
       "date": "2026-11-24",
       "classification": "fix",

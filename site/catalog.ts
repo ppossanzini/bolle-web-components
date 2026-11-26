@@ -12,6 +12,7 @@ import "./data-table-demo.js";
 import "./app-shell-demo.js";
 import "./kanban-demo.js";
 import "./gantt-demo.js";
+import "./dag-demo.js";
 import "./pagination-demo.js";
 import { code } from "./codegen.js";
 import { l, libraryLocale, m } from "./i18n.js";
@@ -36,6 +37,7 @@ export type Group =
   | "Empty states"
   | "HTML controls"
   | "Gantt"
+  | "DAG"
   | "Kanban"
   | "Lists"
   | "Loading indicator"
@@ -3040,6 +3042,68 @@ export const entries: Entry[] = [
   return start < floor ? "${l(m("Non si sposta un'attività prima del"))} " + floor : undefined
 }`,
         `const onChange = ({ task, start, end }) => setTasks((list) => list.map((item) => (item.id === task.id ? { ...item, start, end } : item)))`,
+      ],
+      content: undefined,
+    }),
+  },
+  {
+    tag: "bolle-dag",
+    title: "DAG",
+    group: "DAG",
+    section: "Schiuma",
+    summary: m(
+      "Editor di grafo aciclico orientato: nodi con porte libere o tipizzate, collegamenti con il motivo di ogni rifiuto, tavolozza dei tipi di nodo, disposizione a livelli, mappa e modifica da puntatore o da tastiera.",
+    ),
+    note: m(
+      "L'editor applica da sé la modifica e la riporta con dag-change. Il ciclo è sempre rifiutato; gli altri vincoli li dichiara l'applicazione in constraints, e ogni rifiuto mostra il suo motivo. Con overrides l'applicazione sostituisce il comportamento di un'operazione, e lo slot node-{id} aggiunge contenuto al nodo. L'altezza del host è obbligatoria.",
+    ),
+    controls: [
+      en("config", m("Configurazione"), ["typed", "free"], "typed"),
+      en("orientation", m("Orientamento"), ["horizontal", "vertical"], "horizontal"),
+      fl("readonly", m("Sola lettura"), false),
+      fl("minimap", m("Mappa"), true),
+      tx("label", m("Etichetta"), m("Flusso dati vendite")),
+    ],
+    render: (state) =>
+      html`<demo-dag
+        .config=${s(state, "config")}
+        .orientation=${s(state, "orientation")}
+        ?readonly=${b(state, "readonly")}
+        ?minimap=${b(state, "minimap")}
+        .label=${s(state, "label")}
+      ></demo-dag>`,
+    code: (state) => ({
+      attrs: [
+        a("label", s(state, "label")),
+        ...(s(state, "orientation") === "horizontal" ? [] : [a("orientation", s(state, "orientation"))]),
+        ...(b(state, "readonly") ? [a("readonly", true)] : []),
+        { name: "nodes", raw: "nodes" },
+        { name: "edges", raw: "edges" },
+        { name: "kinds", raw: "kinds" },
+        ...(s(state, "config") === "typed" ? [{ name: "constraints", raw: "constraints" }] : []),
+      ],
+      vuePreamble: [
+        `const nodes = ref([
+  { id: "orders", label: "${l(m("Ordini 2026"))}", x: 0, y: 0, inputs: [], outputs: [{ id: "rows", label: "${l(m("Righe"))}", type: "table" }] },
+  { id: "clean", label: "${l(m("Pulizia ordini"))}", x: 328, y: 0, inputs: [{ id: "rows", label: "${l(m("Righe"))}", type: "table", max: 1 }], outputs: [{ id: "rows", label: "${l(m("Righe pulite"))}", type: "table" }] },
+])`,
+        `const edges = ref([{ id: "e-1", source: "orders", sourcePort: "rows", target: "clean", targetPort: "rows" }])`,
+        `const kinds = [{ kind: "clean", label: "${l(m("Pulizia"))}", inputs: [{ id: "rows", type: "table", max: 1 }], outputs: [{ id: "rows", type: "table" }] }]`,
+        `const constraints = { maxNodes: 40, canDelete: (node) => (node.id === "orders" ? "${l(m("Sorgente gestita dall'amministratore dei dati"))}" : true) }`,
+        `const onChange = ({ nodes: next, edges: links }) => { nodes.value = next; edges.value = links }`,
+      ],
+      reactPreamble: [
+        `const [graph, setGraph] = useState({
+  nodes: [
+    { id: "orders", label: "${l(m("Ordini 2026"))}", x: 0, y: 0, inputs: [], outputs: [{ id: "rows", label: "${l(m("Righe"))}", type: "table" }] },
+    { id: "clean", label: "${l(m("Pulizia ordini"))}", x: 328, y: 0, inputs: [{ id: "rows", label: "${l(m("Righe"))}", type: "table", max: 1 }], outputs: [{ id: "rows", label: "${l(m("Righe pulite"))}", type: "table" }] },
+  ],
+  edges: [{ id: "e-1", source: "orders", sourcePort: "rows", target: "clean", targetPort: "rows" }],
+})`,
+        `const { nodes, edges } = graph`,
+        `const kinds = [{ kind: "clean", label: "${l(m("Pulizia"))}", inputs: [{ id: "rows", type: "table", max: 1 }], outputs: [{ id: "rows", type: "table" }] }]`,
+        `const constraints = { maxNodes: 40, canDelete: (node) => (node.id === "orders" ? "${l(m("Sorgente gestita dall'amministratore dei dati"))}" : true) }`,
+        `const onChange = ({ nodes, edges }) => setGraph({ nodes, edges })`,
       ],
       content: undefined,
     }),
